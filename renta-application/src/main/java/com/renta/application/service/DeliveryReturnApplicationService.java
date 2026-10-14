@@ -2,6 +2,7 @@ package com.renta.application.service;
 
 import com.renta.application.dto.delivery.DamageReportRequest;
 import com.renta.application.dto.delivery.DamageReportResponse;
+import com.renta.application.dto.delivery.DepositSettlementResponse;
 import com.renta.application.dto.delivery.FinishRentalRequest;
 import com.renta.application.dto.delivery.RentalDeliveryResponse;
 import com.renta.application.dto.delivery.RentalReturnResponse;
@@ -16,17 +17,21 @@ import com.renta.domain.model.entity.Reservation;
 import com.renta.domain.model.enums.DamageReportStatus;
 import com.renta.domain.model.enums.ReservationStatus;
 import com.renta.domain.model.enums.ToolConditionStatus;
+import com.renta.domain.model.enums.ToolStatus;
+import com.renta.domain.model.vo.DepositSettlement;
 import com.renta.domain.model.vo.Money;
 import com.renta.domain.port.in.FinalizeRentalUseCase;
 import com.renta.domain.port.in.FinishRentalUseCase;
+import com.renta.domain.port.in.GetSettlementUseCase;
 import com.renta.domain.port.in.RegisterDamageReportUseCase;
 import com.renta.domain.port.in.StartRentalUseCase;
+import com.renta.domain.port.out.ClientRepositoryPort;
 import com.renta.domain.port.out.DamageReportRepositoryPort;
 import com.renta.domain.port.out.RentalDeliveryRepositoryPort;
 import com.renta.domain.port.out.RentalReturnRepositoryPort;
 import com.renta.domain.port.out.ReservationRepositoryPort;
+import com.renta.domain.port.out.ToolRepositoryPort;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -35,22 +40,37 @@ public class DeliveryReturnApplicationService implements
         StartRentalUseCase,
         FinishRentalUseCase,
         FinalizeRentalUseCase,
-        RegisterDamageReportUseCase {
+        RegisterDamageReportUseCase,
+        GetSettlementUseCase {
 
     private final RentalDeliveryRepositoryPort deliveryRepository;
     private final RentalReturnRepositoryPort returnRepository;
     private final DamageReportRepositoryPort damageReportRepository;
     private final ReservationRepositoryPort reservationRepository;
+    private final ToolRepositoryPort toolRepository;
+    private final ClientRepositoryPort clientRepository;
 
     public DeliveryReturnApplicationService(
             RentalDeliveryRepositoryPort deliveryRepository,
             RentalReturnRepositoryPort returnRepository,
             DamageReportRepositoryPort damageReportRepository,
             ReservationRepositoryPort reservationRepository) {
+        this(deliveryRepository, returnRepository, damageReportRepository, reservationRepository, null, null);
+    }
+
+    public DeliveryReturnApplicationService(
+            RentalDeliveryRepositoryPort deliveryRepository,
+            RentalReturnRepositoryPort returnRepository,
+            DamageReportRepositoryPort damageReportRepository,
+            ReservationRepositoryPort reservationRepository,
+            ToolRepositoryPort toolRepository,
+            ClientRepositoryPort clientRepository) {
         this.deliveryRepository = Objects.requireNonNull(deliveryRepository);
         this.returnRepository = Objects.requireNonNull(returnRepository);
         this.damageReportRepository = Objects.requireNonNull(damageReportRepository);
         this.reservationRepository = Objects.requireNonNull(reservationRepository);
+        this.toolRepository = toolRepository;
+        this.clientRepository = clientRepository;
     }
 
     @Override
@@ -116,23 +136,45 @@ public class DeliveryReturnApplicationService implements
                 command.depositRefunded(),
                 command.extraDamageFee()
         );
-        return returnRepository.save(ret);
+        RentalReturn savedReturn = returnRepository.save(ret);
+
+        // Actualización de estado de la herramienta según la condición de entrega
+        if (toolRepository != null) {
+            toolRepository.findById(res.getToolId()).ifPresent(tool -> {
+                if (command.conditionStatus() == ToolConditionStatus.DANADO || command.conditionStatus() == ToolConditionStatus.INOPERATIVO) {
+                    tool.setStatus(ToolStatus.MANTENIMIENTO);
+                } else if (command.conditionStatus() == ToolConditionStatus.EXCELENTE || command.conditionStatus() == ToolConditionStatus.BUENO) {
+                    tool.setStatus(ToolStatus.DISPONIBLE);
+                }
+                toolRepository.save(tool);
+            });
+        }
+
+        return savedReturn;
     }
 
     public RentalReturnResponse finishRentalFromRequest(FinishRentalRequest req) {
-        Money fee = req.extraDamageFee() != null ? Money.cop(req.extraDamageFee()) : Money.zero();
+        Reservation res = reservationRepository.findById(req.reservationId())
+                .orElseThrow(() -> new ResourceNotFoundException("Reserva no encontrada con ID: " + req.reservationId()));
+
+        Money deposit = res.getDepositTotal();
+        Money damageCost = req.repairCostEstimate() != null ? Money.cop(req.repairCostEstimate())
+                : (req.extraDamageFee() != null ? Money.cop(req.extraDamageFee()) : Money.zero());
+
+        DepositSettlement settlement = DepositSettlement.calculate(deposit, damageCost);
+        boolean refunded = req.depositRefunded() != null ? req.depositRefunded() : settlement.refundAmount().isGreaterThan(Money.zero());
+        Money extraFee = settlement.extraChargeDue();
+
         FinishRentalCommand cmd = new FinishRentalCommand(
                 req.reservationId(),
                 req.receivedBy(),
                 req.conditionStatus(),
                 req.inspectionNotes(),
-                req.depositRefunded(),
-                fee
+                refunded,
+                extraFee
         );
         RentalReturn r = finishRental(cmd);
-        String code = reservationRepository.findById(r.getReservationId())
-                .map(Reservation::getReservationCode)
-                .orElse("RES-" + r.getReservationId());
+        String code = res.getReservationCode();
         return DeliveryReturnDtoMapper.toReturnResponse(r, code);
     }
 
@@ -178,5 +220,57 @@ public class DeliveryReturnApplicationService implements
         return damageReportRepository.findByReturnId(returnId).stream()
                 .map(DeliveryReturnDtoMapper::toDamageResponse)
                 .toList();
+    }
+
+    @Override
+    public DepositSettlement getSettlementByReservationId(Long reservationId) {
+        Reservation res = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reserva no encontrada con ID: " + reservationId));
+        RentalReturn ret = returnRepository.findByReservationId(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("La reserva no cuenta con acta de devolución registrada"));
+
+        List<DamageReport> damages = damageReportRepository.findByReturnId(ret.getId());
+        Money totalDamage = damages.stream()
+                .map(DamageReport::getRepairCostEstimate)
+                .filter(Objects::nonNull)
+                .reduce(Money.zero(), Money::add);
+
+        if (totalDamage.equals(Money.zero()) && ret.getExtraDamageFee() != null) {
+            totalDamage = ret.getExtraDamageFee();
+        }
+
+        return DepositSettlement.calculate(res.getDepositTotal(), totalDamage);
+    }
+
+    public DepositSettlementResponse getSettlementResponse(Long reservationId) {
+        Reservation res = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reserva no encontrada con ID: " + reservationId));
+        RentalReturn ret = returnRepository.findByReservationId(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("La reserva no cuenta con acta de devolución registrada"));
+
+        DepositSettlement settlement = getSettlementByReservationId(reservationId);
+
+        String clientName = clientRepository != null ? clientRepository.findById(res.getClientId())
+                .map(c -> c.getFirstName() + " " + c.getLastName())
+                .orElse("Cliente #" + res.getClientId()) : "Cliente #" + res.getClientId();
+
+        String toolName = toolRepository != null ? toolRepository.findById(res.getToolId())
+                .map(t -> t.getName() + " (" + t.getBrand() + ")")
+                .orElse("Herramienta #" + res.getToolId()) : "Herramienta #" + res.getToolId();
+
+        return new DepositSettlementResponse(
+                res.getId(),
+                res.getReservationCode(),
+                clientName,
+                toolName,
+                settlement.initialDeposit().amount(),
+                settlement.damageDeduction().amount(),
+                settlement.refundAmount().amount(),
+                settlement.extraChargeDue().amount(),
+                settlement.status(),
+                ret.getToolConditionStatus(),
+                ret.getInspectionNotes(),
+                ret.getReturnDate()
+        );
     }
 }

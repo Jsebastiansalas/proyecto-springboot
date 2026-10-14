@@ -14,5 +14,7 @@ public interface ReservationQueryUseCase {
 
     List<ReservationResponse> listReservationsByProvider(Long providerId);
 
+    List<ReservationResponse> listReservationsByTool(Long toolId);
+
     List<ReservationResponse> listAllReservations();
 }

@@ -8,6 +8,7 @@ import com.renta.application.service.InvoiceApplicationService;
 import com.renta.application.service.PaymentApplicationService;
 import com.renta.application.service.ReportApplicationService;
 import com.renta.application.service.ReservationApplicationService;
+import com.renta.application.service.ReviewApplicationService;
 import com.renta.application.service.ToolApplicationService;
 import com.renta.domain.port.out.CategoryRepositoryPort;
 import com.renta.domain.port.out.ClientRepositoryPort;
@@ -20,6 +21,7 @@ import com.renta.domain.port.out.ProviderRepositoryPort;
 import com.renta.domain.port.out.RentalDeliveryRepositoryPort;
 import com.renta.domain.port.out.RentalReturnRepositoryPort;
 import com.renta.domain.port.out.ReservationRepositoryPort;
+import com.renta.domain.port.out.ReviewRepositoryPort;
 import com.renta.domain.port.out.ToolRepositoryPort;
 import com.renta.domain.port.out.UserRepositoryPort;
 import org.springframework.context.annotation.Bean;
@@ -80,8 +82,20 @@ public class ApplicationBeanConfiguration {
             RentalDeliveryRepositoryPort deliveryRepository,
             RentalReturnRepositoryPort returnRepository,
             DamageReportRepositoryPort damageReportRepository,
-            ReservationRepositoryPort reservationRepository) {
-        return new DeliveryReturnApplicationService(deliveryRepository, returnRepository, damageReportRepository, reservationRepository);
+            ReservationRepositoryPort reservationRepository,
+            ToolRepositoryPort toolRepository,
+            ClientRepositoryPort clientRepository) {
+        return new DeliveryReturnApplicationService(
+                deliveryRepository, returnRepository, damageReportRepository,
+                reservationRepository, toolRepository, clientRepository);
+    }
+
+    @Bean
+    public ReviewApplicationService reviewApplicationService(
+            ReviewRepositoryPort reviewRepository,
+            ReservationRepositoryPort reservationRepository,
+            ClientRepositoryPort clientRepository) {
+        return new ReviewApplicationService(reviewRepository, reservationRepository, clientRepository);
     }
 
     @Bean

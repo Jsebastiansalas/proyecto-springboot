@@ -232,6 +232,14 @@ public class ReservationApplicationService implements
     }
 
     @Override
+    public List<ReservationResponse> listReservationsByTool(Long toolId) {
+        return reservationRepository.findByToolId(toolId).stream()
+                .filter(r -> r.getStatus() == ReservationStatus.APROBADA || r.getStatus() == ReservationStatus.EN_CURSO)
+                .map(this::enrichReservationResponse)
+                .toList();
+    }
+
+    @Override
     public List<ReservationResponse> listAllReservations() {
         // Obtenemos todas las reservas iterando sobre las herramientas disponibles
         List<Tool> allTools = toolRepository.findAllAvailable();

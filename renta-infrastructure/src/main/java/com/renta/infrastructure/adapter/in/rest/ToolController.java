@@ -1,0 +1,94 @@
+package com.renta.infrastructure.adapter.in.rest;
+
+import com.renta.application.dto.tool.CategoryResponse;
+import com.renta.application.dto.tool.CreateToolRequest;
+import com.renta.application.dto.tool.ToolDetailResponse;
+import com.renta.application.dto.tool.ToolResponse;
+import com.renta.application.dto.tool.UpdateToolRequest;
+import com.renta.application.service.ToolApplicationService;
+import com.renta.domain.model.enums.ToolStatus;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/v1/tools")
+@Tag(name = "2. Catálogo de Maquinaria y Equipos", description = "Endpoints públicos de consulta y privados para gestión de herramientas")
+public class ToolController {
+
+    private final ToolApplicationService toolService;
+
+    public ToolController(ToolApplicationService toolService) {
+        this.toolService = toolService;
+    }
+
+    @GetMapping
+    @Operation(summary = "Catálogo público y búsqueda", description = "Lista herramientas disponibles con soporte para filtros por texto, categoría y rango de precio.")
+    public ResponseEntity<List<ToolResponse>> searchTools(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice) {
+        List<ToolResponse> list = toolService.searchTools(query, categoryId, minPrice, maxPrice);
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/categories")
+    @Operation(summary = "Categorías de equipos", description = "Lista todas las categorías de herramientas disponibles.")
+    public ResponseEntity<List<CategoryResponse>> listCategories() {
+        return ResponseEntity.ok(toolService.listCategories());
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Ficha detallada de la herramienta (4FN)", description = "Obtiene los detalles completos de la herramienta: especificaciones técnicas, tiers de descuento por volumen, requisitos de seguridad e imágenes.")
+    public ResponseEntity<ToolDetailResponse> getToolDetail(@PathVariable Long id) {
+        return ResponseEntity.ok(toolService.getToolDetail(id));
+    }
+
+    @GetMapping("/provider/{providerId}")
+    @Operation(summary = "Herramientas de un proveedor", description = "Lista todas las herramientas pertenecientes a un proveedor específico.")
+    public ResponseEntity<List<ToolResponse>> listToolsByProvider(@PathVariable Long providerId) {
+        return ResponseEntity.ok(toolService.listToolsByProvider(providerId));
+    }
+
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROVEEDOR')")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Registrar nueva herramienta", description = "Crea una herramienta con todas sus relaciones normalizadas 4FN (imágenes, especificaciones, precios y seguridad). Requiere rol PROVEEDOR o ADMIN.")
+    public ResponseEntity<ToolDetailResponse> createTool(@Valid @RequestBody CreateToolRequest request) {
+        ToolDetailResponse created = toolService.createTool(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROVEEDOR')")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Actualizar herramienta existente", description = "Actualiza la información y colecciones normalizadas de la herramienta. Requiere rol PROVEEDOR o ADMIN.")
+    public ResponseEntity<ToolDetailResponse> updateTool(@PathVariable Long id, @Valid @RequestBody UpdateToolRequest request) {
+        return ResponseEntity.ok(toolService.updateTool(id, request));
+    }
+
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROVEEDOR')")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Cambiar estado de herramienta", description = "Cambia el estado de una herramienta (DISPONIBLE, ALQUILADA, MANTENIMIENTO, RETIRADA).")
+    public ResponseEntity<Void> updateToolStatus(@PathVariable Long id, @RequestParam ToolStatus status) {
+        toolService.updateToolStatus(id, status);
+        return ResponseEntity.noContent().build();
+    }
+}
