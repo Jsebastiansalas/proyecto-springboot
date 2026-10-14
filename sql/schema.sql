@@ -5,6 +5,7 @@
 -- ============================================================================
 
 -- Limpieza preventiva de tablas en orden inverso de dependencias
+DROP TABLE IF EXISTS reviews CASCADE;
 DROP TABLE IF EXISTS damage_reports CASCADE;
 DROP TABLE IF EXISTS rental_returns CASCADE;
 DROP TABLE IF EXISTS rental_deliveries CASCADE;
@@ -309,3 +310,23 @@ CREATE TABLE damage_reports (
 );
 
 CREATE INDEX idx_damages_return ON damage_reports (return_id);
+ 
+-- ----------------------------------------------------------------------------
+-- 17. TABLA: reviews
+-- Calificaciones y reseñas de clientes tras finalizar alquileres
+-- ----------------------------------------------------------------------------
+CREATE TABLE reviews (
+    id BIGSERIAL PRIMARY KEY,
+    tool_id BIGINT NOT NULL,
+    client_id BIGINT NOT NULL,
+    reservation_id BIGINT NOT NULL UNIQUE,
+    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_reviews_tool FOREIGN KEY (tool_id) REFERENCES tools (id) ON DELETE CASCADE,
+    CONSTRAINT fk_reviews_client FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE CASCADE,
+    CONSTRAINT fk_reviews_reservation FOREIGN KEY (reservation_id) REFERENCES reservations (id) ON DELETE RESTRICT
+);
+
+CREATE INDEX idx_reviews_tool ON reviews (tool_id);
+CREATE INDEX idx_reviews_client ON reviews (client_id);

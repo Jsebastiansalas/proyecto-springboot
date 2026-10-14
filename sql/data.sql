@@ -71,13 +71,43 @@ SELECT i, i, i, 'HERR-' || lpad(i::text, 4, '0'),
  (ARRAY[45000,120000,18000,65000,150000,40000,70000,55000,140000,260000,350000,85000,38000,60000,30000,110000,480000,25000,75000,95000])[i]::numeric,
  (ARRAY[150000,400000,80000,250000,500000,150000,250000,200000,450000,800000,1200000,300000,120000,200000,100000,350000,1500000,80000,250000,300000])[i]::numeric,
  CASE WHEN i IN (9, 17) THEN 'MANTENIMIENTO' ELSE 'DISPONIBLE' END,
- 'https://picsum.photos/seed/herramienta' || i || '/800/600'
+ (ARRAY[
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Milwaukee_PLH28XE.JPG?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Concrete_mixer.jpg?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Andamio_de_tres_cuerpos_de_Aneur.jpg?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Kolbenkompressor.jpg?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Honda_EU3000is_Inverter_Generator.jpg?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Circular_saw.jpg?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Welding_Machine_001.jpg?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Concretevibrator.jpg?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Wacker_Neuson_Stampfer_BS_60-2i.jpg?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Scissor_Lift-2.jpg?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Total_station_made_by_Leica_Geosystems.jpg?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Lombardini_Motori_LDA_673_pic4.jpg?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/AngleGrinder.jpg?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/KARCHER_5_85.jpg?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Extension_ladder_leaning_against_a_garage.JPG?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/AbbruchhammerSAH1500-HK.jpg?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/BobcatS770SkidSteerLoader.jpg?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/Hand_tools.jpg?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/AirCombi_Hockdruck.JPG?width=800',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/SMC_TL90_mobile_lighting_tower._Brightlights,_Battlesbridge._(7657791926).jpg?width=800'
+ ])[i]
 FROM generate_series(1, 20) i;
 
 -- 7. TOOL_IMAGES (4FN)
 INSERT INTO tool_images (tool_id, image_url, is_primary, caption)
-SELECT i, 'https://picsum.photos/seed/herramienta' || i || '/1200/800', TRUE, 'Vista frontal del equipo'
-FROM generate_series(1, 20) i;
+SELECT id, main_image_url, TRUE, 'Vista principal del equipo' FROM tools;
+
+-- Imágenes adicionales de inspección visual (4FN)
+INSERT INTO tool_images (tool_id, image_url, is_primary, caption) VALUES
+(1, 'https://commons.wikimedia.org/wiki/Special:FilePath/Hitachi_DH24PE_loaded.jpg?width=800', FALSE, 'Vista en operación con broca SDS'),
+(9, 'https://commons.wikimedia.org/wiki/Special:FilePath/Trilstamper.jpg?width=800', FALSE, 'Detalle del pie de impacto'),
+(13, 'https://commons.wikimedia.org/wiki/Special:FilePath/Winkelschleifer.jpg?width=800', FALSE, 'Detalle con disco de desbaste'),
+(14, 'https://commons.wikimedia.org/wiki/Special:FilePath/Kaercher_hochdruckreiniger.jpg?width=800', FALSE, 'Vista de manguera y lanza'),
+(15, 'https://commons.wikimedia.org/wiki/Special:FilePath/Step-ladder.JPG?width=800', FALSE, 'Vista en posición desplegada'),
+(16, 'https://commons.wikimedia.org/wiki/Special:FilePath/Jackhammer.jpg?width=800', FALSE, 'Operación en obra'),
+(17, 'https://commons.wikimedia.org/wiki/Special:FilePath/Bobcat_553.jpg?width=800', FALSE, 'Vista lateral del minicargador');
 
 -- 8. TOOL_SPECIFICATIONS (4FN)
 INSERT INTO tool_specifications (tool_id, spec_name, spec_value)
@@ -161,3 +191,12 @@ SELECT setval(pg_get_serial_sequence('reservations', 'id'), (SELECT max(id) FROM
 SELECT setval(pg_get_serial_sequence('payments', 'id'), (SELECT max(id) FROM payments));
 SELECT setval(pg_get_serial_sequence('invoices', 'id'), (SELECT max(id) FROM invoices));
 SELECT setval(pg_get_serial_sequence('rental_returns', 'id'), (SELECT max(id) FROM rental_returns));
+
+-- 17. REVIEWS (Opiniones iniciales de clientes tras alquileres completados)
+INSERT INTO reviews (tool_id, client_id, reservation_id, rating, comment) VALUES
+(1, 1, 1, 5, 'Excelente rotomartillo, perforó concreto sin problema y ahorró mucho tiempo en obra.'),
+(2, 2, 2, 4, 'La vibrocompactadora funcionó muy bien, motor potente y fácil de arrancar.'),
+(3, 3, 3, 5, 'Cortadora de pavimento de alta precisión, disco diamantado en excelente estado.')
+ON CONFLICT (reservation_id) DO NOTHING;
+
+SELECT setval(pg_get_serial_sequence('reviews', 'id'), COALESCE((SELECT max(id) FROM reviews), 1));
