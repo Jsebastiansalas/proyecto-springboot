@@ -751,6 +751,123 @@
     </div>
   </div>
 
+  <!-- ==================== MODAL 7: CALIFICACIÓN Y RESEÑA (REVIEWS) ==================== -->
+  <div id="modal-review" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 p-6 sm:p-8 animate-fade-in relative">
+      <button onclick="App.closeModal('modal-review')" class="absolute top-5 right-5 w-8 h-8 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full flex items-center justify-center font-bold">✕</button>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-2xl">⭐</span>
+        <h3 class="text-lg font-black text-slate-900">Calificar Herramienta</h3>
+      </div>
+      <p class="text-xs text-slate-500 mb-4">Tu opinión ayuda a otros contratistas a seleccionar los mejores equipos.</p>
+
+      <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl mb-4 text-xs space-y-1">
+        <div class="font-bold text-slate-800" id="review-tool-name">-</div>
+        <div class="text-slate-500 font-mono text-[11px]">Reserva: <span id="review-res-code">-</span></div>
+      </div>
+
+      <form id="form-review" class="space-y-4 text-xs" onsubmit="App.submitReview(event)">
+        <input type="hidden" id="review-res-id">
+        <input type="hidden" id="review-tool-id">
+        <input type="hidden" id="review-rating-value" value="5">
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1.5 text-center">Puntuación General</label>
+          <div class="flex justify-center items-center gap-2 py-2" id="star-picker-container">
+            <button type="button" onclick="App.setReviewRating(1)" class="star-btn text-3xl text-amber-400 hover:scale-110 transition-transform">★</button>
+            <button type="button" onclick="App.setReviewRating(2)" class="star-btn text-3xl text-amber-400 hover:scale-110 transition-transform">★</button>
+            <button type="button" onclick="App.setReviewRating(3)" class="star-btn text-3xl text-amber-400 hover:scale-110 transition-transform">★</button>
+            <button type="button" onclick="App.setReviewRating(4)" class="star-btn text-3xl text-amber-400 hover:scale-110 transition-transform">★</button>
+            <button type="button" onclick="App.setReviewRating(5)" class="star-btn text-3xl text-amber-400 hover:scale-110 transition-transform">★</button>
+          </div>
+          <div class="text-center font-bold text-amber-600 text-xs" id="review-rating-text">5 estrellas - ¡Excelente equipo!</div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Comentario y Rendimiento en Obra *</label>
+          <textarea id="review-comment" rows="3" required placeholder="Describe la potencia, facilidad de uso, estado físico y desempeño del equipo en faena..." class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
+        </div>
+
+        <button type="submit" id="btn-submit-review" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-xl transition-all shadow-md">
+          Publicar Calificación y Reseña
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 8: COMPROBANTE DE LIQUIDACIÓN DE GARANTÍA ==================== -->
+  <div id="modal-settlement" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 p-6 sm:p-8 animate-fade-in relative max-h-[92vh] overflow-y-auto">
+      <button onclick="App.closeModal('modal-settlement')" class="no-print absolute top-5 right-5 w-8 h-8 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full flex items-center justify-center font-bold">✕</button>
+      
+      <div class="flex items-center gap-2 mb-1">
+        <span class="w-7 h-7 bg-emerald-500 text-white rounded-lg flex items-center justify-center text-sm font-black">🛡️</span>
+        <h3 class="text-lg font-black text-slate-900">Liquidación de Garantía</h3>
+      </div>
+      <p class="text-xs text-slate-500 mb-4">Comprobante oficial de inspección técnica y fianza de alquiler.</p>
+
+      <div class="space-y-4 text-xs">
+        <!-- Tarjeta de Detalle del Alquiler -->
+        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-slate-400 font-bold uppercase text-[10px]">Contrato de Alquiler</span>
+            <span id="settle-res-code" class="font-mono font-black text-slate-900">-</span>
+          </div>
+          <div>
+            <span class="text-slate-400 uppercase text-[10px] block">Herramienta / Maquinaria</span>
+            <div id="settle-tool-name" class="font-bold text-slate-800 text-sm">-</div>
+          </div>
+          <div>
+            <span class="text-slate-400 uppercase text-[10px] block">Contratista / Titular</span>
+            <div id="settle-client-name" class="font-bold text-slate-800">-</div>
+          </div>
+          <div class="flex justify-between items-center pt-1 border-t border-slate-200">
+            <span class="text-slate-400 text-[10px]">Condición de Retorno:</span>
+            <span id="settle-condition-badge" class="px-2 py-0.5 rounded text-[11px] font-extrabold">-</span>
+          </div>
+          <div>
+            <span class="text-slate-400 text-[10px] block">Notas de Inspección:</span>
+            <p id="settle-inspection-notes" class="text-slate-600 italic bg-white p-2 rounded-lg border border-slate-100 mt-0.5">-</p>
+          </div>
+        </div>
+
+        <!-- Desglose Financiero -->
+        <div class="p-4 bg-slate-900 text-white rounded-2xl space-y-2.5">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400">Depósito en Custodia:</span>
+            <span id="settle-initial-deposit" class="font-mono font-bold text-slate-200">$ 0 COP</span>
+          </div>
+          <div class="flex justify-between items-center text-xs text-rose-400">
+            <span>Deducción por Averías / Daños:</span>
+            <span id="settle-damage-deduction" class="font-mono font-bold">- $ 0 COP</span>
+          </div>
+          <div class="border-t border-slate-800 pt-2 flex justify-between items-center text-sm font-black">
+            <span class="text-emerald-400">Reembolso Neto Devuelto:</span>
+            <span id="settle-refund-amount" class="font-mono text-emerald-400 text-base font-extrabold">$ 0 COP</span>
+          </div>
+          <div id="settle-extra-charge-row" class="hidden flex justify-between items-center text-xs text-amber-400 pt-1 border-t border-slate-800">
+            <span>Saldo Pendiente de Cobro:</span>
+            <span id="settle-extra-charge" class="font-mono font-bold">$ 0 COP</span>
+          </div>
+        </div>
+
+        <!-- Estado de Liquidación -->
+        <div class="text-center p-3 rounded-xl border" id="settle-status-banner">
+          <span class="font-bold text-xs" id="settle-status-text">-</span>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="window.print()" class="no-print flex-1 py-2.5 bg-slate-900 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5">
+            <span>🖨️</span> Imprimir Comprobante
+          </button>
+          <button type="button" onclick="App.closeModal('modal-settlement')" class="no-print px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Contenedor Flotante de Notificaciones Toast -->
   <div id="toast-container"></div>
 

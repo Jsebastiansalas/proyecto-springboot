@@ -1,0 +1,255 @@
+{
+  "info": {
+    "name": "RentaMaq API v1 - Colección de Pruebas",
+    "description": "Colección completa de pruebas para la API REST de RentaMaq (Java 21, Spring Boot 3.4.2, PostgreSQL 18 en 4FN). Incluye flujos de Auth, Catálogo 4FN, Cotizador, Reservas, Pagos, Facturas y Logística.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080/api/v1", "type": "string" },
+    { "key": "token_admin", "value": "", "type": "string" },
+    { "key": "token_client", "value": "", "type": "string" },
+    { "key": "token_provider", "value": "", "type": "string" },
+    { "key": "test_reservation_id", "value": "1", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Autenticación & Usuarios",
+      "item": [
+        {
+          "name": "Login - Administrador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.collectionVariables.set('token_admin', data.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@renta.com\",\n  \"password\": \"Admin123*\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login - Cliente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.collectionVariables.set('token_client', data.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"cliente1@correo.com\",\n  \"password\": \"Password123*\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login - Proveedor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.collectionVariables.set('token_provider', data.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"proveedor1@correo.com\",\n  \"password\": \"Password123*\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Perfil Actual (/auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_client}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Catálogo & Ficha Técnica 4FN",
+      "item": [
+        {
+          "name": "Listar Categorías Públicas",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/tools/categories", "host": ["{{baseUrl}}"], "path": ["tools", "categories"] }
+          }
+        },
+        {
+          "name": "Catálogo con Filtros (Público)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tools?query=Bosch&minPrice=10000&maxPrice=500000",
+              "host": ["{{baseUrl}}"],
+              "path": ["tools"],
+              "query": [
+                { "key": "query", "value": "Bosch" },
+                { "key": "minPrice", "value": "10000" },
+                { "key": "maxPrice", "value": "500000" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Ficha Técnica 4FN de Equipo",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/tools/1", "host": ["{{baseUrl}}"], "path": ["tools", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Cotizador & Reservas",
+      "item": [
+        {
+          "name": "Cotizar Precio (Con 15% Descuento Semanal)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"toolId\": 1,\n  \"startDate\": \"2026-11-01\",\n  \"endDate\": \"2026-11-08\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/reservations/calculate-price", "host": ["{{baseUrl}}"], "path": ["reservations", "calculate-price"] }
+          }
+        },
+        {
+          "name": "Crear Solicitud de Reserva (Cliente)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_client}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"toolId\": 1,\n  \"startDate\": \"2026-12-01\",\n  \"endDate\": \"2026-12-08\",\n  \"deliveryAddress\": \"Carrera 7 # 72-13, Torre Obra Norte\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/reservations", "host": ["{{baseUrl}}"], "path": ["reservations"] }
+          }
+        },
+        {
+          "name": "Aprobar Reserva (Proveedor)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_provider}}" }],
+            "url": { "raw": "{{baseUrl}}/provider/reservations/1/approve", "host": ["{{baseUrl}}"], "path": ["provider", "reservations", "1", "approve"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Pasarela de Pagos & Factura",
+      "item": [
+        {
+          "name": "Procesar Pago Simulado",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_client}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reservationId\": 1,\n  \"paymentMethod\": \"TARJETA_CREDITO\",\n  \"referenceNumber\": \"TX-2026-TEST-001\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/payments/process", "host": ["{{baseUrl}}"], "path": ["payments", "process"] }
+          }
+        },
+        {
+          "name": "Consultar Factura Electrónica con IVA 19%",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_client}}" }],
+            "url": { "raw": "{{baseUrl}}/invoices/reservation/1", "host": ["{{baseUrl}}"], "path": ["invoices", "reservation", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Operaciones Logísticas",
+      "item": [
+        {
+          "name": "Acta de Despacho Inicial (EN_CURSO)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_provider}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reservationId\": 1,\n  \"deliveredBy\": \"Operador Logístico de Patio\",\n  \"initialConditionNotes\": \"Equipo probado 100% operativo en patio\",\n  \"clientSignatureAck\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/deliveries/start-rental", "host": ["{{baseUrl}}"], "path": ["deliveries", "start-rental"] }
+          }
+        },
+        {
+          "name": "Acta de Devolución e Inspección (FINALIZADA)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_provider}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reservationId\": 1,\n  \"receivedBy\": \"Ingeniero de Inspección\",\n  \"conditionStatus\": \"EXCELENTE\",\n  \"inspectionNotes\": \"Horómetro dentro de rango, sin daños\",\n  \"depositRefunded\": true,\n  \"extraDamageFee\": 0\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/deliveries/finish-rental", "host": ["{{baseUrl}}"], "path": ["deliveries", "finish-rental"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Dashboard Gerencial Admin",
+      "item": [
+        {
+          "name": "Métricas Consolidadas de la Plataforma",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/dashboard", "host": ["{{baseUrl}}"], "path": ["admin", "dashboard"] }
+          }
+        }
+      ]
+    }
+  ]
+}

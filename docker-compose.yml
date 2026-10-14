@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # Base de Datos Relacional PostgreSQL 17/18
+  postgres:
+    image: postgres:17-alpine
+    container_name: rentamaq-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: renta_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Renta2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Inicializa el esquema y los datos semilla automáticamente en el primer arranque
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./sql/data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d renta_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Aplicación RentaMaq en Servidor Tomcat 10.1 con Java 21 LTS
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rentamaq-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/renta_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: Renta2026
+      APP_SECURITY_JWT_SECRET: RentaMaq2026SuperSecretKeySuperSecureAndLongEnoughForHS256BitSecurity
+    ports:
+      - "8080:8080"
+
+  # Interfaz de Gestión Visual de Base de Datos pgAdmin 4 (Opcional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: rentamaq-pgadmin
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@renta.com
+      PGADMIN_DEFAULT_PASSWORD: Admin123*
+    ports:
+      - "5050:80"
+
+volumes:
+  pgdata:
+    driver: local
