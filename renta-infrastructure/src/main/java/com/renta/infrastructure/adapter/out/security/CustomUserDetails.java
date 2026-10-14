@@ -8,6 +8,22 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * ============================================================================
+ * ADAPTADOR DE USUARIO PARA SPRING SECURITY (UserDetails)
+ * ============================================================================
+ * 
+ * ¿QUÉ ES USERDETAILS?
+ * Es el modelo estándar interno que usa Spring Security para representar
+ * a un usuario autenticado durante la sesión o petición HTTP.
+ * 
+ * Esta clase envuelve nuestra entidad de base de datos (`UserJpaEntity`) y le
+ * responde a Spring Security preguntas como:
+ * - ¿Cuál es su contraseña encriptada? -> getPassword()
+ * - ¿Cuál es su identificador de inicio de sesión? -> getUsername() (en nuestro caso, el email)
+ * - ¿Qué permisos o roles tiene? -> getAuthorities() (ROLE_ADMIN, ROLE_CLIENTE, etc.)
+ * - ¿La cuenta está activa o bloqueada? -> isAccountNonLocked()
+ */
 public class CustomUserDetails implements UserDetails {
 
     private final Long id;
@@ -32,6 +48,10 @@ public class CustomUserDetails implements UserDetails {
         return roleName;
     }
 
+    /**
+     * Retorna la lista de roles del usuario con el formato de Spring Security.
+     * Ejemplo: ROLE_CLIENTE o ROLE_ADMIN
+     */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(roleName));
@@ -49,21 +69,21 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true;
+        return true; // La cuenta nunca expira por tiempo
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return active;
+        return active; // Si active == false, Spring Security bloqueará el acceso automáticamente
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        return true; // La contraseña no caduca
     }
 
     @Override
     public boolean isEnabled() {
-        return active;
+        return active; // Cuenta habilitada
     }
 }

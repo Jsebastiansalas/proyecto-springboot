@@ -18,11 +18,24 @@ import com.renta.domain.port.out.ReviewRepositoryPort;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * ============================================================================
+ * SERVICIO DE GESTIÓN DE RESEÑAS Y CALIFICACIONES (1 a 5 ESTRELLAS)
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE SERVICIO?
+ * Permite a los clientes evaluar el rendimiento de los equipos que alquilaron:
+ * 1. Validar que la reserva esté FINALIZADA (no se puede calificar antes de usar la máquina).
+ * 2. Validar que quien califica sea el titular de la reserva.
+ * 3. Impedir calificaciones duplicadas para una misma reserva.
+ * 4. Calcular el promedio de estrellas redondeado a 1 decimal (ej. 4.8 / 5.0).
+ */
 public class ReviewApplicationService implements CreateReviewUseCase, ReviewQueryUseCase {
 
     private final ReviewRepositoryPort reviewRepository;
@@ -33,28 +46,38 @@ public class ReviewApplicationService implements CreateReviewUseCase, ReviewQuer
             ReviewRepositoryPort reviewRepository,
             ReservationRepositoryPort reservationRepository,
             ClientRepositoryPort clientRepository) {
-        this.reviewRepository = Objects.requireNonNull(reviewRepository);
-        this.reservationRepository = Objects.requireNonNull(reservationRepository);
-        this.clientRepository = Objects.requireNonNull(clientRepository);
+        this.reviewRepository = Objects.requireNonNull(reviewRepository, "reviewRepository es obligatorio");
+        this.reservationRepository = Objects.requireNonNull(reservationRepository, "reservationRepository es obligatorio");
+        this.clientRepository = Objects.requireNonNull(clientRepository, "clientRepository es obligatorio");
     }
 
+    /**
+     * CREAR RESEÑA
+     * Valida reglas de negocio del contrato antes de registrar la opinión.
+     */
     @Override
     public Review createReview(CreateReviewCommand command) {
+        // PASO 1: Buscar la reserva asociada
         Reservation res = reservationRepository.findById(command.reservationId())
                 .orElseThrow(() -> new ResourceNotFoundException("Reserva no encontrada con ID: " + command.reservationId()));
 
+        // PASO 2: Validar que el alquiler haya finalizado
         if (res.getStatus() != ReservationStatus.FINALIZADA) {
-            throw new BusinessRuleViolationException("Solo se pueden calificar herramientas tras finalizar y devolver el alquiler (estado actual: " + res.getStatus() + ")");
+            throw new BusinessRuleViolationException(
+                    "Solo se pueden calificar herramientas tras finalizar y devolver el alquiler (estado actual: " + res.getStatus() + ")");
         }
 
+        // PASO 3: Validar que sea el cliente titular de la reserva
         if (!Objects.equals(res.getClientId(), command.clientId())) {
             throw new BusinessRuleViolationException("Solo el cliente titular de la reserva puede emitir la calificación");
         }
 
+        // PASO 4: Validar que no haya calificado ya previamente
         if (reviewRepository.findByReservationId(res.getId()).isPresent()) {
             throw new BusinessRuleViolationException("Esta reserva ya cuenta con una reseña y calificación registrada");
         }
 
+        // PASO 5: Crear entidad de dominio con sus invariantes (1 a 5 estrellas, comentario min 3 chars)
         Review review = Review.create(
                 res.getToolId(),
                 command.clientId(),
@@ -106,9 +129,11 @@ public class ReviewApplicationService implements CreateReviewUseCase, ReviewQuer
         );
 
         Review saved = createReview(cmd);
-        String clientName = clientRepository.findById(saved.getClientId())
-                .map(c -> c.getFirstName() + " " + c.getLastName())
-                .orElse("Cliente #" + saved.getClientId());
+        String clientName = "Cliente #" + saved.getClientId();
+        var clientOpt = clientRepository.findById(saved.getClientId());
+        if (clientOpt.isPresent()) {
+            clientName = clientOpt.get().getFirstName() + " " + clientOpt.get().getLastName();
+        }
 
         return new ReviewResponse(
                 saved.getId(),
@@ -133,13 +158,7 @@ public class ReviewApplicationService implements CreateReviewUseCase, ReviewQuer
         if (reviews.isEmpty()) {
             return ToolRatingSummary.empty(toolId);
         }
-        double avg = reviews.stream()
-                .mapToInt(Review::getRating)
-                .average()
-                .orElse(0.0);
-        double roundedAvg = BigDecimal.valueOf(avg)
-                .setScale(1, RoundingMode.HALF_UP)
-                .doubleValue();
+        double roundedAvg = calculateAverageRating(reviews);
         return new ToolRatingSummary(toolId, roundedAvg, reviews.size());
     }
 
@@ -154,19 +173,18 @@ public class ReviewApplicationService implements CreateReviewUseCase, ReviewQuer
             return new ToolRatingSummaryResponse(toolId, 0.0, 0, Collections.emptyList());
         }
 
-        double avg = reviews.stream()
-                .mapToInt(Review::getRating)
-                .average()
-                .orElse(0.0);
-        double roundedAvg = BigDecimal.valueOf(avg)
-                .setScale(1, RoundingMode.HALF_UP)
-                .doubleValue();
+        double roundedAvg = calculateAverageRating(reviews);
 
-        List<ReviewResponse> responseList = reviews.stream().map(r -> {
-            String clientName = clientRepository.findById(r.getClientId())
-                    .map(c -> c.getFirstName() + " " + c.getLastName())
-                    .orElse("Cliente #" + r.getClientId());
-            return new ReviewResponse(
+        // Convertir cada reseña a DTO con nombre del cliente usando un bucle for tradicional y legible
+        List<ReviewResponse> responseList = new ArrayList<>();
+        for (Review r : reviews) {
+            String clientName = "Cliente #" + r.getClientId();
+            var clientOpt = clientRepository.findById(r.getClientId());
+            if (clientOpt.isPresent()) {
+                clientName = clientOpt.get().getFirstName() + " " + clientOpt.get().getLastName();
+            }
+
+            responseList.add(new ReviewResponse(
                     r.getId(),
                     r.getToolId(),
                     r.getClientId(),
@@ -175,9 +193,25 @@ public class ReviewApplicationService implements CreateReviewUseCase, ReviewQuer
                     r.getRating(),
                     r.getComment(),
                     r.getCreatedAt()
-            );
-        }).toList();
+            ));
+        }
 
         return new ToolRatingSummaryResponse(toolId, roundedAvg, reviews.size(), responseList);
+    }
+
+    /**
+     * MÉTODO AUXILIAR DIDÁCTICO:
+     * Calcula la media aritmética de las estrellas y redondea a 1 decimal.
+     */
+    private double calculateAverageRating(List<Review> reviews) {
+        if (reviews.isEmpty()) return 0.0;
+        double sum = 0.0;
+        for (Review r : reviews) {
+            sum += r.getRating();
+        }
+        double avg = sum / reviews.size();
+        return BigDecimal.valueOf(avg)
+                .setScale(1, RoundingMode.HALF_UP)
+                .doubleValue();
     }
 }

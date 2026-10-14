@@ -6,6 +6,19 @@ import com.renta.domain.model.vo.DateRange;
 import com.renta.domain.model.vo.Money;
 import com.renta.infrastructure.adapter.out.persistence.entity.ReservationJpaEntity;
 
+/**
+ * ============================================================================
+ * TRADUCTOR DE RESERVAS: DOMINIO <-> BASE DE DATOS (JPA)
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTA CLASE Y POR QUÉ NO USAMOS UNA SOLA CLASE?
+ * 1. `ReservationJpaEntity` representa la TABLA de PostgreSQL (con tipos primitivos: BigDecimal, String, Timestamp).
+ * 2. `Reservation` representa el MODELO DE NEGOCIO (con Objetos de Valor: Money, DateRange, etc.).
+ * 
+ * Esta clase contiene dos métodos estáticos muy sencillos:
+ * - `toDomain(entity)`: Convierte un registro traído de la base de datos a un objeto de negocio.
+ * - `toJpa(domain)`: Convierte un objeto de negocio a una entidad lista para ser guardada en la base de datos.
+ */
 public final class ReservationJpaMapper {
 
     private ReservationJpaMapper() {}

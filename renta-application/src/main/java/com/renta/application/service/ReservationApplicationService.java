@@ -31,10 +31,23 @@ import com.renta.domain.service.RentalPricingCalculator;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * ============================================================================
+ * SERVICIO DE GESTIÓN DE RESERVAS Y COTIZACIÓN DE ALQUILERES
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE SERVICIO?
+ * Es el núcleo del negocio de alquileres. Gestiona todo el proceso:
+ * 1. Cotizar precios antes de alquilar (aplica descuento semanal e IVA 19%).
+ * 2. Crear una reserva validando que no choque con otras en el calendario.
+ * 3. Aprobar, rechazar o cancelar contratos de reserva.
+ * 4. Consultar el historial de alquileres por cliente, proveedor o máquina.
+ */
 public class ReservationApplicationService implements
         CreateReservationUseCase,
         ApproveReservationUseCase,
@@ -53,34 +66,49 @@ public class ReservationApplicationService implements
             ToolRepositoryPort toolRepository,
             ClientRepositoryPort clientRepository,
             NotificationServicePort notificationService) {
-        this.reservationRepository = Objects.requireNonNull(reservationRepository);
-        this.toolRepository = Objects.requireNonNull(toolRepository);
-        this.clientRepository = Objects.requireNonNull(clientRepository);
-        this.notificationService = Objects.requireNonNull(notificationService);
+        this.reservationRepository = Objects.requireNonNull(reservationRepository, "reservationRepository es obligatorio");
+        this.toolRepository = Objects.requireNonNull(toolRepository, "toolRepository es obligatorio");
+        this.clientRepository = Objects.requireNonNull(clientRepository, "clientRepository es obligatorio");
+        this.notificationService = Objects.requireNonNull(notificationService, "notificationService es obligatorio");
     }
 
+    /**
+     * CREAR RESERVA DE ALQUILER
+     * 
+     * Flujo paso a paso:
+     * - Paso 1: Verificar que la herramienta exista.
+     * - Paso 2: Verificar que esté en estado DISPONIBLE (no en mantenimiento ni retirada).
+     * - Paso 3: Verificar que el cliente que reserva esté registrado.
+     * - Paso 4: Validar las fechas y verificar que NO se solapen con otra reserva activa.
+     * - Paso 5: Calcular el costo exacto (días x tarifa + IVA 19% + fianza de garantía).
+     * - Paso 6: Generar un código único legible (ej. RES-2026-A1B2C3).
+     * - Paso 7: Guardar en la base de datos con estado PENDIENTE.
+     */
     @Override
     public Reservation createReservation(CreateReservationCommand command) {
+        // PASO 1: Buscar la herramienta
         Tool tool = toolRepository.findById(command.toolId())
                 .orElseThrow(() -> new ResourceNotFoundException("Herramienta no encontrada con ID: " + command.toolId()));
 
+        // PASO 2: Validar disponibilidad
         if (tool.getStatus() != ToolStatus.DISPONIBLE) {
             throw new ToolNotAvailableException(command.toolId(),
                     "La herramienta '" + tool.getName() + "' no está disponible (Estado actual: " + tool.getStatus() + ")");
         }
 
+        // PASO 3: Validar que el cliente exista
         if (!clientRepository.findById(command.clientId()).isPresent()) {
             throw new ResourceNotFoundException("Cliente no encontrado con ID: " + command.clientId());
         }
 
+        // PASO 4: Validar rango de fechas y solapamientos
         DateRange dateRange = DateRange.of(command.startDate(), command.endDate());
-
-        // Comprobar solapamiento de fechas con otras reservas activas
         if (reservationRepository.existsOverlapping(command.toolId(), dateRange)) {
             throw new ReservationConflictException(command.toolId(),
                     "La herramienta ya tiene una reserva activa que se solapa con las fechas solicitadas: " + dateRange);
         }
 
+        // PASO 5: Calcular costos financieros
         int totalDays = dateRange.totalDays();
         RentalPricingCalculator calculator = new RentalPricingCalculator();
         RentalPriceCalculation calc = calculator.calculate(tool.getBaseDailyPrice(), totalDays);
@@ -89,9 +117,11 @@ public class ReservationApplicationService implements
         Money deposit = tool.getDepositAmount();
         Money total = subtotal.plus(deposit);
 
+        // PASO 6: Generar código de reserva único
         String code = "RES-" + LocalDate.now().getYear() + "-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         Instant now = Instant.now();
 
+        // PASO 7: Instanciar la entidad en estado PENDIENTE y persistir
         Reservation reservation = new Reservation(
                 null,
                 code,
