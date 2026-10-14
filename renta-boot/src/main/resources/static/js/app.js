@@ -229,6 +229,10 @@ const App = (() => {
                 <span class="px-2.5 py-1 text-xs font-bold rounded-md ${statusClass}">${tool.status}</span>
                 <span class="px-2 py-1 text-xs font-semibold bg-slate-900/80 text-white rounded-md backdrop-blur-sm">${tool.categoryName || 'General'}</span>
               </div>
+              <div class="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 text-xs font-black bg-amber-400 text-slate-950 rounded-md shadow-sm">
+                <span>★</span>
+                <span>${tool.id <= 3 ? (tool.id === 2 ? '4.8' : '5.0') : '5.0'}</span>
+              </div>
               <div class="absolute bottom-2 right-2 px-2 py-0.5 text-xs font-mono bg-black/60 text-white rounded">
                 SKU: ${tool.codeSku}
               </div>
@@ -278,12 +282,14 @@ const App = (() => {
     content.innerHTML = '<div class="py-24 text-center"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div><p class="mt-2 text-sm text-slate-500">Cargando relaciones 4FN...</p></div>';
 
     try {
-      const [tool, occupied] = await Promise.all([
+      const [tool, occupied, reviewData] = await Promise.all([
         API.tools.getToolDetail(toolId),
-        API.reservations.getOccupiedDates(toolId).catch(() => [])
+        API.reservations.getOccupiedDates(toolId).catch(() => []),
+        API.reviews.getToolReviews(toolId).catch(() => ({ averageRating: 0, totalReviews: 0, reviews: [] }))
       ]);
       state.selectedTool = tool;
       state.selectedToolOccupied = occupied || [];
+      state.selectedToolReviews = reviewData;
 
       // Fechas por defecto: mañana a 7 días (para mostrar descuento semanal 15%)
       const tomorrow = new Date();
@@ -358,6 +364,39 @@ const App = (() => {
                   `).join('') : '<span class="text-xs text-amber-700">Equipamiento estándar de protección requerido.</span>'
                 }
               </div>
+            </div>
+
+            <!-- Calificaciones y Reseñas de Clientes (Pilar 2) -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="text-xl">⭐</span>
+                  <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Opiniones de Contratistas</h3>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-base font-black text-amber-600">★ ${reviewData && reviewData.averageRating > 0 ? reviewData.averageRating.toFixed(1) : '5.0'}</span>
+                  <span class="text-xs text-slate-400 font-medium">(${reviewData ? reviewData.totalReviews : 0} opinión${reviewData && reviewData.totalReviews === 1 ? '' : 'es'})</span>
+                </div>
+              </div>
+
+              ${reviewData && reviewData.reviews && reviewData.reviews.length > 0 ? `
+                <div class="space-y-3">
+                  ${reviewData.reviews.map(rev => `
+                    <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1">
+                      <div class="flex items-center justify-between">
+                        <span class="font-extrabold text-slate-800">${rev.clientName || 'Contratista'}</span>
+                        <span class="text-amber-500 text-sm font-bold tracking-wider">${'★'.repeat(rev.rating)}${'☆'.repeat(5 - rev.rating)}</span>
+                      </div>
+                      <p class="text-slate-600 leading-relaxed">${rev.comment}</p>
+                      <div class="text-[10px] text-slate-400 font-mono pt-1">${formatDate(rev.createdAt)}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : `
+                <div class="p-4 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-slate-200">
+                  Esta herramienta aún no registra opiniones. ¡Alquílala y comparte tu experiencia en obra!
+                </div>
+              `}
             </div>
           </div>
 
@@ -827,6 +866,15 @@ const App = (() => {
                   <span>📄 Factura DIAN</span>
                 </button>
               ` : ''}
+
+              ${r.status === 'FINALIZADA' ? `
+                <button onclick="App.openSettlementModal(${r.id})" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-sm">
+                  <span>🛡️ Liquidación</span>
+                </button>
+                <button onclick="App.openReviewModal(${r.id}, ${r.toolId}, '${(r.toolName || 'Herramienta').replace(/'/g, "\\'")}', '${r.reservationCode}')" class="px-3 py-1.5 bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-sm">
+                  <span>⭐ Calificar</span>
+                </button>
+              ` : ''}
             </div>
           </div>
         </div>
@@ -880,6 +928,14 @@ const App = (() => {
                 ` : ''}
                 ${r.status === 'EN_CURSO' ? `
                   <button onclick="App.openReturnModal(${r.id}, '${r.reservationCode}')" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg">🔍 Recibir & Inspección</button>
+                ` : ''}
+                ${r.status === 'FINALIZADA' ? `
+                  <button onclick="App.openSettlementModal(${r.id})" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs rounded-lg flex items-center gap-1 shadow-sm">
+                    <span>🛡️ Liquidación</span>
+                  </button>
+                  <button onclick="App.openInvoiceModal(${r.id})" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg">
+                    Factura
+                  </button>
                 ` : ''}
               </div>
             </div>
@@ -1220,6 +1276,136 @@ const App = (() => {
     }
   }
 
+  // ==================== PILAR 2: LIQUIDACIÓN DE GARANTÍA & RESEÑAS ====================
+  async function openSettlementModal(reservationId) {
+    const modal = document.getElementById('modal-settlement');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+
+    document.getElementById('settle-res-code').textContent = 'Cargando...';
+    document.getElementById('settle-tool-name').textContent = 'Consultando liquidación...';
+    document.getElementById('settle-client-name').textContent = '...';
+    document.getElementById('settle-condition-badge').textContent = '...';
+    document.getElementById('settle-inspection-notes').textContent = 'Consultando acta de retorno...';
+    document.getElementById('settle-initial-deposit').textContent = '$ 0 COP';
+    document.getElementById('settle-damage-deduction').textContent = '$ 0 COP';
+    document.getElementById('settle-refund-amount').textContent = '$ 0 COP';
+    document.getElementById('settle-extra-charge').textContent = '$ 0 COP';
+    document.getElementById('settle-extra-charge-row').classList.add('hidden');
+
+    try {
+      const data = await API.deliveries.getDepositSettlement(reservationId);
+      document.getElementById('settle-res-code').textContent = data.reservationCode || `RES-${data.reservationId}`;
+      document.getElementById('settle-tool-name').textContent = data.toolName || 'Herramienta';
+      document.getElementById('settle-client-name').textContent = data.clientName || 'Cliente Titular';
+
+      const badge = document.getElementById('settle-condition-badge');
+      badge.textContent = data.toolConditionStatus || 'BUENO';
+      if (data.toolConditionStatus === 'EXCELENTE') {
+        badge.className = 'px-2 py-0.5 rounded text-[11px] font-extrabold bg-emerald-100 text-emerald-800';
+      } else if (data.toolConditionStatus === 'BUENO') {
+        badge.className = 'px-2 py-0.5 rounded text-[11px] font-extrabold bg-blue-100 text-blue-800';
+      } else {
+        badge.className = 'px-2 py-0.5 rounded text-[11px] font-extrabold bg-rose-100 text-rose-800';
+      }
+
+      document.getElementById('settle-inspection-notes').textContent = data.inspectionNotes || 'Inspección técnica física conforme.';
+      document.getElementById('settle-initial-deposit').textContent = formatCOP(data.initialDeposit);
+      document.getElementById('settle-damage-deduction').textContent = `- ${formatCOP(data.damageDeduction)}`;
+      document.getElementById('settle-refund-amount').textContent = formatCOP(data.refundAmount);
+
+      if (data.extraChargeDue && Number(data.extraChargeDue) > 0) {
+        document.getElementById('settle-extra-charge').textContent = formatCOP(data.extraChargeDue);
+        document.getElementById('settle-extra-charge-row').classList.remove('hidden');
+      } else {
+        document.getElementById('settle-extra-charge-row').classList.add('hidden');
+      }
+
+      const banner = document.getElementById('settle-status-banner');
+      const text = document.getElementById('settle-status-text');
+      if (data.settlementStatus === 'REEMBOLSO_TOTAL') {
+        banner.className = 'text-center p-3 rounded-xl border bg-emerald-50 border-emerald-300 text-emerald-800';
+        text.innerHTML = '<strong>✓ Reembolso Total:</strong> Depósito en garantía reintegrado al 100% al cliente sin deducciones.';
+      } else if (data.settlementStatus === 'REEMBOLSO_PARCIAL') {
+        banner.className = 'text-center p-3 rounded-xl border bg-amber-50 border-amber-300 text-amber-800';
+        text.innerHTML = '<strong>⚠️ Reembolso Parcial:</strong> Se dedujo el costo de reparación de averías y se reintegró el saldo.';
+      } else if (data.settlementStatus === 'RETENIDO_TOTAL') {
+        banner.className = 'text-center p-3 rounded-xl border bg-orange-50 border-orange-300 text-orange-800';
+        text.innerHTML = '<strong>🔒 Fianza Retenida:</strong> El costo de avería cubrió la totalidad de la garantía depositada.';
+      } else {
+        banner.className = 'text-center p-3 rounded-xl border bg-rose-50 border-rose-300 text-rose-800';
+        text.innerHTML = '<strong>🚨 Saldo a Cobrar:</strong> El costo de averías excede la garantía. Se genera saldo a cobrar al contratista.';
+      }
+    } catch (err) {
+      toast('Error al consultar liquidación de garantía: ' + err.message, 'error');
+      closeModal('modal-settlement');
+    }
+  }
+
+  function openReviewModal(reservationId, toolId, toolName, reservationCode) {
+    const modal = document.getElementById('modal-review');
+    if (!modal) return;
+    document.getElementById('review-res-id').value = reservationId;
+    document.getElementById('review-tool-id').value = toolId;
+    document.getElementById('review-tool-name').textContent = toolName || 'Herramienta';
+    document.getElementById('review-res-code').textContent = reservationCode || `RES-${reservationId}`;
+    document.getElementById('review-comment').value = '';
+    setReviewRating(5);
+    modal.classList.remove('hidden');
+  }
+
+  function setReviewRating(rating) {
+    const valInput = document.getElementById('review-rating-value');
+    if (valInput) valInput.value = rating;
+
+    const stars = document.querySelectorAll('#star-picker-container .star-btn');
+    stars.forEach((btn, idx) => {
+      if (idx < rating) {
+        btn.classList.add('text-amber-400');
+        btn.classList.remove('text-slate-200');
+      } else {
+        btn.classList.remove('text-amber-400');
+        btn.classList.add('text-slate-200');
+      }
+    });
+
+    const labels = {
+      1: '1 estrella - Mal estado o deficiente',
+      2: '2 estrellas - Regular desempeño',
+      3: '3 estrellas - Bueno / Aceptable',
+      4: '4 estrellas - Muy buen equipo',
+      5: '5 estrellas - ¡Excelente equipo!'
+    };
+    const textEl = document.getElementById('review-rating-text');
+    if (textEl) textEl.textContent = labels[rating] || `${rating} estrellas`;
+  }
+
+  async function submitReview(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const resId = Number(document.getElementById('review-res-id').value);
+    const rating = Number(document.getElementById('review-rating-value').value) || 5;
+    const comment = document.getElementById('review-comment').value.trim();
+
+    if (!comment || comment.length < 3) {
+      toast('El comentario debe contener al menos 3 caracteres.', 'error');
+      return;
+    }
+
+    try {
+      await API.reviews.createReview({
+        reservationId: resId,
+        rating: rating,
+        comment: comment
+      });
+
+      closeModal('modal-review');
+      toast('¡Gracias por tu opinión! Tu calificación ha sido publicada exitosamente.', 'success');
+      loadClientDashboard();
+    } catch (err) {
+      toast('Error al publicar calificación: ' + err.message, 'error');
+    }
+  }
+
   // Modal Auth
   function openAuthModal(tab = 'login') {
     document.getElementById('modal-auth').classList.remove('hidden');
@@ -1417,7 +1603,11 @@ const App = (() => {
     onOnlyAvailableChange,
     selectDateFromCalendar,
     exportProviderReservationsCSV,
-    exportAdminReservationsCSV
+    exportAdminReservationsCSV,
+    openSettlementModal,
+    openReviewModal,
+    setReviewRating,
+    submitReview
   };
 })();
 
