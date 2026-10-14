@@ -1,0 +1,232 @@
+/* Plataforma de Renta de Herramientas y Equipos - Styles */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  --primary: #f59e0b; /* Amber 500 */
+  --primary-hover: #d97706; /* Amber 600 */
+  --secondary: #0f172a; /* Slate 900 */
+  --accent: #2563eb; /* Blue 600 */
+  --bg-main: #f8fafc; /* Slate 50 */
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-light: #e2e8f0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Hero Card Styling */
+.hero-card {
+  background: linear-gradient(135deg, #fffbeb 0%, #ffffff 45%, #f8fafc 100%);
+  border: 1px solid #fde68a;
+  box-shadow: 0 4px 20px -2px rgba(245, 158, 11, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+}
+
+.hero-pill-badge {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.feature-pill {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+.feature-pill:hover {
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+/* Category Quick Chips */
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #475569;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  user-select: none;
+}
+.category-chip:hover {
+  background-color: #e2e8f0;
+  color: #0f172a;
+}
+.category-chip-active {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+  box-shadow: 0 2px 6px -1px rgba(15, 23, 42, 0.25);
+}
+
+/* Tool Cards */
+.tool-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tool-card:hover {
+  transform: translateY(-4px);
+  border-color: #cbd5e1;
+  box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+}
+
+/* Status Badges */
+.badge-available {
+  background-color: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+.badge-rented {
+  background-color: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+.badge-maintenance {
+  background-color: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+.badge-retired {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* Reservation State Badges */
+.badge-res-pendiente { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+.badge-res-aprobada { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.badge-res-en_curso { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.badge-res-finalizada { background-color: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; }
+.badge-res-cancelada { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.badge-res-rechazada { background-color: #ffe4e6; color: #9f1239; border: 1px solid #fecdd3; }
+
+/* Nav Pills */
+.nav-pill-active {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.25);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Toast Notifications */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.toast {
+  min-width: 300px;
+  max-width: 440px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  box-shadow: 0 14px 30px -5px rgba(15, 23, 42, 0.18);
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: fadeIn 0.2s ease-out;
+}
+.toast-success { background: #064e3b; color: #ecfdf5; border-left: 5px solid #10b981; }
+.toast-error { background: #881337; color: #fff1f2; border-left: 5px solid #f43f5e; }
+.toast-info { background: #0f172a; color: #f8fafc; border-left: 5px solid #38bdf8; }
+
+/* Factura Electrónica y Estilos de Impresión */
+.invoice-paper {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  body * {
+    visibility: hidden;
+  }
+  #modal-invoice, #modal-invoice * {
+    visibility: visible;
+  }
+  #modal-invoice {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+  }
+  .invoice-modal-dialog {
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
+

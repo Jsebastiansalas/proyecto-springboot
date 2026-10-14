@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RentaMaq - Alquiler de Maquinaria y Equipos de Construcción</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f59e0b'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/app.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            amber: {
+              500: '#f59e0b',
+              600: '#d97706',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased flex flex-col min-h-screen">
+
+  <!-- Main Navigation Header -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3 flex items-center justify-between">
+      
+      <!-- Logo y Marca -->
+      <div class="flex items-center gap-3 cursor-pointer select-none" onclick="App.navigateView('catalog')">
+        <div class="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 rounded-xl flex items-center justify-center font-black text-xl shadow-md shadow-amber-500/20">
+          ⚙️
+        </div>
+        <div>
+          <div class="text-xl font-black tracking-tight text-slate-950 leading-none">RENTA<span class="text-amber-500">MAQ</span></div>
+          <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mt-0.5">Maquinaria & Equipos de Obra</div>
+        </div>
+      </div>
+
+      <!-- Navegación por Vistas / Roles (Pills Segmentadas) -->
+      <nav id="portal-navigation" class="hidden md:flex items-center gap-1 p-1 bg-slate-100 rounded-xl text-xs font-bold border border-slate-200/60">
+        <button id="btn-nav-catalog" onclick="App.navigateView('catalog')" class="px-4 py-2 rounded-lg nav-pill-active transition-all">
+          Catálogo de Equipos
+        </button>
+        <button id="btn-nav-client" onclick="App.navigateView('client')" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all hidden">
+          Mis Alquileres
+        </button>
+        <button id="btn-nav-provider" onclick="App.navigateView('provider')" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all hidden">
+          Panel Proveedor
+        </button>
+        <button id="btn-nav-admin" onclick="App.navigateView('admin')" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all hidden">
+          Administración
+        </button>
+      </nav>
+
+      <!-- Botones de Sesión y Documentación -->
+      <div class="flex items-center gap-2.5">
+        <!-- Acceso discreto a Swagger -->
+        <a href="swagger-ui.html" target="_blank" class="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-950 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-xl transition-colors" title="Documentación técnica interactiva de la API">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>API Docs</span>
+        </a>
+
+        <!-- Invitado (No autenticado) -->
+        <div id="guest-session-container" class="flex items-center gap-2">
+          <button onclick="App.openAuthModal('login')" class="px-3.5 py-2 text-xs font-bold text-slate-700 hover:text-slate-950 hover:bg-slate-100 rounded-xl transition-all">
+            Ingresar
+          </button>
+          <button onclick="App.openAuthModal('reg-client')" class="px-4 py-2 text-xs font-black bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl shadow-sm transition-all">
+            Registrarse
+          </button>
+        </div>
+
+        <!-- Usuario Autenticado -->
+        <div id="user-session-container" class="hidden flex items-center gap-2.5">
+          <div class="flex items-center gap-2.5 bg-slate-50 border border-slate-200 pl-2 pr-3 py-1 rounded-xl">
+            <div id="user-avatar-initials" class="w-7 h-7 rounded-lg bg-slate-900 text-amber-400 flex items-center justify-center font-bold text-xs uppercase shadow-sm">
+              U
+            </div>
+            <div class="text-left">
+              <div id="user-name-display" class="text-xs font-bold text-slate-900 leading-tight">Usuario</div>
+              <span id="user-role-badge" class="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-slate-200 text-slate-700">ROL</span>
+            </div>
+          </div>
+          <button onclick="API.logout()" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors" title="Cerrar Sesión">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Contenedor Principal de Vistas -->
+  <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- ==================== VISTA 1: CATÁLOGO PÚBLICO ==================== -->
+    <section id="view-catalog" class="space-y-6 animate-fade-in">
+      
+      <!-- Hero Section Luminoso, Moderno y Profesional -->
+      <section class="hero-card rounded-3xl p-6 sm:p-10 shadow-sm relative overflow-hidden">
+        <div class="max-w-3xl space-y-4">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full hero-pill-badge text-xs font-bold tracking-wide">
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+            <span>Maquinaria & Equipos Certificados para Obra Civil</span>
+          </div>
+          
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+            Alquiler de Maquinaria y Equipos <span class="text-amber-600">para tu Proyecto</span>
+          </h1>
+          
+          <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
+            Cotización transparente con <strong class="text-slate-900">15% de descuento por semana</strong> (7+ días), entrega directa a pie de obra, póliza de respaldo y facturación electrónica con IVA (19%).
+          </p>
+
+          <!-- 3 Puntos Clave de Confianza -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+            <div class="feature-pill flex items-center gap-3 p-3 rounded-2xl">
+              <span class="text-2xl">🚚</span>
+              <div>
+                <div class="text-xs font-bold text-slate-900">Despacho en 24h</div>
+                <div class="text-[11px] text-slate-500 font-medium">Directo a pie de obra</div>
+              </div>
+            </div>
+            <div class="feature-pill flex items-center gap-3 p-3 rounded-2xl">
+              <span class="text-2xl">🛡️</span>
+              <div>
+                <div class="text-xs font-bold text-slate-900">Garantía Segura</div>
+                <div class="text-[11px] text-slate-500 font-medium">Depósito en custodia</div>
+              </div>
+            </div>
+            <div class="feature-pill flex items-center gap-3 p-3 rounded-2xl">
+              <span class="text-2xl">📄</span>
+              <div>
+                <div class="text-xs font-bold text-slate-900">Factura con IVA 19%</div>
+                <div class="text-[11px] text-slate-500 font-medium">Comprobante fiscal legal</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Barra de Filtros y Búsqueda Mejorada -->
+      <section class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-sm space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          
+          <!-- Búsqueda por texto -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Equipo o Marca</label>
+            <div class="relative">
+              <input type="text" id="filter-search" placeholder="Ej: Retroexcavadora, DeWalt..." class="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-500 focus:outline-none transition-all font-medium text-slate-800">
+              <svg class="w-4 h-4 text-slate-400 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+          </div>
+
+          <!-- Filtro Categoría -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Categoría</label>
+            <select id="filter-category" class="w-full px-3 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-500 focus:outline-none font-semibold text-slate-800">
+              <option value="">Todas las categorías</option>
+            </select>
+          </div>
+
+          <!-- Precio Mínimo -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Precio Mínimo (COP)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-xs font-bold text-slate-400">$</span>
+              <input type="number" id="filter-min-price" placeholder="Ej: 30000" class="w-full pl-7 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-500 focus:outline-none font-medium text-slate-800">
+            </div>
+          </div>
+
+          <!-- Precio Máximo -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Precio Máximo (COP)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-xs font-bold text-slate-400">$</span>
+              <input type="number" id="filter-max-price" placeholder="Ej: 500000" class="w-full pl-7 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-500 focus:outline-none font-medium text-slate-800">
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Chips de Categorías Rápidas (1-clic) -->
+        <div>
+          <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Filtro rápido por categoría:</div>
+          <div id="category-chips-container" class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <!-- Cargado dinámicamente -->
+          </div>
+        </div>
+
+        <!-- Barra de Estado de Resultados y Controles Avanzados -->
+        <div class="flex flex-wrap justify-between items-center pt-3 border-t border-slate-100 gap-3 text-xs">
+          <div class="flex flex-wrap items-center gap-2.5">
+            <span id="catalog-results-count" class="font-bold text-slate-900">Cargando catálogo...</span>
+            <span class="text-slate-300">•</span>
+            <button type="button" onclick="App.resetFilters()" class="text-amber-600 hover:text-amber-700 font-bold hover:underline flex items-center gap-1">
+              <span>↻</span> Limpiar filtros
+            </button>
+            <span class="text-slate-300">•</span>
+            <label class="inline-flex items-center gap-1.5 cursor-pointer select-none font-semibold text-slate-700 hover:text-slate-900 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
+              <input type="checkbox" id="filter-only-available" onchange="App.onOnlyAvailableChange()" class="w-3.5 h-3.5 rounded text-amber-500 focus:ring-amber-400 accent-amber-500">
+              <span>⚡ Solo disponibles ahora</span>
+            </label>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <label for="catalog-sort-select" class="font-bold text-slate-500">Ordenar por:</label>
+            <select id="catalog-sort-select" onchange="App.onSortChange(this.value)" class="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 text-xs">
+              <option value="featured">Destacados / Recomendados</option>
+              <option value="price_asc">Precio: Menor a Mayor</option>
+              <option value="price_desc">Precio: Mayor a Menor</option>
+              <option value="name_asc">Nombre: A - Z</option>
+              <option value="brand_asc">Marca: A - Z</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cuadrícula de Equipos -->
+      <div id="tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Renderizado dinámico vía app.js -->
+      </div>
+
+    </section>
+
+    <!-- ==================== VISTA 2: PANEL CLIENTE ==================== -->
+    <section id="view-client" class="space-y-6 hidden animate-fade-in">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="text-2xl font-black text-slate-900">Mis Reservas y Alquileres</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Historial de solicitudes, pagos de garantía y comprobantes fiscales.</p>
+        </div>
+        <button onclick="App.navigateView('catalog')" class="px-4 py-2 bg-slate-900 text-white font-bold text-xs rounded-xl hover:bg-amber-500 hover:text-slate-950 transition-colors">
+          + Alquilar Nuevo Equipo
+        </button>
+      </div>
+
+      <div id="client-reservations-list" class="space-y-4">
+        <!-- Renderizado dinámico vía app.js -->
+      </div>
+    </section>
+
+    <!-- ==================== VISTA 3: PANEL PROVEEDOR ==================== -->
+    <section id="view-provider" class="space-y-8 hidden animate-fade-in">
+      <div>
+        <h2 class="text-2xl font-black text-slate-900">Panel de Control del Proveedor</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Gestión de inventario de maquinaria, despacho de pedidos e inspección de devoluciones.</p>
+      </div>
+
+      <!-- Tarjetas KPI -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-xs font-bold uppercase text-slate-400">Total Herramientas</span>
+          <div id="prov-total-tools" class="text-3xl font-black text-slate-900 mt-1">0</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-xs font-bold uppercase text-emerald-600">En Alquiler Activo</span>
+          <div id="prov-rented-tools" class="text-3xl font-black text-emerald-600 mt-1">0</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-xs font-bold uppercase text-amber-600">En Mantenimiento</span>
+          <div id="prov-maintenance-tools" class="text-3xl font-black text-amber-600 mt-1">0</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-xs font-bold uppercase text-slate-400">Total Facturado</span>
+          <div id="prov-total-earnings" class="text-xl font-black text-slate-900 mt-2">$ 0 COP</div>
+        </div>
+      </div>
+
+      <!-- Solicitudes Recibidas de Reserva -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="text-base font-extrabold text-slate-900">Solicitudes de Reserva Recibidas</h3>
+          <button type="button" onclick="App.exportProviderReservationsCSV()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-colors shadow-sm">
+            <span>📥</span> Exportar CSV
+          </button>
+        </div>
+        <div id="provider-reservations-list" class="space-y-3">
+          <!-- Renderizado dinámico -->
+        </div>
+      </div>
+
+      <!-- Catálogo del Proveedor -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="text-base font-extrabold text-slate-900">Mis Equipos Registrados</h3>
+        </div>
+        <div id="provider-tools-list" class="space-y-2">
+          <!-- Renderizado dinámico -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VISTA 4: PANEL ADMINISTRADOR ==================== -->
+    <section id="view-admin" class="space-y-8 hidden animate-fade-in">
+      <div>
+        <h2 class="text-2xl font-black text-slate-900">Dashboard Gerencial (Administración Global)</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Supervisión integral de usuarios, inventario nacional y liquidación fiscal consolidada.</p>
+      </div>
+
+      <!-- Métricas Globales -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-xs font-bold uppercase text-slate-400">Usuarios Registrados</span>
+          <div id="adm-total-users" class="text-3xl font-black text-slate-900 mt-1">0</div>
+          <div class="text-[10px] text-slate-400 mt-1"><span id="adm-total-clients">0</span> Clientes • <span id="adm-total-providers">0</span> Proveedores</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-xs font-bold uppercase text-slate-400">Catálogo de Maquinaria</span>
+          <div id="adm-total-tools" class="text-3xl font-black text-slate-900 mt-1">0</div>
+          <div class="text-[10px] text-slate-400 mt-1">Normalizado en 4FN</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-xs font-bold uppercase text-emerald-600">Alquileres en Curso</span>
+          <div id="adm-active-rentals" class="text-3xl font-black text-emerald-600 mt-1">0</div>
+          <div class="text-[10px] text-slate-400 mt-1">En obra activa</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-xs font-bold uppercase text-amber-600">Facturación Acumulada</span>
+          <div id="adm-total-revenue" class="text-xl font-black text-amber-600 mt-2">$ 0 COP</div>
+          <div class="text-[10px] text-slate-400 mt-0.5">Depósitos en custodia: <span id="adm-total-deposits">$ 0</span></div>
+        </div>
+      </div>
+
+      <!-- Ranking de Herramientas Más Rentadas -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <h3 class="text-base font-extrabold text-slate-900">Maquinaria Más Demandada</h3>
+        <div id="adm-top-tools-list" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <!-- Renderizado dinámico -->
+        </div>
+      </div>
+
+      <!-- Tabla Global de Reservas -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="text-base font-extrabold text-slate-900">Auditoría Global de Reservas</h3>
+          <button type="button" onclick="App.exportAdminReservationsCSV()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-colors shadow-sm">
+            <span>📥</span> Exportar Auditoría (CSV)
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="text-xs font-bold uppercase text-slate-400 border-b border-slate-200 pb-2">
+                <th class="py-2">Código</th>
+                <th class="py-2">Equipo</th>
+                <th class="py-2">Cliente</th>
+                <th class="py-2">Fechas</th>
+                <th class="py-2">Total</th>
+                <th class="py-2">Estado</th>
+              </tr>
+            </thead>
+            <tbody id="adm-all-reservations-list" class="divide-y divide-slate-100">
+              <!-- Renderizado dinámico -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODAL 1: FICHA 4FN Y COTIZADOR ==================== -->
+  <div id="modal-tool-detail" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-5xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-200 p-6 sm:p-8 animate-fade-in relative">
+      <button onclick="App.closeModal('modal-tool-detail')" class="absolute top-5 right-5 w-9 h-9 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full flex items-center justify-center font-bold text-lg">✕</button>
+      <div id="tool-detail-content">
+        <!-- Renderizado dinámico vía app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 2: AUTENTICACIÓN & REGISTRO ==================== -->
+  <div id="modal-auth" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-200 p-6 sm:p-8 animate-fade-in relative">
+      <button onclick="App.closeModal('modal-auth')" class="absolute top-5 right-5 w-8 h-8 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full flex items-center justify-center font-bold">✕</button>
+      
+      <!-- Pestañas de Auth -->
+      <div class="flex border-b border-slate-200 mb-6 font-bold text-xs">
+        <button id="tab-btn-login" onclick="App.switchAuthTab('login')" class="flex-1 py-3 text-amber-600 border-b-2 border-amber-600">Iniciar Sesión</button>
+        <button id="tab-btn-reg-client" onclick="App.switchAuthTab('reg-client')" class="flex-1 py-3 text-slate-400 hover:text-slate-700">Registrar Cliente</button>
+        <button id="tab-btn-reg-prov" onclick="App.switchAuthTab('reg-prov')" class="flex-1 py-3 text-slate-400 hover:text-slate-700">Registrar Proveedor</button>
+      </div>
+
+      <!-- Tab Iniciar Sesión -->
+      <div id="tab-content-login" class="space-y-4">
+        <!-- Acceso Rápido Demo -->
+        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs">
+          <span class="font-bold text-amber-900 block mb-1.5">⚡ Acceso Rápido con Cuentas Semilla (data.sql):</span>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" onclick="App.autofillDemo('admin@renta.com', 'Admin123*')" class="px-2.5 py-1 bg-white border border-amber-300 rounded font-semibold text-amber-900 hover:bg-amber-100">👑 Admin</button>
+            <button type="button" onclick="App.autofillDemo('proveedor1@correo.com', 'Password123*')" class="px-2.5 py-1 bg-white border border-amber-300 rounded font-semibold text-amber-900 hover:bg-amber-100">🏢 Proveedor</button>
+            <button type="button" onclick="App.autofillDemo('cliente1@correo.com', 'Password123*')" class="px-2.5 py-1 bg-white border border-amber-300 rounded font-semibold text-amber-900 hover:bg-amber-100">👷 Cliente</button>
+          </div>
+        </div>
+
+        <form id="form-login" class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Correo Electrónico</label>
+            <input type="email" id="login-email" required placeholder="correo@ejemplo.com" class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Contraseña</label>
+            <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+          </div>
+          <button type="submit" class="w-full py-3 bg-slate-950 hover:bg-amber-500 hover:text-slate-950 text-white font-extrabold text-sm rounded-xl transition-all">
+            Ingresar al Portal
+          </button>
+        </form>
+      </div>
+
+      <!-- Tab Registro Cliente -->
+      <div id="tab-content-reg-client" class="space-y-3 hidden">
+        <form id="form-reg-client" class="space-y-2.5 text-xs">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-bold text-slate-500">Nombres *</label>
+              <input type="text" id="rc-fn" required class="w-full px-2.5 py-1.5 border rounded-lg">
+            </div>
+            <div>
+              <label class="font-bold text-slate-500">Apellidos *</label>
+              <input type="text" id="rc-ln" required class="w-full px-2.5 py-1.5 border rounded-lg">
+            </div>
+          </div>
+          <div>
+            <label class="font-bold text-slate-500">Email *</label>
+            <input type="email" id="rc-email" required class="w-full px-2.5 py-1.5 border rounded-lg">
+          </div>
+          <div>
+            <label class="font-bold text-slate-500">Contraseña *</label>
+            <input type="password" id="rc-pass" minlength="8" required class="w-full px-2.5 py-1.5 border rounded-lg">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-bold text-slate-500">Tipo Doc *</label>
+              <select id="rc-doctype" class="w-full px-2.5 py-1.5 border rounded-lg">
+                <option value="CC">Cédula (CC)</option>
+                <option value="NIT">NIT</option>
+                <option value="CE">Cédula Ext. (CE)</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-bold text-slate-500">Nro Documento *</label>
+              <input type="text" id="rc-docnum" required class="w-full px-2.5 py-1.5 border rounded-lg">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-bold text-slate-500">Teléfono *</label>
+              <input type="text" id="rc-phone" required class="w-full px-2.5 py-1.5 border rounded-lg">
+            </div>
+            <div>
+              <label class="font-bold text-slate-500">Ciudad *</label>
+              <input type="text" id="rc-city" value="Bogotá" required class="w-full px-2.5 py-1.5 border rounded-lg">
+            </div>
+          </div>
+          <div>
+            <label class="font-bold text-slate-500">Dirección *</label>
+            <input type="text" id="rc-addr" required class="w-full px-2.5 py-1.5 border rounded-lg">
+          </div>
+          <button type="submit" class="w-full py-2.5 bg-amber-500 text-slate-950 font-bold rounded-xl mt-3">
+            Crear Cuenta de Cliente
+          </button>
+        </form>
+      </div>
+
+      <!-- Tab Registro Proveedor -->
+      <div id="tab-content-reg-prov" class="space-y-3 hidden">
+        <form id="form-reg-prov" class="space-y-2.5 text-xs">
+          <div>
+            <label class="font-bold text-slate-500">Razón Social / Empresa *</label>
+            <input type="text" id="rp-company" required class="w-full px-2.5 py-1.5 border rounded-lg">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-bold text-slate-500">NIT / RUT *</label>
+              <input type="text" id="rp-nit" required placeholder="900.123.456-1" class="w-full px-2.5 py-1.5 border rounded-lg">
+            </div>
+            <div>
+              <label class="font-bold text-slate-500">Representante Legal *</label>
+              <input type="text" id="rp-rep" required class="w-full px-2.5 py-1.5 border rounded-lg">
+            </div>
+          </div>
+          <div>
+            <label class="font-bold text-slate-500">Email Corporativo *</label>
+            <input type="email" id="rp-email" required class="w-full px-2.5 py-1.5 border rounded-lg">
+          </div>
+          <div>
+            <label class="font-bold text-slate-500">Contraseña *</label>
+            <input type="password" id="rp-pass" minlength="8" required class="w-full px-2.5 py-1.5 border rounded-lg">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-bold text-slate-500">Teléfono Contacto *</label>
+              <input type="text" id="rp-phone" required class="w-full px-2.5 py-1.5 border rounded-lg">
+            </div>
+            <div>
+              <label class="font-bold text-slate-500">Ciudad Base *</label>
+              <input type="text" id="rp-city" value="Bogotá" required class="w-full px-2.5 py-1.5 border rounded-lg">
+            </div>
+          </div>
+          <div>
+            <label class="font-bold text-slate-500">Dirección Sede / Patio *</label>
+            <input type="text" id="rp-addr" required class="w-full px-2.5 py-1.5 border rounded-lg">
+          </div>
+          <button type="submit" class="w-full py-2.5 bg-blue-600 text-white font-bold rounded-xl mt-3">
+            Crear Cuenta de Proveedor
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 3: PASARELA DE PAGO ==================== -->
+  <div id="modal-payment" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 p-6 sm:p-8 animate-fade-in relative">
+      <button onclick="App.closeModal('modal-payment')" class="absolute top-5 right-5 w-8 h-8 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full flex items-center justify-center font-bold">✕</button>
+      <h3 class="text-xl font-extrabold text-slate-900 mb-1">Pasarela de Pagos Segura</h3>
+      <p class="text-xs text-slate-500 mb-4">Confirmación de garantía y alquiler para reserva <strong id="pay-res-code" class="font-mono text-slate-800"></strong></p>
+
+      <div class="p-4 bg-slate-900 text-white rounded-2xl mb-4 text-center">
+        <span class="text-xs uppercase font-semibold text-slate-400">Total a Liquidar:</span>
+        <div id="pay-res-amount" class="text-2xl font-black text-amber-400 mt-1">$ 0 COP</div>
+        <span class="text-[10px] text-emerald-400 block mt-1">✓ Incluye 19% IVA + Depósito Reembolsable</span>
+      </div>
+
+      <form id="form-payment" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Método de Pago</label>
+          <select id="pay-method" class="w-full px-3 py-2 border rounded-xl font-semibold">
+            <option value="TARJETA_CREDITO">Tarjeta de Crédito / Débito (Visa, Mastercard)</option>
+            <option value="PSE">PSE (Débito Bancario en Línea)</option>
+            <option value="TRANSFERENCIA">Transferencia Bancaria Bancolombia / Davivienda</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Número de Tarjeta Simulado</label>
+          <input type="text" id="pay-card-masked" value="4532-8899-7711-2026" class="w-full px-3 py-2 border rounded-xl font-mono">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Expiración</label>
+            <input type="text" value="12/28" class="w-full px-3 py-2 border rounded-xl text-center font-mono">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">CVV</label>
+            <input type="password" value="789" class="w-full px-3 py-2 border rounded-xl text-center font-mono">
+          </div>
+        </div>
+        <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm rounded-xl transition-colors mt-2">
+          Confirmar y Procesar Transacción
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 4: ACTA DE ENTREGA ==================== -->
+  <div id="modal-delivery" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 p-6 animate-fade-in relative">
+      <button onclick="App.closeModal('modal-delivery')" class="absolute top-5 right-5 w-8 h-8 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full flex items-center justify-center font-bold">✕</button>
+      <h3 class="text-lg font-black text-slate-900 mb-1">Acta de Despacho y Entrega</h3>
+      <p class="text-xs text-slate-500 mb-4">Reserva <strong id="deliv-res-code"></strong> (Transición a EN_CURSO)</p>
+      <form id="form-delivery" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Despachado por (Responsable)</label>
+          <input type="text" id="deliv-by" required value="Operador Logístico de Patio" class="w-full px-3 py-2 border rounded-xl">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Notas del Estado Inicial del Equipo</label>
+          <textarea id="deliv-notes" rows="3" required class="w-full px-3 py-2 border rounded-xl">Equipo probado en patio. Funciona al 100%, lubricación completa y sin fugas mecánicas.</textarea>
+        </div>
+        <div class="flex items-center gap-2 p-3 bg-slate-50 rounded-xl">
+          <input type="checkbox" id="deliv-ack" checked required class="w-4 h-4 text-amber-500">
+          <label for="deliv-ack" class="text-slate-600 text-xs">El cliente o transportador firma el acta de recepción a conformidad.</label>
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-amber-500 text-slate-950 font-bold rounded-xl">
+          Confirmar Despacho
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 5: INSPECCIÓN Y RETORNO ==================== -->
+  <div id="modal-return" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 p-6 animate-fade-in relative">
+      <button onclick="App.closeModal('modal-return')" class="absolute top-5 right-5 w-8 h-8 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full flex items-center justify-center font-bold">✕</button>
+      <h3 class="text-lg font-black text-slate-900 mb-1">Acta de Devolución e Inspección</h3>
+      <p class="text-xs text-slate-500 mb-4">Reserva <strong id="ret-res-code"></strong> (Transición a FINALIZADA)</p>
+      <form id="form-return" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Recibido e Inspeccionado por</label>
+          <input type="text" id="ret-by" required value="Ingeniero Técnico de Patio" class="w-full px-3 py-2 border rounded-xl">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Estado Físico / Condición de Retorno</label>
+          <select id="ret-condition" class="w-full px-3 py-2 border rounded-xl font-bold">
+            <option value="EXCELENTE">EXCELENTE (Sin desgaste anormal)</option>
+            <option value="BUENO">BUENO (Desgaste natural de obra)</option>
+            <option value="REGULAR">REGULAR (Requiere limpieza profunda)</option>
+            <option value="DANADO">DAÑADO (Avería o golpe reportado)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Notas de Inspección Técnica</label>
+          <textarea id="ret-notes" rows="2" required class="w-full px-3 py-2 border rounded-xl">Inspección física aprobada, horómetro dentro de rango.</textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Cargo por Daños (COP)</label>
+            <input type="number" id="ret-damage-fee" value="0" min="0" class="w-full px-3 py-2 border rounded-xl">
+          </div>
+          <div class="flex items-center gap-2 pt-4">
+            <input type="checkbox" id="ret-refund" checked class="w-4 h-4 text-emerald-500">
+            <label for="ret-refund" class="font-bold text-slate-700">Reembolsar Depósito</label>
+          </div>
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-emerald-600 text-white font-bold rounded-xl">
+          Cerrar Devolución
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 6: FACTURA ELECTRÓNICA IMPRIMIBLE (DIAN) ==================== -->
+  <div id="modal-invoice" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="invoice-modal-dialog bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-200 p-6 sm:p-8 animate-fade-in relative">
+      <button onclick="App.closeModal('modal-invoice')" class="no-print absolute top-5 right-5 w-8 h-8 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full flex items-center justify-center font-bold">✕</button>
+      
+      <!-- Contenedor Imprimible -->
+      <div id="printable-invoice" class="space-y-6 text-slate-800">
+        <!-- Encabezado Fiscal -->
+        <div class="flex justify-between items-start border-b border-slate-200 pb-5">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="w-8 h-8 bg-amber-500 text-slate-950 rounded-lg flex items-center justify-center font-black text-lg">🏗️</span>
+              <span class="text-xl font-black text-slate-950">RENTA<span class="text-amber-500">MAQ</span> COLOMBIA S.A.S.</span>
+            </div>
+            <div class="text-xs text-slate-500">NIT: 901.884.231-9 • IVA Régimen Común</div>
+            <div class="text-xs text-slate-500">Calle 93B # 13-45, Chicó Norte, Bogotá D.C.</div>
+            <div class="text-xs text-slate-500">Tel: (601) 745-8800 • soporte@renta.com</div>
+          </div>
+          <div class="text-right">
+            <div class="inline-block px-3 py-1 bg-amber-100 text-amber-900 border border-amber-300 rounded-lg text-xs font-bold uppercase tracking-wider mb-1">
+              Factura Electrónica de Venta
+            </div>
+            <div id="inv-display-number" class="text-lg font-black text-slate-900 font-mono">FAC-2026-0001</div>
+            <div class="text-xs text-slate-500">Fecha: <span id="inv-display-date" class="font-semibold text-slate-700">14 Oct 2026</span></div>
+          </div>
+        </div>
+
+        <!-- Datos del Cliente y Reserva -->
+        <div class="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
+          <div>
+            <span class="font-bold text-slate-400 uppercase text-[10px] block mb-1">Adquiriente / Cliente</span>
+            <div id="inv-display-client" class="font-black text-sm text-slate-900">Carlos Gómez</div>
+            <div class="text-slate-600 mt-0.5">Documento: <strong id="inv-display-doc" class="font-mono">CC 1.020.334.556</strong></div>
+            <div class="text-slate-600">Estado: <span class="text-emerald-700 font-bold">PAGADA A CONFORMIDAD</span></div>
+          </div>
+          <div>
+            <span class="font-bold text-slate-400 uppercase text-[10px] block mb-1">Detalles de la Reserva</span>
+            <div class="text-slate-600">Código Reserva: <strong id="inv-display-res-code" class="font-mono text-slate-900">RES-7782A</strong></div>
+            <div class="text-slate-600 mt-0.5">Equipo: <strong id="inv-display-tool" class="text-slate-900">Rotomartillo Bosch</strong></div>
+            <div class="text-slate-600 mt-0.5">Operación: <span class="text-slate-700 font-medium">Arrendamiento de Maquinaria</span></div>
+          </div>
+        </div>
+
+        <!-- Tabla Discriminada de Conceptos -->
+        <div class="border border-slate-200 rounded-2xl overflow-hidden">
+          <table class="w-full text-xs text-left">
+            <thead class="bg-slate-100 text-slate-600 font-bold uppercase text-[10px]">
+              <tr>
+                <th class="py-2.5 px-4">Descripción del Concepto</th>
+                <th class="py-2.5 px-3 text-right">Tarifa Neta</th>
+                <th class="py-2.5 px-3 text-right">IVA (19%)</th>
+                <th class="py-2.5 px-4 text-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr>
+                <td class="py-3 px-4">
+                  <div id="inv-concept-name" class="font-bold text-slate-900">Arriendo de Maquinaria en Obra</div>
+                  <div class="text-[11px] text-slate-500">Incluye descuento por escala de duración y póliza técnica</div>
+                </td>
+                <td id="inv-table-subtotal" class="py-3 px-3 text-right font-mono font-medium">$ 0 COP</td>
+                <td id="inv-table-iva" class="py-3 px-3 text-right font-mono font-medium text-amber-700">$ 0 COP</td>
+                <td id="inv-table-subtotal-neto" class="py-3 px-4 text-right font-mono font-bold text-slate-900">$ 0 COP</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Totales y Resumen Fiscal -->
+        <div class="flex justify-between items-start pt-2">
+          <!-- CUFE y QR Simulado -->
+          <div class="max-w-sm space-y-2">
+            <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <div class="w-16 h-16 bg-white p-1 rounded-lg border border-slate-300 flex items-center justify-center">
+                <!-- QR Code Simulado SVG -->
+                <svg class="w-14 h-14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm10 0h2v2h-2v-2zm4 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm4 0h4v2h-4v-2zm0-4h2v2h-2v-2zm-2 2h2v2h-2v-2zM6 6h2v2H6V6zm10 0h2v2h-2V6zM6 16h2v2H6v-2z"/>
+                </svg>
+              </div>
+              <div class="space-y-0.5">
+                <span class="text-[9px] font-bold uppercase text-slate-400 block">CUFE (Validación DIAN):</span>
+                <div id="inv-display-cufe" class="text-[9px] font-mono text-slate-600 break-all leading-tight">
+                  7a9f8c4e2b1d0356e849201a4f7832bc9d0124578e90ab12f45c89de3210abef45
+                </div>
+                <div class="text-[9px] text-emerald-700 font-semibold">✓ Comprobante verificado con firma digital SHA-384</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Totales -->
+          <div class="w-64 space-y-2 text-xs">
+            <div class="flex justify-between py-1 border-b border-slate-100">
+              <span class="text-slate-500">Subtotal Operación:</span>
+              <span id="inv-total-subtotal" class="font-mono font-bold text-slate-900">$ 0 COP</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-100">
+              <span class="text-slate-500">IVA (19%):</span>
+              <span id="inv-total-iva" class="font-mono font-bold text-amber-600">$ 0 COP</span>
+            </div>
+            <div class="flex justify-between py-2 bg-slate-900 text-white px-3 rounded-xl font-bold">
+              <span>TOTAL LIQUIDADO:</span>
+              <span id="inv-total-final" class="font-mono text-amber-400 font-black text-sm">$ 0 COP</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pie de Factura -->
+        <div class="text-[10px] text-slate-400 text-center border-t border-slate-200 pt-3 leading-relaxed">
+          Esta factura electrónica es título valor de acuerdo con el Art. 774 del Código de Comercio colombiano. Autorización DIAN No. 18760000001 vigente.
+        </div>
+      </div>
+
+      <!-- Botones de Acción (No imprimibles) -->
+      <div class="no-print mt-6 flex justify-end gap-3 pt-4 border-t border-slate-200">
+        <button onclick="window.print()" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl flex items-center gap-2 shadow-sm transition-all">
+          <span>🖨️ Imprimir Factura (A4 / PDF)</span>
+        </button>
+        <button onclick="App.closeModal('modal-invoice')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors">
+          Cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Contenedor Flotante de Notificaciones Toast -->
+  <div id="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="bg-white text-slate-500 py-8 mt-auto border-t border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+      <div class="flex justify-center items-center gap-2">
+        <span class="w-7 h-7 bg-amber-500 text-slate-950 rounded-lg flex items-center justify-center font-bold text-sm">🏗️</span>
+        <span class="text-slate-900 font-extrabold text-base">RENTA<span class="text-amber-600">MAQ</span></span>
+      </div>
+      <p class="text-xs text-slate-500 max-w-xl mx-auto">
+        Plataforma Empresarial de Alquiler de Maquinaria y Equipos de Construcción. Normalización en 4FN, liquidación fiscal DIAN (IVA 19%) y contratos protegidos.
+      </p>
+      <div class="text-[11px] text-slate-400 font-medium">
+        © 2026 RentaMaq S.A.S. • Todos los derechos reservados.
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
