@@ -39,4 +39,9 @@ public class ClientRepositoryAdapter implements ClientRepositoryPort {
     public Optional<Client> findByDocumentNumber(String documentNumber) {
         return repository.findByDocumentNumber(documentNumber).map(ClientJpaMapper::toDomain);
     }
+
+    @Override
+    public java.util.List<Client> findAll() {
+        return repository.findAll().stream().map(ClientJpaMapper::toDomain).toList();
+    }
 }

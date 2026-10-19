@@ -1,0 +1,610 @@
+/* ==========================================================================
+   RENTAMAQ INDUSTRIAL DESIGN SYSTEM - COMPONENT PRIMITIVES
+   Microinteracciones táctiles, componentes modulares y retroalimentación física
+   ========================================================================== */
+
+/* 1. BOTONES INDUSTRIALES CON FEEDBACK TÁCTIL (Emil Kowalski Philosophy) */
+.btn-industrial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.925rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: transform var(--duration-fast) var(--ease-spring),
+              background-color var(--duration-fast) ease-out,
+              border-color var(--duration-fast) ease-out,
+              box-shadow var(--duration-fast) ease-out;
+}
+
+.btn-industrial:active {
+  transform: scale(0.975);
+}
+
+.btn-industrial:focus-visible {
+  outline: 2px solid var(--color-amber-500);
+  outline-offset: 2px;
+}
+
+.btn-industrial:disabled,
+.btn-industrial.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Variantes de Botones */
+.btn-primary {
+  background-color: var(--color-amber-500);
+  color: var(--color-asphalt-950);
+  border-color: var(--color-amber-600);
+  box-shadow: 0 1px 3px rgba(245, 158, 11, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-amber-400);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+.btn-secondary {
+  background-color: var(--color-asphalt-900);
+  color: #ffffff;
+  border-color: var(--color-asphalt-700);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-asphalt-800);
+  border-color: var(--color-amber-500);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--text-main);
+  border-color: var(--border-strong);
+}
+
+.btn-outline:hover {
+  border-color: var(--color-amber-500);
+  background-color: rgba(245, 158, 11, 0.06);
+  color: var(--color-amber-600);
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: var(--text-muted);
+  border-color: transparent;
+  padding: 0.5rem 0.75rem;
+}
+
+.btn-ghost:hover {
+  background-color: rgba(12, 16, 23, 0.05);
+  color: var(--text-main);
+}
+
+.btn-sm {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+}
+
+.btn-lg {
+  padding: 0.85rem 1.75rem;
+  font-size: 1.05rem;
+}
+
+/* 2. PILLS & STATUS BADGES */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+}
+
+.status-pill-available {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #065f46;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+body.dark-mode .status-pill-available {
+  color: #34d399;
+  background-color: rgba(16, 185, 129, 0.15);
+}
+
+.status-pill-rented {
+  background-color: rgba(37, 99, 235, 0.1);
+  color: #1e40af;
+  border-color: rgba(37, 99, 235, 0.3);
+}
+
+body.dark-mode .status-pill-rented {
+  color: #60a5fa;
+  background-color: rgba(37, 99, 235, 0.15);
+}
+
+.status-pill-maintenance {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #92400e;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+body.dark-mode .status-pill-maintenance {
+  color: #fbbf24;
+  background-color: rgba(245, 158, 11, 0.15);
+}
+
+.status-indicator-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.status-indicator-dot.pulse {
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulse-ring 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.spec-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-xs);
+  background-color: var(--bg-surface-subtle);
+  color: var(--text-muted);
+  border: 1px solid var(--border-hairline);
+}
+
+/* 3. CARD INDUSTRIAL DE MAQUINARIA */
+.card-machinery {
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-hairline);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--duration-normal) var(--ease-spring),
+              box-shadow var(--duration-normal) var(--ease-spring),
+              border-color var(--duration-fast) ease-out;
+  position: relative;
+}
+
+.card-machinery:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card-hover);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.card-machinery .tool-image-container {
+  position: relative;
+  width: 100%;
+  height: 195px;
+  background-color: #0c1017;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-machinery .tool-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 300ms var(--ease-spring);
+}
+
+.card-machinery:hover .tool-image-container img {
+  transform: scale(1.04);
+}
+
+/* 4. INPUTS Y FORMULARIOS DE PRECISIÓN */
+.input-industrial {
+  width: 100%;
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 0.925rem;
+  transition: border-color var(--duration-fast) ease-out, box-shadow var(--duration-fast) ease-out;
+}
+
+.input-industrial:focus {
+  outline: none;
+  border-color: var(--color-amber-500);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+
+.input-industrial.mono {
+  font-family: var(--font-mono);
+  font-feature-settings: 'tnum' 1;
+}
+
+/* 5. MODALES CON ANIMACIÓN FÍSICA (Emil Kowalski Scale In) */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background-color: rgba(7, 10, 15, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-normal) ease-out;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-dialog {
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-hairline);
+  box-shadow: var(--shadow-modal);
+  width: 100%;
+  max-width: 620px;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: scale(0.96) translateY(8px);
+  transition: transform var(--duration-enter) var(--ease-spring);
+}
+
+.modal-overlay.active .modal-dialog {
+  transform: scale(1) translateY(0);
+}
+
+/* 6. TARJETA BANCARIA INTERACTIVA 3D */
+.card-scene {
+  perspective: 1000px;
+  width: 100%;
+  max-width: 360px;
+  height: 215px;
+  margin: 0 auto 1.5rem;
+}
+
+.credit-card-3d {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s var(--ease-spring);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+}
+
+.credit-card-3d.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 14px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #0c1017 0%, #1a2333 60%, #111722 100%);
+  color: #ffffff;
+  overflow: hidden;
+}
+
+.card-face::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 75% 30%, rgba(245, 158, 11, 0.15) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.card-face-back {
+  transform: rotateY(180deg);
+  padding: 1.5rem 0;
+}
+
+.magnetic-strip {
+  width: 100%;
+  height: 44px;
+  background-color: #000000;
+  margin-top: 0.5rem;
+}
+
+.cvv-panel {
+  background-color: #ffffff;
+  color: #0c1017;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-align: right;
+  padding: 0.4rem 1rem;
+  margin: 1.25rem 1.5rem 0;
+  border-radius: 4px;
+  letter-spacing: 0.1em;
+}
+
+/* 7. NOTIFICADOR FÍSICO SONNER */
+.sonner-toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.75rem;
+  pointer-events: none;
+  max-width: 400px;
+  width: calc(100% - 3rem);
+}
+
+.sonner-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 0.9rem 1.15rem;
+  border-radius: var(--radius-md);
+  background-color: var(--color-asphalt-950);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.5);
+  transform: translateY(12px) scale(0.96);
+  opacity: 0;
+  transition: transform var(--duration-enter) var(--ease-spring), opacity var(--duration-fast) ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.sonner-toast.show {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.sonner-toast.closing {
+  transform: translateY(12px) scale(0.95);
+  opacity: 0;
+}
+
+.sonner-toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background-color: var(--color-amber-500);
+  width: 100%;
+  transition: width linear;
+}
+
+/* 8. SEGMENTED CONTROL NAVEGACIÓN (Apple WWDC Fluid Controls) */
+.segmented-control {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--bg-surface-subtle);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  position: relative;
+  user-select: none;
+}
+
+.segmented-item {
+  padding: 0.45rem 1rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-xs);
+  transition: color var(--duration-fast) ease-out, background-color var(--duration-fast) ease-out;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.segmented-item:hover {
+  color: var(--text-main);
+}
+
+.segmented-item.active {
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+body.dark-mode .segmented-item.active {
+  background-color: var(--color-asphalt-800);
+  color: var(--color-amber-400);
+}
+
+/* 9. COMPONENTES EXCLUSIVOS PARA CONSTRUCTORA Y FAENA */
+
+/* Tabla de Alta Densidad de Maquinaria en Obra */
+.constructora-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.825rem;
+}
+
+.constructora-table th {
+  background-color: var(--bg-surface-subtle);
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--border-strong);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.constructora-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-hairline);
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+.constructora-table tr:hover td {
+  background-color: rgba(245, 158, 11, 0.04);
+}
+
+body.dark-mode .constructora-table tr:hover td {
+  background-color: rgba(245, 158, 11, 0.08);
+}
+
+/* Horómetro Digital de Faena */
+.horometro-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-xs);
+  background-color: #070a0f;
+  color: #38bdf8;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid #1e293b;
+  letter-spacing: 0.08em;
+}
+
+.horometro-bar {
+  height: 4px;
+  background-color: rgba(12, 16, 23, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.horometro-bar-fill {
+  height: 100%;
+  background-color: var(--color-amber-500);
+  transition: width 0.3s ease-out;
+}
+
+/* Tags de EPP y Seguridad Industrial */
+.epp-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 3px;
+  background-color: rgba(15, 23, 42, 0.06);
+  color: var(--text-muted);
+  border: 1px solid var(--border-hairline);
+  text-transform: uppercase;
+}
+
+body.dark-mode .epp-tag {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Selector de Obra / Proyecto en Cabecera */
+.obra-selector-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface-subtle);
+  border: 1px solid var(--border-strong);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-spring);
+}
+
+.obra-selector-pill:hover {
+  border-color: var(--color-amber-500);
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15);
+}
+
+/* Caja de Precios Dual: Diario vs Semanal (-15%) */
+.pricing-dual-matrix {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface-subtle);
+  border: 1px solid var(--border-hairline);
+  font-family: var(--font-mono);
+}
+
+.pricing-tier {
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px;
+}
+
+.pricing-tier.featured {
+  background-color: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+/* Acta Formal de Entrega / Despacho */
+.acta-sheet {
+  background-color: #ffffff;
+  color: #070a0f;
+  border: 2px solid #0f172a;
+  border-radius: 4px;
+  padding: 1.5rem;
+  font-family: var(--font-mono);
+  box-shadow: var(--shadow-modal);
+}
+
+.acta-header-seal {
+  border: 2px dashed #f59e0b;
+  padding: 0.5rem;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #b45309;
+  text-transform: uppercase;
+}
+

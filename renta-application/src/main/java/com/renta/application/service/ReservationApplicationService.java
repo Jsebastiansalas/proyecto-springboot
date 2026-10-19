@@ -10,6 +10,7 @@ import com.renta.domain.exception.ReservationConflictException;
 import com.renta.domain.exception.ResourceNotFoundException;
 import com.renta.domain.exception.ToolNotAvailableException;
 import com.renta.domain.model.entity.Client;
+import com.renta.domain.model.entity.Payment;
 import com.renta.domain.model.entity.Reservation;
 import com.renta.domain.model.entity.Tool;
 import com.renta.domain.model.enums.ReservationStatus;
@@ -24,6 +25,7 @@ import com.renta.domain.port.in.CreateReservationUseCase;
 import com.renta.domain.port.in.RejectReservationUseCase;
 import com.renta.domain.port.out.ClientRepositoryPort;
 import com.renta.domain.port.out.NotificationServicePort;
+import com.renta.domain.port.out.PaymentRepositoryPort;
 import com.renta.domain.port.out.ReservationRepositoryPort;
 import com.renta.domain.port.out.ToolRepositoryPort;
 import com.renta.domain.service.RentalPricingCalculator;
@@ -60,16 +62,27 @@ public class ReservationApplicationService implements
     private final ToolRepositoryPort toolRepository;
     private final ClientRepositoryPort clientRepository;
     private final NotificationServicePort notificationService;
+    private final PaymentRepositoryPort paymentRepository;
 
     public ReservationApplicationService(
             ReservationRepositoryPort reservationRepository,
             ToolRepositoryPort toolRepository,
             ClientRepositoryPort clientRepository,
             NotificationServicePort notificationService) {
+        this(reservationRepository, toolRepository, clientRepository, notificationService, null);
+    }
+
+    public ReservationApplicationService(
+            ReservationRepositoryPort reservationRepository,
+            ToolRepositoryPort toolRepository,
+            ClientRepositoryPort clientRepository,
+            NotificationServicePort notificationService,
+            PaymentRepositoryPort paymentRepository) {
         this.reservationRepository = Objects.requireNonNull(reservationRepository, "reservationRepository es obligatorio");
         this.toolRepository = Objects.requireNonNull(toolRepository, "toolRepository es obligatorio");
         this.clientRepository = Objects.requireNonNull(clientRepository, "clientRepository es obligatorio");
         this.notificationService = Objects.requireNonNull(notificationService, "notificationService es obligatorio");
+        this.paymentRepository = paymentRepository;
     }
 
     /**
@@ -291,6 +304,10 @@ public class ReservationApplicationService implements
             toolName = toolOpt.get().getName();
             toolImageUrl = toolOpt.get().getMainImageUrl();
         }
-        return ReservationDtoMapper.toResponse(res, clientName, toolName, toolImageUrl);
+        Payment payment = null;
+        if (paymentRepository != null) {
+            payment = paymentRepository.findByReservationId(res.getId()).orElse(null);
+        }
+        return ReservationDtoMapper.toResponse(res, clientName, toolName, toolImageUrl, payment);
     }
 }

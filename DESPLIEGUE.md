@@ -21,8 +21,8 @@ CREATE DATABASE renta_db
 
 ### B. Ejecución de los Scripts DDL y DML
 Conéctate a la base de datos `renta_db` y ejecuta en orden:
-1. **Esquema relacional (16 tablas en 4FN)**: [`sql/schema.sql`](file:///c:/Users/USUARIO/OneDrive/Documents/proyecto_springboot/sql/schema.sql)
-2. **Datos semilla (roles, usuarios, clientes, proveedores, catálogo y reservas)**: [`sql/data.sql`](file:///c:/Users/USUARIO/OneDrive/Documents/proyecto_springboot/sql/data.sql)
+1. **Esquema relacional (17 tablas en 4FN)**: [sql/schema.sql](sql/schema.sql)
+2. **Datos semilla (roles, usuarios, clientes, proveedores, catálogo y reservas)**: [sql/data.sql](sql/data.sql)
 
 Comando desde terminal:
 ```bash
@@ -39,10 +39,26 @@ psql -h localhost -p 1129 -U postgres -d renta_db -f sql/data.sql
 
 Este es el método más rápido y recomendado para desarrollo y servidores dedicados basados en contenedores o máquinas virtuales.
 
-### Paso 1: Compilar el WAR
+### Paso 1: Compilar el Frontend y el WAR
+Para asegurar que los últimos cambios visuales estén empaquetados en el WAR:
 ```bash
+# 1. Compilar los assets del frontend (genera /frontend/dist en ~500ms)
+cd frontend
+npm run build
+cd ..
+
+# 2. Empaquetar el WAR integrado con Maven
 mvn clean package -DskipTests
 ```
+
+> [!TIP]
+> **Desarrollo Rápido de Frontend (Hot Reload / HMR):**  
+> Durante el desarrollo visual, no es necesario recompilar el WAR. Puedes iniciar el servidor de desarrollo de Vite:
+> ```bash
+> cd frontend
+> npm run dev
+> ```
+> Abrirá la interfaz en `http://localhost:5173` con recarga instantánea (<50 ms) y redirigirá automáticamente todas las peticiones `/api/*` al backend Spring Boot en `http://localhost:8080`.
 
 ### Paso 2: Ejecutar el Artefacto
 ```bash
@@ -152,7 +168,27 @@ docker-compose down
 
 ---
 
-## 6. Verificación Post-Despliegue (Smoke Test)
+---
+
+## 6. Credenciales de Prueba y Seguridad del Sistema
+
+Las contraseñas de las cuentas demo están configuradas con hash **BCrypt (costo 12 / 4096 iteraciones)** y alta entropía:
+
+| Rol | Correo Demostrativo | Contraseña Segura | Privilegios / Alcance |
+| :--- | :--- | :--- | :--- |
+| **Cliente** | `cliente1@correo.com` | `Cliente#Renta2026!Sec` | Ver catálogo, cotizar, crear reservas propias, ver facturas propias y cambiar contraseña. |
+| **Proveedor** | `proveedor1@correo.com` | `Proveedor#Renta2026!Sec` | Gestionar inventario propio, responder cotizaciones/comentarios y cambiar contraseña. |
+| **Administrador** | `admin@renta.com` | `Admin#Renta2026!SecOps` | Acceso a métricas de Actuator, gestión global de usuarios, resolución de disputas y auditoría. |
+
+### Endpoints de Autenticación y Seguridad
+- **`POST /api/v1/auth/login`**: Retorna token JWT simétrico de 256 bits. Si las credenciales fallan, responde **HTTP 401** conforme a RFC 7235.
+- **`POST /api/v1/auth/change-password`**: Permite al usuario autenticado cambiar su contraseña validando la contraseña actual, complejidad de la nueva contraseña y no repetición.
+- **Protección BOLA / IDOR**: Reglas a nivel de servicio `@authz` impiden que un cliente acceda a reservas, facturas o pagos de otros usuarios (responde HTTP 403 Forbidden).
+- **Cabeceras de Seguridad OWASP Activas**: Content Security Policy (CSP), HTTP Strict Transport Security (HSTS), X-Frame-Options (DENY/SAMEORIGIN), X-Content-Type-Options (nosniff) y Permissions-Policy.
+
+---
+
+## 7. Verificación Post-Despliegue (Smoke Test)
 
 Ejecuta estas pruebas en terminal para confirmar que la aplicación está 100% operativa:
 
@@ -167,3 +203,4 @@ curl -I http://localhost:8080/swagger-ui.html
 curl -s http://localhost:8080/api/v1/tools | head -n 30
 ```
 Todas las peticiones deben responder con código de estado HTTP `200 OK`.
+

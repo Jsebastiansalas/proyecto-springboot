@@ -6,6 +6,7 @@ package com.renta.domain.model.enums;
 public enum PaymentStatus {
     PENDIENTE,
     COMPLETADO,
+    EN_CUOTAS,
     FALLIDO,
     REEMBOLSADO
 }

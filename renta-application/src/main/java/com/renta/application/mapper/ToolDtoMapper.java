@@ -22,6 +22,10 @@ public final class ToolDtoMapper {
     private ToolDtoMapper() {}
 
     public static ToolResponse toResponse(Tool tool, String providerName, String categoryName) {
+        return toResponse(tool, providerName, categoryName, 5.0, 0L);
+    }
+
+    public static ToolResponse toResponse(Tool tool, String providerName, String categoryName, Double averageRating, Long totalReviews) {
         if (tool == null) return null;
         return new ToolResponse(
                 tool.getId(),
@@ -38,7 +42,9 @@ public final class ToolDtoMapper {
                 tool.getDepositAmount() != null ? tool.getDepositAmount().amount() : null,
                 tool.getStatus(),
                 tool.getMainImageUrl(),
-                tool.getCreatedAt()
+                tool.getCreatedAt(),
+                averageRating != null ? averageRating : 5.0,
+                totalReviews != null ? totalReviews : 0L
         );
     }
 

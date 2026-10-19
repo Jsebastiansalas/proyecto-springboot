@@ -1,9 +1,11 @@
 package com.renta.infrastructure.config.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,10 +16,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -37,6 +41,9 @@ import java.util.List;
 @EnableMethodSecurity // Permite usar anotaciones como @PreAuthorize("hasRole('ADMIN')") en los Controllers
 public class SecurityConfig {
 
+    // Filtro personalizado de Rate Limiting para evitar ataques de fuerza bruta en el login
+    private final LoginRateLimiterFilter loginRateLimiterFilter;
+
     // Filtro personalizado que intercepta cada petición para extraer y validar el token JWT
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -46,9 +53,14 @@ public class SecurityConfig {
     // Manejador que responde con HTTP 403 si un usuario autenticado intenta acceder a algo de otro rol
     private final RestAccessDeniedHandler accessDeniedHandler;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+    @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:8080,http://127.0.0.1:5173,http://127.0.0.1:8080}")
+    private String allowedOrigins;
+
+    public SecurityConfig(LoginRateLimiterFilter loginRateLimiterFilter,
+                          JwtAuthenticationFilter jwtAuthenticationFilter,
                           RestAuthenticationEntryPoint authenticationEntryPoint,
                           RestAccessDeniedHandler accessDeniedHandler) {
+        this.loginRateLimiterFilter = loginRateLimiterFilter;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.accessDeniedHandler = accessDeniedHandler;
@@ -62,24 +74,46 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1. CORS: Permite peticiones desde el navegador (Cross-Origin Resource Sharing)
+                // 1. CORS: Permite peticiones desde orígenes autorizados
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // 2. CSRF: Se desactiva porque nuestra API es REST y usa tokens JWT en cabeceras,
+                // 2. CABECERAS DE SEGURIDAD OWASP (Protección Clickjacking, XSS, MIME Sniffing, Referrer, CSP, HSTS)
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.sameOrigin())
+                        .contentTypeOptions(Customizer.withDefaults())
+                        .xssProtection(Customizer.withDefaults())
+                        .referrerPolicy(referrer -> referrer.policy(ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                        .permissionsPolicyHeader(permissions -> permissions.policy("camera=(), microphone=(), geolocation=()"))
+                        .contentSecurityPolicy(csp -> csp.policyDirectives(
+                                "default-src 'self'; " +
+                                "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; " +
+                                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+                                "font-src 'self' https://fonts.gstatic.com; " +
+                                "img-src 'self' data: https:; " +
+                                "connect-src 'self';"
+                        ))
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .includeSubDomains(true)
+                                .maxAgeInSeconds(31536000)
+                                .requestMatcher(request -> true)
+                        )
+                )
+
+                // 3. CSRF: Se desactiva porque nuestra API es REST y usa tokens JWT en cabeceras,
                 //    por lo que no usamos cookies de sesión y no somos vulnerables a ataques CSRF.
                 .csrf(AbstractHttpConfigurer::disable)
 
-                // 3. SESIÓN STATELESS (Sin Estado): El servidor no guarda sesiones en memoria RAM.
+                // 4. SESIÓN STATELESS (Sin Estado): El servidor no guarda sesiones en memoria RAM.
                 //    Cada petición es independiente y debe traer su propio token JWT.
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // 4. MANEJO DE ERRORES: Respuestas JSON limpias en formato estándar RFC 7807 (ProblemDetail)
+                // 5. MANEJO DE ERRORES: Respuestas JSON limpias en formato estándar RFC 7807 (ProblemDetail)
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authenticationEntryPoint) // Error 401: No autenticado
                         .accessDeniedHandler(accessDeniedHandler)           // Error 403: Rol insuficiente
                 )
 
-                // 5. REGLAS DE AUTORIZACIÓN DE RUTAS (De lo más específico a lo general)
+                // 6. REGLAS DE AUTORIZACIÓN DE RUTAS (De lo más específico a lo general)
                 .authorizeHttpRequests(auth -> auth
                         // --- RUTAS PÚBLICAS (No requieren login) ---
                         .requestMatchers("/api/v1/auth/**").permitAll()                           // Login y Registro
@@ -88,15 +122,26 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/reservations/tool/*/occupied-dates").permitAll() // Calendario de disponibilidad
                         .requestMatchers(HttpMethod.GET, "/api/v1/reviews/tool/**").permitAll()    // Reseñas de clientes
 
+                        // --- SPRING BOOT ACTUATOR (Monitoreo y Salud del Sistema) ---
+                        // /actuator/health e /info son públicos para que Docker/Kubernetes verifiquen el estado
+                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        // /actuator/metrics y otros endpoints de auditoría requieren permisos de ADMINISTRADOR
+                        .requestMatchers("/actuator/**").hasRole("ADMIN")
+
                         // --- DOCUMENTACIÓN SWAGGER / OPENAPI ---
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
-                        // --- ARCHIVOS ESTÁTICOS DE LA INTERFAZ WEB (HTML, JS, CSS) ---
-                        .requestMatchers("/", "/index.html", "/favicon.ico", "/css/**", "/js/**", "/assets/**", "/static/**").permitAll()
+                        // --- ARCHIVOS ESTÁTICOS DE LA INTERFAZ WEB (HTML, JS, CSS, IMÁGENES) ---
+                        .requestMatchers("/", "/index.html", "/favicon.ico", "/css/**", "/js/**", "/images/**", "/assets/**", "/static/**").permitAll()
                         .requestMatchers("/error").permitAll()
+
+                        // --- NOTIFICACIONES Y SIMULACIÓN ---
+                        .requestMatchers(HttpMethod.POST, "/api/v1/notifications/simulate").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/notifications/**").authenticated()
 
                         // --- RUTAS PROTEGIDAS POR ROL ---
                         .requestMatchers(HttpMethod.GET, "/api/v1/logistics/settlement/**").hasAnyRole("ADMIN", "CLIENTE", "PROVEEDOR")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/tools/comments/*/reply").hasAnyRole("ADMIN", "PROVEEDOR")
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/provider/**").hasAnyRole("ADMIN", "PROVEEDOR")
                         .requestMatchers("/api/v1/client/**").hasAnyRole("ADMIN", "CLIENTE")
@@ -105,7 +150,10 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
-                // 6. AGREGAR NUESTRO FILTRO JWT: Se ejecuta ANTES del filtro estándar de usuario/contraseña
+                // 7. FILTRO DE RATE LIMITING: Bloquea intentos excesivos de login por IP (HTTP 429)
+                .addFilterBefore(loginRateLimiterFilter, UsernamePasswordAuthenticationFilter.class)
+
+                // 8. FILTRO JWT: Valida el token del usuario y establece la autenticación
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -113,11 +161,11 @@ public class SecurityConfig {
 
     /**
      * ENCRIPTADOR DE CONTRASEÑAS (BCrypt)
-     * Nunca guardamos contraseñas en texto plano. Usamos BCrypt con un costo (salt) seguro.
+     * Configurado con costo 12 (4096 iteraciones de salt) para máxima resistencia criptográfica.
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(12);
     }
 
     /**
@@ -131,15 +179,19 @@ public class SecurityConfig {
 
     /**
      * CONFIGURACIÓN DE CORS (Cross-Origin Resource Sharing)
-     * Permite que clientes web (frontend en JavaScript o Postman) puedan comunicarse
-     * con la API sin que el navegador bloquee las solicitudes HTTP.
+     * Restringe las solicitudes a orígenes explícitos y seguros (Vite en 5173, Tomcat/Spring en 8080)
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*"));
+        List<String> origins = Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
+        config.setAllowedOrigins(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With", "Origin"));
+        config.setExposedHeaders(List.of("Authorization", "Content-Disposition"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L); // 1 hora de caché para las respuestas de preflight OPTIONS
 

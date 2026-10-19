@@ -143,6 +143,12 @@ const API = (() => {
       },
       async getMe() {
         return await request('/auth/me');
+      },
+      async changePassword(currentPassword, newPassword, confirmPassword) {
+        return await request('/auth/change-password', {
+          method: 'POST',
+          body: JSON.stringify({ currentPassword, newPassword, confirmPassword })
+        });
       }
     },
 
@@ -181,6 +187,21 @@ const API = (() => {
       async updateStatus(id, status) {
         return await request(`/tools/${id}/status?status=${encodeURIComponent(status)}`, {
           method: 'PATCH'
+        });
+      },
+      async getComments(toolId) {
+        return await request(`/tools/${toolId}/comments`);
+      },
+      async addComment(toolId, commentText) {
+        return await request(`/tools/${toolId}/comments`, {
+          method: 'POST',
+          body: JSON.stringify({ commentText })
+        });
+      },
+      async replyComment(commentId, providerReply) {
+        return await request(`/tools/comments/${commentId}/reply`, {
+          method: 'PATCH',
+          body: JSON.stringify({ providerReply })
         });
       }
     },
@@ -238,6 +259,14 @@ const API = (() => {
       },
       async getByReservation(reservationId) {
         return await request(`/payments/reservation/${reservationId}`);
+      },
+      async getInstallments(reservationId) {
+        return await request(`/payments/reservation/${reservationId}/installments`);
+      },
+      async payInstallment(installmentId) {
+        return await request(`/payments/installments/${installmentId}/pay`, {
+          method: 'POST'
+        });
       }
     },
 
@@ -317,6 +346,19 @@ const API = (() => {
       },
       async getReviewStatus(reservationId) {
         return await request(`/reviews/reservation/${reservationId}/status`);
+      }
+    },
+
+    // 9. Notifications Endpoints
+    notifications: {
+      async getNotifications() {
+        return await request('/notifications');
+      },
+      async markAsRead(id) {
+        return await request(`/notifications/${id}/read`, { method: 'PATCH' });
+      },
+      async markAllAsRead() {
+        return await request('/notifications/read-all', { method: 'PATCH' });
       }
     }
   };

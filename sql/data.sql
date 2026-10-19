@@ -19,15 +19,19 @@ INSERT INTO roles (id, name, description) VALUES
  (3, 'ROLE_CLIENTE', 'Cliente que renta herramientas');
 
 -- 2. USERS: 1-20 clientes, 21-40 proveedores, 41-42 administradores
+-- Contraseñas reforzadas de alta entropía con costo BCrypt 12:
+--   Admin: Admin#Renta2026!SecOps
+--   Proveedores: Proveedor#Renta2026!Sec
+--   Clientes: Cliente#Renta2026!Sec
 INSERT INTO users (id, email, password_hash, role_id)
-SELECT i, 'cliente' || i || '@correo.com', crypt('Password123*', gen_salt('bf', 10)), 3
+SELECT i, 'cliente' || i || '@correo.com', crypt('Cliente#Renta2026!Sec', gen_salt('bf', 12)), 3
 FROM generate_series(1, 20) i;
 INSERT INTO users (id, email, password_hash, role_id)
-SELECT i, 'proveedor' || (i - 20) || '@correo.com', crypt('Password123*', gen_salt('bf', 10)), 2
+SELECT i, 'proveedor' || (i - 20) || '@correo.com', crypt('Proveedor#Renta2026!Sec', gen_salt('bf', 12)), 2
 FROM generate_series(21, 40) i;
 INSERT INTO users (id, email, password_hash, role_id) VALUES
- (41, 'admin@renta.com', crypt('Admin123*', gen_salt('bf', 10)), 1),
- (42, 'admin2@renta.com', crypt('Admin123*', gen_salt('bf', 10)), 1);
+ (41, 'admin@renta.com', crypt('Admin#Renta2026!SecOps', gen_salt('bf', 12)), 1),
+ (42, 'admin2@renta.com', crypt('Admin#Renta2026!SecOps', gen_salt('bf', 12)), 1);
 
 -- 3. CLIENTS
 INSERT INTO clients (id, user_id, first_name, last_name, document_type, document_number, phone, address, city)
@@ -72,27 +76,27 @@ SELECT i, i, i, 'HERR-' || lpad(i::text, 4, '0'),
  (ARRAY[150000,400000,80000,250000,500000,150000,250000,200000,450000,800000,1200000,300000,120000,200000,100000,350000,1500000,80000,250000,300000])[i]::numeric,
  CASE WHEN i IN (9, 17) THEN 'MANTENIMIENTO' ELSE 'DISPONIBLE' END,
  (ARRAY[
-  'https://commons.wikimedia.org/wiki/Special:FilePath/Milwaukee_PLH28XE.JPG?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/Concrete_mixer.jpg?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/Andamio_de_tres_cuerpos_de_Aneur.jpg?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/Kolbenkompressor.jpg?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/Honda_EU3000is_Inverter_Generator.jpg?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/Circular_saw.jpg?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/Welding_Machine_001.jpg?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/Concretevibrator.jpg?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/Wacker_Neuson_Stampfer_BS_60-2i.jpg?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/Scissor_Lift-2.jpg?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/Total_station_made_by_Leica_Geosystems.jpg?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/Lombardini_Motori_LDA_673_pic4.jpg?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/AngleGrinder.jpg?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/KARCHER_5_85.jpg?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/Extension_ladder_leaning_against_a_garage.JPG?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/AbbruchhammerSAH1500-HK.jpg?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/BobcatS770SkidSteerLoader.jpg?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/Hand_tools.jpg?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/AirCombi_Hockdruck.JPG?width=800',
-  'https://commons.wikimedia.org/wiki/Special:FilePath/SMC_TL90_mobile_lighting_tower._Brightlights,_Battlesbridge._(7657791926).jpg?width=800'
- ])[i]
+   'images/tools/HERR-0001.jpg',
+   'images/tools/HERR-0002.jpg',
+   'images/tools/HERR-0003.jpg',
+   'images/tools/HERR-0004.jpg',
+   'images/tools/HERR-0005.webp',
+   'images/tools/HERR-0006.jpg',
+   'images/tools/HERR-0007.webp',
+   'images/tools/HERR-0008.webp',
+   'images/tools/HERR-0009.jpg',
+   'images/tools/HERR-0010.jpg',
+   'images/tools/HERR-0011.jpg',
+   'images/tools/HERR-0012.jpg',
+   'images/tools/HERR-0013.webp',
+   'images/tools/HERR-0014.jpg',
+   'images/tools/HERR-0015.jpg',
+   'images/tools/HERR-0016.jpg',
+   'images/tools/HERR-0017.jpg',
+   'images/tools/HERR-0018.webp',
+   'images/tools/HERR-0019.jpg',
+   'images/tools/HERR-0020.jpg'
+  ])[i]
 FROM generate_series(1, 20) i;
 
 -- 7. TOOL_IMAGES (4FN)
@@ -101,13 +105,10 @@ SELECT id, main_image_url, TRUE, 'Vista principal del equipo' FROM tools;
 
 -- Imágenes adicionales de inspección visual (4FN)
 INSERT INTO tool_images (tool_id, image_url, is_primary, caption) VALUES
-(1, 'https://commons.wikimedia.org/wiki/Special:FilePath/Hitachi_DH24PE_loaded.jpg?width=800', FALSE, 'Vista en operación con broca SDS'),
-(9, 'https://commons.wikimedia.org/wiki/Special:FilePath/Trilstamper.jpg?width=800', FALSE, 'Detalle del pie de impacto'),
-(13, 'https://commons.wikimedia.org/wiki/Special:FilePath/Winkelschleifer.jpg?width=800', FALSE, 'Detalle con disco de desbaste'),
-(14, 'https://commons.wikimedia.org/wiki/Special:FilePath/Kaercher_hochdruckreiniger.jpg?width=800', FALSE, 'Vista de manguera y lanza'),
-(15, 'https://commons.wikimedia.org/wiki/Special:FilePath/Step-ladder.JPG?width=800', FALSE, 'Vista en posición desplegada'),
-(16, 'https://commons.wikimedia.org/wiki/Special:FilePath/Jackhammer.jpg?width=800', FALSE, 'Operación en obra'),
-(17, 'https://commons.wikimedia.org/wiki/Special:FilePath/Bobcat_553.jpg?width=800', FALSE, 'Vista lateral del minicargador');
+(1, 'images/tools/taladro-percutor.webp', FALSE, 'Vista en operación con broca SDS'),
+(3, 'images/tools/HERR-0003.png', FALSE, 'Detalle de estructura y crucetas'),
+(11, 'images/tools/HERR-0011.png', FALSE, 'Vista en trípode de precisión'),
+(14, 'images/tools/HERR-0014.png', FALSE, 'Vista de manguera y lanza');
 
 -- 8. TOOL_SPECIFICATIONS (4FN)
 INSERT INTO tool_specifications (tool_id, spec_name, spec_value)
@@ -140,10 +141,15 @@ SELECT 20 + n, 'RES-2026-' || lpad((20 + n)::text, 4, '0'), n, n,
 FROM generate_series(1, 5) n JOIN tools t ON t.id = n;
 
 -- 12. PAYMENTS (reservas 1-20)
-INSERT INTO payments (id, transaction_reference, reservation_id, client_id, payment_method, amount, payment_status, payment_date, gateway_reference)
+INSERT INTO payments (id, transaction_reference, reservation_id, client_id, payment_method, amount, payment_status, payment_date, gateway_reference, installment_count, paid_installments, monthly_interest_rate)
 SELECT r.id, 'TXN-' || lpad(r.id::text, 8, '0'), r.id, r.client_id,
  (ARRAY['TARJETA_CREDITO','PSE','TRANSFERENCIA','PASARELA_SIMULADA'])[1 + r.id % 4],
- r.total_amount, 'COMPLETADO', r.start_date::timestamptz - interval '2 days', 'GW-' || (700000 + r.id * 13)
+ r.total_amount,
+ CASE WHEN r.id IN (5, 10) THEN 'EN_CUOTAS' ELSE 'COMPLETADO' END,
+ r.start_date::timestamptz - interval '2 days', 'GW-' || (700000 + r.id * 13),
+ CASE WHEN r.id IN (5, 10) THEN 3 ELSE 1 END,
+ 1,
+ 0.00
 FROM reservations r WHERE r.id <= 20;
 
 -- 13. INVOICES (IVA 19% sobre el subtotal)
@@ -200,3 +206,58 @@ INSERT INTO reviews (tool_id, client_id, reservation_id, rating, comment) VALUES
 ON CONFLICT (reservation_id) DO NOTHING;
 
 SELECT setval(pg_get_serial_sequence('reviews', 'id'), COALESCE((SELECT max(id) FROM reviews), 1));
+
+
+-- 18. PAYMENT_INSTALLMENTS (Cronograma de cuotas para pagos existentes)
+-- Para pagos de 1 cuota (todos excepto 5 y 10)
+INSERT INTO payment_installments (payment_id, reservation_id, installment_number, total_installments, due_date, principal_amount, interest_amount, total_installment_amount, status, paid_at, transaction_ref)
+SELECT p.id, p.reservation_id, 1, 1, p.payment_date::date, p.amount, 0.00, p.amount, 'PAGADA', p.payment_date, p.transaction_reference || '-C1'
+FROM payments p WHERE p.id NOT IN (5, 10);
+
+-- Para pago 5 (3 cuotas: Cuota 1 pagada, Cuotas 2 y 3 pendientes)
+INSERT INTO payment_installments (payment_id, reservation_id, installment_number, total_installments, due_date, principal_amount, interest_amount, total_installment_amount, status, paid_at, transaction_ref)
+SELECT 5, 5, 1, 3, p.payment_date::date, round(p.amount / 3, 2), 0.00, round(p.amount / 3, 2), 'PAGADA', p.payment_date, p.transaction_reference || '-C1'
+FROM payments p WHERE p.id = 5
+UNION ALL
+SELECT 5, 5, 2, 3, p.payment_date::date + interval '30 days', round(p.amount / 3, 2), 0.00, round(p.amount / 3, 2), 'PENDIENTE', NULL, NULL
+FROM payments p WHERE p.id = 5
+UNION ALL
+SELECT 5, 5, 3, 3, p.payment_date::date + interval '60 days', round(p.amount / 3, 2), 0.00, round(p.amount / 3, 2), 'PENDIENTE', NULL, NULL
+FROM payments p WHERE p.id = 5;
+
+-- Para pago 10 (3 cuotas: Cuota 1 pagada, Cuotas 2 y 3 pendientes)
+INSERT INTO payment_installments (payment_id, reservation_id, installment_number, total_installments, due_date, principal_amount, interest_amount, total_installment_amount, status, paid_at, transaction_ref)
+SELECT 10, 10, 1, 3, p.payment_date::date, round(p.amount / 3, 2), 0.00, round(p.amount / 3, 2), 'PAGADA', p.payment_date, p.transaction_reference || '-C1'
+FROM payments p WHERE p.id = 10
+UNION ALL
+SELECT 10, 10, 2, 3, p.payment_date::date + interval '30 days', round(p.amount / 3, 2), 0.00, round(p.amount / 3, 2), 'PENDIENTE', NULL, NULL
+FROM payments p WHERE p.id = 10
+UNION ALL
+SELECT 10, 10, 3, 3, p.payment_date::date + interval '60 days', round(p.amount / 3, 2), 0.00, round(p.amount / 3, 2), 'PENDIENTE', NULL, NULL
+FROM payments p WHERE p.id = 10;
+
+-- 19. TOOL_COMMENTS (20 preguntas y comentarios técnicos con respuestas oficiales de proveedores)
+INSERT INTO tool_comments (tool_id, user_id, author_name, author_role, comment_text, provider_reply, replied_at) VALUES
+(1, 1, 'Carlos Mendoza', 'CLIENTE', '¿El rotomartillo incluye el juego de brocas SDS Plus o se alquilan aparte?', 'Buen día Carlos. Incluye juego de 3 brocas estándar para concreto (1/2, 5/8 y 3/4 pulgada) listas para faena.', NOW() - interval '5 days'),
+(1, 2, 'Constructora Bolívar SAS', 'CLIENTE', '¿Requiere toma eléctrica de 220V o funciona en 110V estándar de obra?', 'Funciona a 110V estándar con motor de 1.500W de alto rendimiento y doble aislamiento.', NOW() - interval '4 days'),
+(2, 3, 'Ing. Roberto Silva', 'CLIENTE', '¿Qué tipo de combustible utiliza la vibrocompactadora y cuánta capacidad tiene el tanque?', 'Utiliza gasolina corriente con motor Honda GX160 de 4 tiempos. Capacidad de 3.6 litros.', NOW() - interval '6 days'),
+(2, 4, 'Urbanizaciones del Norte', 'CLIENTE', '¿Viene calibrada para compactación de sub-base granular en parqueaderos?', 'Correcto, cuenta con impacto de 13 kN ideal para zanjas y bases granulares.', NOW() - interval '3 days'),
+(3, 5, 'Consorcio Vial 2026', 'CLIENTE', '¿La cortadora de pavimento incluye disco diamantado para concreto verde o asfalto?', 'Incluye disco diamantado de 14 pulgadas apto para corte de pavimento asfáltico y concreto curado.', NOW() - interval '2 days'),
+(4, 1, 'Carlos Mendoza', 'CLIENTE', '¿La torre de iluminación es remolcable con tiro estándar de camioneta?', 'Sí, cuenta con tiro de bola de 2 pulgadas, luces reglamentarias de carretera y suspensión reforzada.', NOW() - interval '7 days'),
+(4, 2, 'Constructora Bolívar SAS', 'CLIENTE', '¿Cuántas horas de autonomía continua brinda con el tanque lleno?', 'Tiene tanque diésel de 100 litros que rinde 60 horas continuas de operación con sus 4 lámparas LED.', NOW() - interval '5 days'),
+(5, 3, 'Ing. Roberto Silva', 'CLIENTE', '¿El generador de 10 kVA tiene salida trifásica o solo monofásica?', 'Cuenta con salidas bifásicas de 120/240V y breaker industrial independiente para faenas de construcción.', NOW() - interval '3 days'),
+(6, 4, 'Urbanizaciones del Norte', 'CLIENTE', '¿El compresor neumático tiene acoples rápidos tipo Chicago?', 'Afirmativo, incluye 2 acoples de garra tipo Chicago con manguera de alta presión de 15 metros.', NOW() - interval '4 days'),
+(7, 5, 'Consorcio Vial 2026', 'CLIENTE', '¿El martillo demoledor de 30 kg incluye cincel de punta y pala ancha?', 'Incluye 1 puntero y 1 cincel plano con encastre hexagonal de 28 mm certificados.', NOW() - interval '1 day'),
+(8, 1, 'Carlos Mendoza', 'CLIENTE', '¿Cuál es la altura máxima de trabajo de la plataforma de tijera?', 'Alcanza una altura de trabajo de 10 metros con capacidad de carga de 230 kg en canastilla.', NOW() - interval '8 days'),
+(9, 2, 'Constructora Bolívar SAS', 'CLIENTE', '¿La motobomba para lodos soporta sólidos en suspensión?', 'Soporta sólidos de hasta 2 pulgadas de diámetro con cuerpo de bomba autocebante de alta resistencia.', NOW() - interval '2 days'),
+(10, 3, 'Ing. Roberto Silva', 'CLIENTE', '¿La allanadora de concreto incluye el plato de flotación?', 'Viene equipada con 4 aspas combinadas y plato flotador de 36 pulgadas para acabado pulido.', NOW() - interval '4 days'),
+(11, 4, 'Urbanizaciones del Norte', 'CLIENTE', '¿El andamio certificado incluye rodapiés y barandas de seguridad?', 'Viene con cuerpo completo de 2 secciones, plataforma metálica antideslizante, rodapiés y baranda perimetral.', NOW() - interval '6 days'),
+(12, 5, 'Consorcio Vial 2026', 'CLIENTE', '¿La soldadora inverter requiere acometida industrial?', 'Funciona con corriente 110V/220V bi-voltaje automática, perfecta para talleres móviles o conexiones de obra.', NOW() - interval '1 day'),
+(13, 1, 'Carlos Mendoza', 'CLIENTE', '¿El rotomartillo inalámbrico incluye 2 baterías y cargador rápido?', 'Incluye 2 baterías de litio de 18V / 5.0Ah y cargador rápido de 45 minutos.', NOW() - interval '9 days'),
+(14, 2, 'Constructora Bolívar SAS', 'CLIENTE', '¿La hidrolavadora industrial es de motor a gasolina o eléctrica?', 'Es motor a gasolina de 6.5 HP con presión de trabajo de 3.200 PSI para lavado pesado de maquinaria.', NOW() - interval '3 days'),
+(15, 3, 'Ing. Roberto Silva', 'CLIENTE', '¿La zanjadora compacta tiene orugas de goma para no maltratar césped?', 'Correcto, cuenta con orugas de caucho de baja presión que no dañan áreas verdes o adoquines.', NOW() - interval '5 days'),
+(16, 4, 'Urbanizaciones del Norte', 'CLIENTE', '¿La sierra ingletadora telescópica tiene guía láser?', 'Sí, incorpora guía láser de precisión y disco de carburo de 80 dientes para corte limpio de perfiles.', NOW() - interval '2 days'),
+(17, 5, 'Consorcio Vial 2026', 'CLIENTE', '¿El rodillo compactador doble rodillo es de operador a pie o sentado?', 'Es tipo hombre a bordo (operador sentado) con tracción y vibración en ambos tambores.', NOW() - interval '1 day');
+
+SELECT setval(pg_get_serial_sequence('payment_installments', 'id'), COALESCE((SELECT max(id) FROM payment_installments), 1));
+SELECT setval(pg_get_serial_sequence('tool_comments', 'id'), COALESCE((SELECT max(id) FROM tool_comments), 1));

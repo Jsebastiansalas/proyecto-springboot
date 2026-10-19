@@ -70,4 +70,11 @@ public class ReservationRepositoryAdapter implements ReservationRepositoryPort {
         if (dateRange == null) return false;
         return repository.existsOverlapping(toolId, dateRange.startDate(), dateRange.endDate());
     }
+
+    @Override
+    public List<Reservation> findAll() {
+        return repository.findAll().stream()
+                .map(ReservationJpaMapper::toDomain)
+                .toList();
+    }
 }

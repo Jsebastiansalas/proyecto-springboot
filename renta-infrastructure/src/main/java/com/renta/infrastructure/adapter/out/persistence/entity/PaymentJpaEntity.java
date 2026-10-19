@@ -42,11 +42,21 @@ public class PaymentJpaEntity {
     @Column(name = "gateway_reference", length = 100)
     private String gatewayReference;
 
+    @Column(name = "installment_count", nullable = false)
+    private Integer installmentCount = 1;
+
+    @Column(name = "paid_installments", nullable = false)
+    private Integer paidInstallments = 1;
+
+    @Column(name = "monthly_interest_rate", nullable = false, precision = 5, scale = 2)
+    private BigDecimal monthlyInterestRate = BigDecimal.ZERO;
+
     public PaymentJpaEntity() {}
 
     public PaymentJpaEntity(Long id, String transactionReference, Long reservationId, Long clientId,
                             String paymentMethod, BigDecimal amount, String paymentStatus,
-                            Instant paymentDate, String gatewayReference) {
+                            Instant paymentDate, String gatewayReference,
+                            Integer installmentCount, Integer paidInstallments, BigDecimal monthlyInterestRate) {
         this.id = id;
         this.transactionReference = transactionReference;
         this.reservationId = reservationId;
@@ -56,6 +66,9 @@ public class PaymentJpaEntity {
         this.paymentStatus = paymentStatus != null ? paymentStatus : "COMPLETADO";
         this.paymentDate = paymentDate != null ? paymentDate : Instant.now();
         this.gatewayReference = gatewayReference;
+        this.installmentCount = installmentCount != null ? installmentCount : 1;
+        this.paidInstallments = paidInstallments != null ? paidInstallments : 1;
+        this.monthlyInterestRate = monthlyInterestRate != null ? monthlyInterestRate : BigDecimal.ZERO;
     }
 
     public Long getId() { return id; }
@@ -76,4 +89,10 @@ public class PaymentJpaEntity {
     public void setPaymentDate(Instant paymentDate) { this.paymentDate = paymentDate; }
     public String getGatewayReference() { return gatewayReference; }
     public void setGatewayReference(String gatewayReference) { this.gatewayReference = gatewayReference; }
+    public Integer getInstallmentCount() { return installmentCount; }
+    public void setInstallmentCount(Integer installmentCount) { this.installmentCount = installmentCount; }
+    public Integer getPaidInstallments() { return paidInstallments; }
+    public void setPaidInstallments(Integer paidInstallments) { this.paidInstallments = paidInstallments; }
+    public BigDecimal getMonthlyInterestRate() { return monthlyInterestRate; }
+    public void setMonthlyInterestRate(BigDecimal monthlyInterestRate) { this.monthlyInterestRate = monthlyInterestRate; }
 }

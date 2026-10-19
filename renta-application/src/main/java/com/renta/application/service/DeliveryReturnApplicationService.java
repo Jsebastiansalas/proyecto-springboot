@@ -205,6 +205,34 @@ public class DeliveryReturnApplicationService implements
                 extraFee
         );
         RentalReturn r = finishRental(cmd);
+
+        // HU-04: Registrar automáticamente el reporte en damage_reports (4FN) si hay avería o cargo por daños
+        boolean hasDamage = req.conditionStatus() == ToolConditionStatus.DANADO
+                || req.conditionStatus() == ToolConditionStatus.INOPERATIVO
+                || (req.repairCostEstimate() != null && req.repairCostEstimate().compareTo(java.math.BigDecimal.ZERO) > 0)
+                || (req.extraDamageFee() != null && req.extraDamageFee().compareTo(java.math.BigDecimal.ZERO) > 0);
+
+        if (hasDamage) {
+            com.renta.domain.model.enums.DamageType dtype = req.damageType() != null ? req.damageType() : com.renta.domain.model.enums.DamageType.ESTRUCTURA;
+            String ddesc = (req.damageDescription() != null && !req.damageDescription().isBlank())
+                    ? req.damageDescription()
+                    : req.inspectionNotes();
+            Money damageAmount = req.repairCostEstimate() != null ? Money.cop(req.repairCostEstimate())
+                    : (req.extraDamageFee() != null ? Money.cop(req.extraDamageFee()) : Money.zero());
+
+            DamageReport damageReport = new DamageReport(
+                    null,
+                    r.getId(),
+                    req.receivedBy(),
+                    dtype,
+                    ddesc,
+                    damageAmount,
+                    DamageReportStatus.EVALUANDO,
+                    Instant.now()
+            );
+            damageReportRepository.save(damageReport);
+        }
+
         String code = res.getReservationCode();
         return DeliveryReturnDtoMapper.toReturnResponse(r, code);
     }

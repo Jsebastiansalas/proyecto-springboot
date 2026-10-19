@@ -38,6 +38,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import org.junit.jupiter.api.BeforeEach;
+import com.renta.domain.port.out.ToolRepositoryPort;
+import com.renta.domain.model.enums.ToolStatus;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -59,7 +63,20 @@ class FullRentalLifecycleIntegrationTest {
     @Autowired
     private ReviewApplicationService reviewService;
 
+    @Autowired
+    private ToolRepositoryPort toolRepository;
+
     private static Long createdReservationId;
+
+    @BeforeEach
+    void ensureToolIsAvailable() {
+        toolRepository.findById(1L).ifPresent(t -> {
+            if (t.getStatus() != ToolStatus.DISPONIBLE) {
+                t.setStatus(ToolStatus.DISPONIBLE);
+                toolRepository.save(t);
+            }
+        });
+    }
 
     @Test
     @Order(1)

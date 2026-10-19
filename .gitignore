@@ -35,3 +35,12 @@ desktop.ini
 
 # Agent internal files
 .agents/
+
+# Frontend Node / Vite
+frontend/node_modules/
+frontend/dist/
+
+# Scratch & temporary test classes
+target_test-classes/
+.superpowers/
+pg_*.txt

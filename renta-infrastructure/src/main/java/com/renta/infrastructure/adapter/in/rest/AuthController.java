@@ -1,5 +1,6 @@
 package com.renta.infrastructure.adapter.in.rest;
 
+import com.renta.application.dto.auth.ChangePasswordRequest;
 import com.renta.application.dto.auth.LoginRequest;
 import com.renta.application.dto.auth.LoginResponse;
 import com.renta.application.dto.auth.RegisterClientRequest;
@@ -9,12 +10,16 @@ import com.renta.application.service.AuthApplicationService;
 import com.renta.domain.port.out.ClientRepositoryPort;
 import com.renta.domain.port.out.ProviderRepositoryPort;
 import com.renta.infrastructure.adapter.out.security.CustomUserDetails;
+import com.renta.infrastructure.config.security.LoginRateLimiterFilter;
+import com.renta.infrastructure.config.security.SecurityAuditLogger;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,20 +38,34 @@ public class AuthController {
     private final AuthApplicationService authService;
     private final ClientRepositoryPort clientRepository;
     private final ProviderRepositoryPort providerRepository;
+    private final LoginRateLimiterFilter rateLimiterFilter;
+    private final SecurityAuditLogger auditLogger;
 
     public AuthController(AuthApplicationService authService,
                           ClientRepositoryPort clientRepository,
-                          ProviderRepositoryPort providerRepository) {
+                          ProviderRepositoryPort providerRepository,
+                          LoginRateLimiterFilter rateLimiterFilter,
+                          SecurityAuditLogger auditLogger) {
         this.authService = authService;
         this.clientRepository = clientRepository;
         this.providerRepository = providerRepository;
+        this.rateLimiterFilter = rateLimiterFilter;
+        this.auditLogger = auditLogger;
     }
 
     @PostMapping("/login")
     @Operation(summary = "Iniciar sesión", description = "Autentica un usuario con email y contraseña, retornando un token JWT Bearer.")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        LoginResponse response = authService.login(request);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest servletRequest) {
+        String ip = extractIp(servletRequest);
+        try {
+            LoginResponse response = authService.login(request);
+            rateLimiterFilter.resetAttempts(ip);
+            auditLogger.logEvent("LOGIN_SUCCESS", request.email(), ip, true, "Inicio de sesión exitoso. Rol: " + response.role());
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException ex) {
+            auditLogger.logEvent("LOGIN_FAILED", request.email(), ip, false, ex.getMessage());
+            throw ex;
+        }
     }
 
     @PostMapping("/register-client")
@@ -84,5 +103,33 @@ public class AuthController {
         providerRepository.findByUserId(summary.id()).ifPresent(p -> response.put("providerId", p.getId()));
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/change-password")
+    @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Cambiar contraseña de cuenta", description = "Permite al usuario autenticado modificar su contraseña actual por una nueva de alta entropía.")
+    public ResponseEntity<Map<String, String>> changePassword(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody ChangePasswordRequest request,
+            HttpServletRequest servletRequest) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String ip = extractIp(servletRequest);
+        authService.changePassword(userDetails.getId(), request);
+        auditLogger.logEvent("PASSWORD_CHANGED", userDetails.getUsername(), ip, true, "Contraseña modificada exitosamente.");
+
+        return ResponseEntity.ok(Map.of("message", "Contraseña actualizada exitosamente."));
+    }
+
+    private String extractIp(HttpServletRequest request) {
+        if (request == null) return "UNKNOWN";
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }

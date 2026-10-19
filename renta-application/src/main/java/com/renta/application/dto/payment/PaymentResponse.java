@@ -16,5 +16,15 @@ public record PaymentResponse(
         BigDecimal amount,
         PaymentStatus paymentStatus,
         Instant paymentDate,
-        String gatewayReference
-) {}
+        String gatewayReference,
+        Integer installmentCount,
+        Integer paidInstallments,
+        BigDecimal monthlyInterestRate
+) {
+    public PaymentResponse(Long id, String transactionReference, Long reservationId, String reservationCode,
+                           Long clientId, PaymentMethod paymentMethod, BigDecimal amount,
+                           PaymentStatus paymentStatus, Instant paymentDate, String gatewayReference) {
+        this(id, transactionReference, reservationId, reservationCode, clientId, paymentMethod, amount,
+                paymentStatus, paymentDate, gatewayReference, 1, 1, BigDecimal.ZERO);
+    }
+}

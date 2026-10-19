@@ -29,4 +29,6 @@ public interface ReservationRepositoryPort {
     default boolean existsOverlappingReservation(Long toolId, DateRange dateRange) {
         return existsOverlapping(toolId, dateRange);
     }
+
+    List<Reservation> findAll();
 }

@@ -10,7 +10,6 @@ public record ProcessPaymentRequest(
         @NotNull(message = "El ID de la reserva es obligatorio")
         Long reservationId,
 
-        @NotNull(message = "El ID del cliente es obligatorio")
         Long clientId,
 
         @NotNull(message = "El método de pago es obligatorio")
@@ -21,5 +20,10 @@ public record ProcessPaymentRequest(
         BigDecimal amount,
 
         String cardNumberMasked,
-        String gatewayReference
-) {}
+        String gatewayReference,
+        Integer installmentCount
+) {
+    public ProcessPaymentRequest(Long reservationId, Long clientId, PaymentMethod paymentMethod, BigDecimal amount, String cardNumberMasked, String gatewayReference) {
+        this(reservationId, clientId, paymentMethod, amount, cardNumberMasked, gatewayReference, 1);
+    }
+}

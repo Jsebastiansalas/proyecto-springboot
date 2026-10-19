@@ -76,17 +76,17 @@ public class ToolController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROVEEDOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROVEEDOR') and @authz.canModifyTool(principal, #id)")
     @SecurityRequirement(name = "BearerAuth")
-    @Operation(summary = "Actualizar herramienta existente", description = "Actualiza la información y colecciones normalizadas de la herramienta. Requiere rol PROVEEDOR o ADMIN.")
+    @Operation(summary = "Actualizar herramienta existente", description = "Actualiza la información y colecciones normalizadas de la herramienta. Requiere rol PROVEEDOR titular o ADMIN.")
     public ResponseEntity<ToolDetailResponse> updateTool(@PathVariable Long id, @Valid @RequestBody UpdateToolRequest request) {
         return ResponseEntity.ok(toolService.updateTool(id, request));
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROVEEDOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROVEEDOR') and @authz.canModifyTool(principal, #id)")
     @SecurityRequirement(name = "BearerAuth")
-    @Operation(summary = "Cambiar estado de herramienta", description = "Cambia el estado de una herramienta (DISPONIBLE, ALQUILADA, MANTENIMIENTO, RETIRADA).")
+    @Operation(summary = "Cambiar estado de herramienta", description = "Cambia el estado de una herramienta (DISPONIBLE, ALQUILADA, MANTENIMIENTO, RETIRADA). Requiere rol PROVEEDOR titular o ADMIN.")
     public ResponseEntity<Void> updateToolStatus(@PathVariable Long id, @RequestParam ToolStatus status) {
         toolService.updateToolStatus(id, status);
         return ResponseEntity.noContent().build();

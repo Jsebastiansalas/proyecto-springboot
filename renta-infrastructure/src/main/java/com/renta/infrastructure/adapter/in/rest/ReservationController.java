@@ -58,8 +58,9 @@ public class ReservationController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("@authz.canAccessReservation(principal, #id)")
     @SecurityRequirement(name = "BearerAuth")
-    @Operation(summary = "Consultar reserva por ID", description = "Obtiene los detalles completos de una reserva específica.")
+    @Operation(summary = "Consultar reserva por ID", description = "Obtiene los detalles completos de una reserva específica. Solo el cliente, el proveedor dueño o ADMIN pueden acceder.")
     public ResponseEntity<ReservationResponse> getReservationById(@PathVariable Long id) {
         return ResponseEntity.ok(reservationService.getReservationById(id));
     }
@@ -68,21 +69,22 @@ public class ReservationController {
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "Consultar reserva por código", description = "Obtiene los datos de una reserva mediante su código alfanumérico único (ej. RES-2026-XXXX).")
     public ResponseEntity<ReservationResponse> getReservationByCode(@PathVariable String code) {
-        return ResponseEntity.ok(reservationService.getReservationByCode(code));
+        ReservationResponse res = reservationService.getReservationByCode(code);
+        return ResponseEntity.ok(res);
     }
 
     @GetMapping("/client/{clientId}")
-    @PreAuthorize("hasAnyRole('CLIENTE', 'ADMIN')")
+    @PreAuthorize("@authz.isClientOwner(principal, #clientId)")
     @SecurityRequirement(name = "BearerAuth")
-    @Operation(summary = "Reservas de un cliente", description = "Lista el historial de reservas de un cliente.")
+    @Operation(summary = "Reservas de un cliente", description = "Lista el historial de reservas de un cliente. Restringido al titular de la cuenta o ADMIN.")
     public ResponseEntity<List<ReservationResponse>> listByClient(@PathVariable Long clientId) {
         return ResponseEntity.ok(reservationService.listReservationsByClient(clientId));
     }
 
     @GetMapping("/provider/{providerId}")
-    @PreAuthorize("hasAnyRole('PROVEEDOR', 'ADMIN')")
+    @PreAuthorize("@authz.isProviderOwner(principal, #providerId)")
     @SecurityRequirement(name = "BearerAuth")
-    @Operation(summary = "Reservas de un proveedor", description = "Lista las reservas asociadas a las herramientas del proveedor especificado.")
+    @Operation(summary = "Reservas de un proveedor", description = "Lista las reservas asociadas a las herramientas del proveedor especificado. Restringido a la empresa titular o ADMIN.")
     public ResponseEntity<List<ReservationResponse>> listByProvider(@PathVariable Long providerId) {
         return ResponseEntity.ok(reservationService.listReservationsByProvider(providerId));
     }
@@ -102,17 +104,18 @@ public class ReservationController {
     }
 
     @PatchMapping("/{id}/approve")
-    @PreAuthorize("hasAnyRole('PROVEEDOR', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('PROVEEDOR', 'ADMIN') and @authz.canAccessReservation(principal, #id)")
     @SecurityRequirement(name = "BearerAuth")
-    @Operation(summary = "Aprobar reserva", description = "Aprueba una reserva en estado PENDIENTE.")
+    @Operation(summary = "Aprobar reserva", description = "Aprueba una reserva en estado PENDIENTE. Restringido al proveedor del equipo o ADMIN.")
     public ResponseEntity<ReservationResponse> approveReservation(@PathVariable Long id) {
         Reservation res = reservationService.approveReservation(id);
         return ResponseEntity.ok(reservationService.getReservationById(res.getId()));
     }
 
     @PatchMapping("/{id}/cancel")
+    @PreAuthorize("@authz.canAccessReservation(principal, #id)")
     @SecurityRequirement(name = "BearerAuth")
-    @Operation(summary = "Cancelar reserva", description = "Cancela una reserva registrando el motivo.")
+    @Operation(summary = "Cancelar reserva", description = "Cancela una reserva registrando el motivo. Restringido al cliente titular o ADMIN.")
     public ResponseEntity<ReservationResponse> cancelReservation(
             @PathVariable Long id,
             @RequestParam(defaultValue = "Cancelada por el usuario") String reason) {
@@ -121,7 +124,7 @@ public class ReservationController {
     }
 
     @PatchMapping("/{id}/reject")
-    @PreAuthorize("hasAnyRole('PROVEEDOR', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('PROVEEDOR', 'ADMIN') and @authz.canAccessReservation(principal, #id)")
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "Rechazar reserva", description = "Rechaza una reserva registrando el motivo.")
     public ResponseEntity<ReservationResponse> rejectReservation(

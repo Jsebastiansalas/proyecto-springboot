@@ -40,8 +40,12 @@ public class JwtTokenProviderAdapter implements TokenProviderPort {
     public JwtTokenProviderAdapter(
             @Value("${jwt.secret:RentaHerramientasClaveSuperSeguraJWT2026ConMasDe256BitsParaHS256Firmado!}") String secret,
             @Value("${jwt.expiration-millis:86400000}") long expirationMillis) {
+        byte[] secretBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (secretBytes.length < 32) {
+            throw new IllegalArgumentException("La clave secreta JWT debe contener al menos 256 bits (32 caracteres UTF-8) para garantizar seguridad criptográfica.");
+        }
         // Generamos la clave criptográfica a partir del secreto en texto
-        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.key = Keys.hmacShaKeyFor(secretBytes);
         this.expirationMillis = expirationMillis;
     }
 

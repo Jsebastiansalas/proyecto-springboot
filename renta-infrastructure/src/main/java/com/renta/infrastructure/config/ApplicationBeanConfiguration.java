@@ -10,18 +10,21 @@ import com.renta.application.service.ReportApplicationService;
 import com.renta.application.service.ReservationApplicationService;
 import com.renta.application.service.ReviewApplicationService;
 import com.renta.application.service.ToolApplicationService;
+import com.renta.application.service.ToolCommentApplicationService;
 import com.renta.domain.port.out.CategoryRepositoryPort;
 import com.renta.domain.port.out.ClientRepositoryPort;
 import com.renta.domain.port.out.DamageReportRepositoryPort;
 import com.renta.domain.port.out.InvoiceRepositoryPort;
 import com.renta.domain.port.out.NotificationServicePort;
 import com.renta.domain.port.out.PaymentGatewayPort;
+import com.renta.domain.port.out.PaymentInstallmentRepositoryPort;
 import com.renta.domain.port.out.PaymentRepositoryPort;
 import com.renta.domain.port.out.ProviderRepositoryPort;
 import com.renta.domain.port.out.RentalDeliveryRepositoryPort;
 import com.renta.domain.port.out.RentalReturnRepositoryPort;
 import com.renta.domain.port.out.ReservationRepositoryPort;
 import com.renta.domain.port.out.ReviewRepositoryPort;
+import com.renta.domain.port.out.ToolCommentRepositoryPort;
 import com.renta.domain.port.out.ToolRepositoryPort;
 import com.renta.domain.port.out.UserRepositoryPort;
 import org.springframework.context.annotation.Bean;
@@ -71,8 +74,9 @@ public class ApplicationBeanConfiguration {
     public ToolApplicationService toolApplicationService(
             ToolRepositoryPort toolRepository,
             CategoryRepositoryPort categoryRepository,
-            ProviderRepositoryPort providerRepository) {
-        return new ToolApplicationService(toolRepository, categoryRepository, providerRepository);
+            ProviderRepositoryPort providerRepository,
+            ReviewRepositoryPort reviewRepository) {
+        return new ToolApplicationService(toolRepository, categoryRepository, providerRepository, reviewRepository);
     }
 
     /**
@@ -84,13 +88,14 @@ public class ApplicationBeanConfiguration {
             ReservationRepositoryPort reservationRepository,
             ToolRepositoryPort toolRepository,
             ClientRepositoryPort clientRepository,
-            NotificationServicePort notificationService) {
-        return new ReservationApplicationService(reservationRepository, toolRepository, clientRepository, notificationService);
+            NotificationServicePort notificationService,
+            PaymentRepositoryPort paymentRepository) {
+        return new ReservationApplicationService(reservationRepository, toolRepository, clientRepository, notificationService, paymentRepository);
     }
 
     /**
      * SERVICIO DE PAGOS
-     * Procesa pagos simulados de alquiler y depósito de garantía, y genera la factura.
+     * Procesa pagos simulados de alquiler y depósito de garantía, cronograma de cuotas y genera la factura.
      */
     @Bean
     public PaymentApplicationService paymentApplicationService(
@@ -98,8 +103,20 @@ public class ApplicationBeanConfiguration {
             ReservationRepositoryPort reservationRepository,
             InvoiceRepositoryPort invoiceRepository,
             PaymentGatewayPort paymentGateway,
-            NotificationServicePort notificationService) {
-        return new PaymentApplicationService(paymentRepository, reservationRepository, invoiceRepository, paymentGateway, notificationService);
+            NotificationServicePort notificationService,
+            PaymentInstallmentRepositoryPort paymentInstallmentRepository) {
+        return new PaymentApplicationService(paymentRepository, reservationRepository, invoiceRepository, paymentGateway, notificationService, paymentInstallmentRepository);
+    }
+
+    /**
+     * SERVICIO DE MURO DE PREGUNTAS Y COMENTARIOS
+     * Permite a clientes preguntar sobre maquinaria y a proveedores responder públicamente.
+     */
+    @Bean
+    public ToolCommentApplicationService toolCommentApplicationService(
+            ToolCommentRepositoryPort toolCommentRepository,
+            ToolRepositoryPort toolRepository) {
+        return new ToolCommentApplicationService(toolCommentRepository, toolRepository);
     }
 
     /**

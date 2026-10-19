@@ -19,7 +19,10 @@ public final class PaymentDtoMapper {
                 p.getAmount() != null ? p.getAmount().amount() : null,
                 p.getPaymentStatus(),
                 p.getPaymentDate(),
-                p.getGatewayReference()
+                p.getGatewayReference(),
+                p.getInstallmentCount() != null ? p.getInstallmentCount() : 1,
+                p.getPaidInstallments() != null ? p.getPaidInstallments() : 1,
+                p.getMonthlyInterestRate() != null ? p.getMonthlyInterestRate() : java.math.BigDecimal.ZERO
         );
     }
 }

@@ -1,5 +1,6 @@
 package com.renta.application.service;
 
+import com.renta.application.dto.auth.ChangePasswordRequest;
 import com.renta.application.dto.auth.LoginRequest;
 import com.renta.application.dto.auth.LoginResponse;
 import com.renta.application.dto.auth.RegisterClientRequest;
@@ -9,10 +10,12 @@ import com.renta.application.port.in.AuthUseCase;
 import com.renta.application.port.out.PasswordEncoderPort;
 import com.renta.application.port.out.TokenProviderPort;
 import com.renta.domain.exception.BusinessRuleViolationException;
+import com.renta.domain.exception.InvalidCredentialsException;
 import com.renta.domain.exception.ResourceNotFoundException;
 import com.renta.domain.model.entity.Client;
 import com.renta.domain.model.entity.Provider;
 import com.renta.domain.model.entity.User;
+import com.renta.domain.model.enums.DocumentType;
 import com.renta.domain.model.enums.UserRole;
 import com.renta.domain.model.vo.Email;
 import com.renta.domain.port.out.ClientRepositoryPort;
@@ -49,14 +52,14 @@ public class AuthApplicationService implements AuthUseCase {
     @Override
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new BusinessRuleViolationException("Credenciales inválidas: email o contraseña incorrectos"));
+                .orElseThrow(InvalidCredentialsException::new);
 
         if (!user.isActive()) {
             throw new BusinessRuleViolationException("La cuenta de usuario se encuentra inactiva. Contacte al administrador.");
         }
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            throw new BusinessRuleViolationException("Credenciales inválidas: email o contraseña incorrectos");
+            throw new InvalidCredentialsException();
         }
 
         String displayName = resolveDisplayName(user);
@@ -77,6 +80,21 @@ public class AuthApplicationService implements AuthUseCase {
         Email email = Email.of(request.email());
         if (userRepository.existsByEmail(email)) {
             throw new BusinessRuleViolationException("Ya existe una cuenta registrada con el email: " + request.email());
+        }
+
+        if (request.documentType() == DocumentType.CC) {
+            if (!request.documentNumber().matches("^[0-9]{6,11}$")) {
+                throw new BusinessRuleViolationException("La Cédula de Ciudadanía (CC) debe contener entre 6 y 11 dígitos numéricos sin letras ni símbolos");
+            }
+        } else if (request.documentType() == DocumentType.NIT) {
+            if (!request.documentNumber().matches("^[0-9]{8,10}(-[0-9])?$")) {
+                throw new BusinessRuleViolationException("El NIT debe contener entre 8 y 10 dígitos (ej: 900123456-1)");
+            }
+        }
+
+        String digitsOnly = request.phone().replaceAll("\\D", "");
+        if (digitsOnly.matches("^(\\d)\\1{5,}$")) {
+            throw new BusinessRuleViolationException("El número de teléfono ingresado no es válido (dígitos repetidos).");
         }
 
         if (clientRepository.findByDocumentNumber(request.documentNumber()).isPresent()) {
@@ -126,6 +144,11 @@ public class AuthApplicationService implements AuthUseCase {
         Email email = Email.of(request.email());
         if (userRepository.existsByEmail(email)) {
             throw new BusinessRuleViolationException("Ya existe una cuenta registrada con el email: " + request.email());
+        }
+
+        String digitsOnly = request.phone().replaceAll("\\D", "");
+        if (digitsOnly.matches("^(\\d)\\1{5,}$")) {
+            throw new BusinessRuleViolationException("El número de teléfono ingresado no es válido (dígitos repetidos).");
         }
 
         if (providerRepository.findByNitRut(request.nitRut()).isPresent()) {
@@ -187,11 +210,16 @@ public class AuthApplicationService implements AuthUseCase {
 
     @Override
     public List<UserSummaryDto> listAllUsers() {
-        // Query users using client and provider repositories
-        List<UserSummaryDto> list = new ArrayList<>();
-        // In infrastructure we can query all users or iterate known ranges
-        // Provided by UserRepositoryPort findById / findAll in implementation
-        return list;
+        return userRepository.findAll().stream()
+                .map(user -> new UserSummaryDto(
+                        user.getId(),
+                        user.getEmail().value(),
+                        user.getRole(),
+                        user.isActive(),
+                        resolveDisplayName(user),
+                        user.getCreatedAt()
+                ))
+                .toList();
     }
 
     @Override
@@ -199,6 +227,45 @@ public class AuthApplicationService implements AuthUseCase {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + userId));
         user.setActive(active);
+        userRepository.save(user);
+    }
+
+    @Override
+    public List<Provider> listAllProviders() {
+        return providerRepository.findAll();
+    }
+
+    @Override
+    public void verifyProvider(Long providerId, boolean verified) {
+        Provider provider = providerRepository.findById(providerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Proveedor no encontrado con ID: " + providerId));
+        provider.setVerified(verified);
+        providerRepository.save(provider);
+    }
+
+    @Override
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        if (userId == null) {
+            throw new IllegalArgumentException("El ID de usuario no puede ser nulo.");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + userId));
+
+        if (!request.newPassword().equals(request.confirmPassword())) {
+            throw new BusinessRuleViolationException("La confirmación de la nueva contraseña no coincide.");
+        }
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw new InvalidCredentialsException("La contraseña actual es incorrecta.");
+        }
+
+        if (passwordEncoder.matches(request.newPassword(), user.getPasswordHash())) {
+            throw new BusinessRuleViolationException("La nueva contraseña no puede ser igual a la contraseña actual.");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        user.setUpdatedAt(Instant.now());
         userRepository.save(user);
     }
 

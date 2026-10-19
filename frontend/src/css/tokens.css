@@ -1,0 +1,103 @@
+/* ==========================================================================
+   RENTAMAQ INDUSTRIAL DESIGN SYSTEM - DESIGN TOKENS
+   Conforme a Impeccable Design, Emil Kowalski Engineering & Apple Foundations
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@500;600;700;800&display=swap');
+
+:root {
+  /* Brand Industrial Precision Palette */
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b; /* Safety / Machinery Amber */
+  --color-amber-600: #d97706; /* Heavy Wear Amber */
+  --color-amber-700: #b45309;
+
+  /* Asphalt / Carbon Scale */
+  --color-asphalt-950: #070a0f; /* Deep Trench */
+  --color-asphalt-900: #0c1017; /* Engine Carbon */
+  --color-asphalt-800: #131926; /* Plate Steel */
+  --color-asphalt-700: #1c2638; /* Cast Iron */
+  --color-asphalt-600: #2b3a54; /* Slate Steel */
+  --color-asphalt-500: #475569;
+
+  /* Functional Status Matrix */
+  --color-emerald-500: #10b981; /* Patio Disponible / Operativo */
+  --color-emerald-600: #059669;
+  --color-blue-500: #2563eb;    /* En Tránsito / Reservado */
+  --color-red-500: #ef4444;     /* Avería / Alerta */
+  --color-red-600: #dc2626;
+
+  /* Neutral Surface System (Light Mode por defecto con alta legibilidad en obra) */
+  --bg-app: #f4f6f8;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #ffffff;
+  --bg-surface-subtle: #f8fafc;
+  --bg-surface-inverse: #0c1017;
+
+  --text-main: #0c1017;
+  --text-muted: #526071;
+  --text-faint: #94a3b8;
+  --text-inverse: #ffffff;
+
+  --border-hairline: rgba(12, 16, 23, 0.08);
+  --border-strong: rgba(12, 16, 23, 0.16);
+  --border-focus: #f59e0b;
+
+  /* Colores de Construcción y Faena */
+  --color-diesel: #1e293b;
+  --color-safety-orange: #ea580c;
+  --color-retie-gold: #f59e0b;
+  --color-site-green: #10b981;
+  --color-alert-red: #ef4444;
+
+  /* Tipografía Estructurada */
+  --font-display: 'Barlow Condensed', -apple-system, sans-serif;
+  --font-sans: 'Barlow', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Escala de Radios de Borde (Jerarquía Estricta sin burbujas genéricas) */
+  --radius-xs: 3px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 9999px;
+
+  /* Profundidad Físicamente Calibrada (Doble Capa de Sombra) */
+  --shadow-sm: 0 1px 2px rgba(12, 16, 23, 0.05);
+  --shadow-card: 0 1px 3px rgba(12, 16, 23, 0.05), 0 8px 20px -4px rgba(12, 16, 23, 0.08);
+  --shadow-card-hover: 0 4px 6px -1px rgba(12, 16, 23, 0.06), 0 16px 32px -4px rgba(12, 16, 23, 0.12);
+  --shadow-modal: 0 24px 48px -12px rgba(7, 10, 15, 0.28), 0 0 0 1px rgba(12, 16, 23, 0.08);
+  --shadow-drawer: -12px 0 32px rgba(7, 10, 15, 0.2);
+
+  /* Curvas y Duraciones de Movimiento (Emil Kowalski + Apple Design) */
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+  --duration-instant: 100ms;
+  --duration-fast: 140ms;
+  --duration-normal: 220ms;
+  --duration-enter: 260ms;
+}
+
+/* Modo Oscuro Industrial (Control Room Mode) */
+body.dark-mode {
+  --bg-app: #070a0f;
+  --bg-surface: #0c1017;
+  --bg-surface-elevated: #131926;
+  --bg-surface-subtle: #111722;
+  --bg-surface-inverse: #f4f6f8;
+
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
+  --text-inverse: #0c1017;
+
+  --border-hairline: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.6), 0 8px 24px -4px rgba(0, 0, 0, 0.7);
+  --shadow-card-hover: 0 8px 16px -2px rgba(0, 0, 0, 0.7), 0 20px 40px -6px rgba(0, 0, 0, 0.9);
+  --shadow-modal: 0 28px 64px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}

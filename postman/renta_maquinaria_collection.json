@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "RentaMaq API v1 - Colección de Pruebas",
-    "description": "Colección completa de pruebas para la API REST de RentaMaq (Java 21, Spring Boot 3.4.2, PostgreSQL 18 en 4FN). Incluye flujos de Auth, Catálogo 4FN, Cotizador, Reservas, Pagos, Facturas y Logística.",
+    "name": "RentaMaq API v1 - Colección Completa de Pruebas",
+    "description": "Colección empresarial de pruebas de integración para la API REST de RentaMaq (Java 21 LTS, Spring Boot 3.4.2, PostgreSQL 18 en 4FN). Incluye flujos completos de Autenticación, Gestión Admin, Catálogo 4FN, Reservas, Pagos, Facturación DIAN, Logística con Reporte de Daños y Analítica Real.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -9,7 +9,9 @@
     { "key": "token_admin", "value": "", "type": "string" },
     { "key": "token_client", "value": "", "type": "string" },
     { "key": "token_provider", "value": "", "type": "string" },
-    { "key": "test_reservation_id", "value": "1", "type": "string" }
+    { "key": "test_reservation_id", "value": "1", "type": "string" },
+    { "key": "test_tool_id", "value": "1", "type": "string" },
+    { "key": "test_return_id", "value": "1", "type": "string" }
   ],
   "item": [
     {
@@ -35,7 +37,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@renta.com\",\n  \"password\": \"Admin123*\"\n}"
+              "raw": "{\n  \"email\": \"admin@renta.com\",\n  \"password\": \"Admin#Renta2026!SecOps\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
           }
@@ -60,7 +62,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"cliente1@correo.com\",\n  \"password\": \"Password123*\"\n}"
+              "raw": "{\n  \"email\": \"cliente1@correo.com\",\n  \"password\": \"Cliente#Renta2026!Sec\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
           }
@@ -85,7 +87,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"proveedor1@correo.com\",\n  \"password\": \"Password123*\"\n}"
+              "raw": "{\n  \"email\": \"proveedor1@correo.com\",\n  \"password\": \"Proveedor#Renta2026!Sec\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
           }
@@ -97,11 +99,86 @@
             "header": [{ "key": "Authorization", "value": "Bearer {{token_client}}" }],
             "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
           }
+        },
+        {
+          "name": "Registrar Nuevo Cliente",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nuevo.cliente@correo.com\",\n  \"password\": \"Cliente#Renta2026!Sec\",\n  \"firstName\": \"Andrés\",\n  \"lastName\": \"Morales\",\n  \"documentType\": \"CC\",\n  \"documentNumber\": \"1098765432\",\n  \"phone\": \"3109876543\",\n  \"address\": \"Calle 45 # 12-34\",\n  \"city\": \"Bogotá\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register-client", "host": ["{{baseUrl}}"], "path": ["auth", "register-client"] }
+          }
+        },
+        {
+          "name": "Registrar Nuevo Proveedor",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"contacto@maquiobras.com\",\n  \"password\": \"Proveedor#Renta2026!Sec\",\n  \"companyName\": \"MaquiObras Colombia S.A.S.\",\n  \"taxId\": \"901456789-1\",\n  \"contactName\": \"Laura Restrepo\",\n  \"phone\": \"3201234567\",\n  \"address\": \"Zona Franca Bodega 8\",\n  \"city\": \"Medellín\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register-provider", "host": ["{{baseUrl}}"], "path": ["auth", "register-provider"] }
+          }
         }
       ]
     },
     {
-      "name": "2. Catálogo & Ficha Técnica 4FN",
+      "name": "2. Panel Administrativo (HU-03)",
+      "item": [
+        {
+          "name": "Listar Todos los Usuarios",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/users", "host": ["{{baseUrl}}"], "path": ["admin", "users"] }
+          }
+        },
+        {
+          "name": "Suspender o Reactivar Usuario",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"active\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/admin/users/2/status", "host": ["{{baseUrl}}"], "path": ["admin", "users", "2", "status"] }
+          }
+        },
+        {
+          "name": "Listar Proveedores Registrados",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/providers", "host": ["{{baseUrl}}"], "path": ["admin", "providers"] }
+          }
+        },
+        {
+          "name": "Verificar Proveedor con NIT (Sello de Calidad)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"verified\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/admin/providers/1/verify", "host": ["{{baseUrl}}"], "path": ["admin", "providers", "1", "verify"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Catálogo & Ficha Técnica 4FN (HU-01, HU-02)",
       "item": [
         {
           "name": "Listar Categorías Públicas",
@@ -111,15 +188,16 @@
           }
         },
         {
-          "name": "Catálogo con Filtros (Público)",
+          "name": "Explorar Catálogo con Filtros",
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/tools?query=Bosch&minPrice=10000&maxPrice=500000",
+              "raw": "{{baseUrl}}/tools?query=Bosch&categoryId=1&minPrice=10000&maxPrice=500000",
               "host": ["{{baseUrl}}"],
               "path": ["tools"],
               "query": [
                 { "key": "query", "value": "Bosch" },
+                { "key": "categoryId", "value": "1" },
                 { "key": "minPrice", "value": "10000" },
                 { "key": "maxPrice", "value": "500000" }
               ]
@@ -127,31 +205,83 @@
           }
         },
         {
-          "name": "Ficha Técnica 4FN de Equipo",
+          "name": "Ficha Técnica Completa 4FN",
           "request": {
             "method": "GET",
             "url": { "raw": "{{baseUrl}}/tools/1", "host": ["{{baseUrl}}"], "path": ["tools", "1"] }
+          }
+        },
+        {
+          "name": "Crear Herramienta con 4 Tablas 4FN (Proveedor)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_provider}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"providerId\": 1,\n  \"categoryId\": 1,\n  \"codeSku\": \"GEN-5KW-001\",\n  \"name\": \"Generador Diésel Insonorizado 5.5 kVA\",\n  \"brand\": \"Caterpillar\",\n  \"model\": \"DE7.5E0S\",\n  \"description\": \"Generador para soporte de energía continua en obra civil\",\n  \"baseDailyPrice\": 180000.00,\n  \"depositAmount\": 500000.00,\n  \"mainImageUrl\": \"https://images.unsplash.com/photo-1581092160607-ee22621dd758\",\n  \"images\": [\n    {\n      \"imageUrl\": \"https://images.unsplash.com/photo-1581092160607-ee22621dd758\",\n      \"primary\": true,\n      \"caption\": \"Vista Frontal con Panel de Control\"\n    }\n  ],\n  \"specifications\": [\n    { \"specName\": \"Potencia Continua\", \"specValue\": \"5.5 kVA / 5 kW\" },\n    { \"specName\": \"Combustible\", \"specValue\": \"Diésel Grado Obra\" },\n    { \"specName\": \"Autonomía\", \"specValue\": \"12 horas con tanque lleno\" }\n  ],\n  \"pricingTiers\": [\n    { \"tierType\": \"DIARIO\", \"minDays\": 1, \"pricePerDay\": 180000.00 },\n    { \"tierType\": \"SEMANAL\", \"minDays\": 7, \"pricePerDay\": 153000.00 },\n    { \"tierType\": \"MENSUAL\", \"minDays\": 30, \"pricePerDay\": 126000.00 }\n  ],\n  \"safetyRequirements\": [\n    { \"requirementName\": \"Protección Auditiva Obligatoria\", \"description\": \"Uso de orejeras con reducción mayor a 28 dB\" },\n    { \"requirementName\": \"Puesta a Tierra Certificada\", \"description\": \"Instalar varilla de cobre antes de energizar cargas\" }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/tools", "host": ["{{baseUrl}}"], "path": ["tools"] }
+          }
+        },
+        {
+          "name": "Actualizar Herramienta con 4FN",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_provider}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": 1,\n  \"name\": \"Generador Diésel Insonorizado 5.5 kVA (Edición 2026)\",\n  \"brand\": \"Caterpillar\",\n  \"model\": \"DE7.5E0S\",\n  \"description\": \"Generador para soporte de energía continua en obra civil con mantenimiento al día\",\n  \"baseDailyPrice\": 185000.00,\n  \"depositAmount\": 500000.00,\n  \"mainImageUrl\": \"https://images.unsplash.com/photo-1581092160607-ee22621dd758\",\n  \"status\": \"DISPONIBLE\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/tools/1", "host": ["{{baseUrl}}"], "path": ["tools", "1"] }
+          }
+        },
+        {
+          "name": "Dar de Baja Herramienta (HU-02 -> RETIRADA)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_provider}}" }],
+            "url": { "raw": "{{baseUrl}}/tools/1/retire", "host": ["{{baseUrl}}"], "path": ["tools", "1", "retire"] }
           }
         }
       ]
     },
     {
-      "name": "3. Cotizador & Reservas",
+      "name": "4. Cotizador & Reservas",
       "item": [
         {
-          "name": "Cotizar Precio (Con 15% Descuento Semanal)",
+          "name": "Cotizar Precio (Con Descuento Semanal e IVA 19%)",
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"toolId\": 1,\n  \"startDate\": \"2026-11-01\",\n  \"endDate\": \"2026-11-08\"\n}"
+              "raw": "{\n  \"toolId\": 1,\n  \"startDate\": \"2026-12-01\",\n  \"endDate\": \"2026-12-08\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/reservations/calculate-price", "host": ["{{baseUrl}}"], "path": ["reservations", "calculate-price"] }
           }
         },
         {
           "name": "Crear Solicitud de Reserva (Cliente)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  var data = pm.response.json();",
+                  "  pm.collectionVariables.set('test_reservation_id', data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -160,26 +290,34 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"toolId\": 1,\n  \"startDate\": \"2026-12-01\",\n  \"endDate\": \"2026-12-08\",\n  \"deliveryAddress\": \"Carrera 7 # 72-13, Torre Obra Norte\"\n}"
+              "raw": "{\n  \"clientId\": 1,\n  \"toolId\": 1,\n  \"startDate\": \"2026-12-15\",\n  \"endDate\": \"2026-12-20\",\n  \"notes\": \"Entrega en frente de obra Edificio Altavista, Calle 116 # 7-15\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/reservations", "host": ["{{baseUrl}}"], "path": ["reservations"] }
           }
         },
         {
-          "name": "Aprobar Reserva (Proveedor)",
+          "name": "Aprobar Solicitud de Reserva",
           "request": {
             "method": "PATCH",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token_provider}}" }],
-            "url": { "raw": "{{baseUrl}}/provider/reservations/1/approve", "host": ["{{baseUrl}}"], "path": ["provider", "reservations", "1", "approve"] }
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": { "raw": "{{baseUrl}}/reservations/{{test_reservation_id}}/approve", "host": ["{{baseUrl}}"], "path": ["reservations", "{{test_reservation_id}}", "approve"] }
+          }
+        },
+        {
+          "name": "Consultar Reserva por ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_client}}" }],
+            "url": { "raw": "{{baseUrl}}/reservations/{{test_reservation_id}}", "host": ["{{baseUrl}}"], "path": ["reservations", "{{test_reservation_id}}"] }
           }
         }
       ]
     },
     {
-      "name": "4. Pasarela de Pagos & Factura",
+      "name": "5. Pasarela de Pagos & Factura DIAN",
       "item": [
         {
-          "name": "Procesar Pago Simulado",
+          "name": "Procesar Pago Simulado (Tarjeta de Crédito)",
           "request": {
             "method": "POST",
             "header": [
@@ -188,23 +326,23 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"reservationId\": 1,\n  \"paymentMethod\": \"TARJETA_CREDITO\",\n  \"referenceNumber\": \"TX-2026-TEST-001\"\n}"
+              "raw": "{\n  \"reservationId\": {{test_reservation_id}},\n  \"clientId\": 1,\n  \"paymentMethod\": \"TARJETA_CREDITO\",\n  \"amount\": 330000.00,\n  \"cardNumberMasked\": \"**** **** **** 8899\",\n  \"gatewayReference\": \"GW-POSTMAN-2026\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/payments/process", "host": ["{{baseUrl}}"], "path": ["payments", "process"] }
           }
         },
         {
-          "name": "Consultar Factura Electrónica con IVA 19%",
+          "name": "Consultar Factura Electrónica con IVA 19% y CUFE",
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token_client}}" }],
-            "url": { "raw": "{{baseUrl}}/invoices/reservation/1", "host": ["{{baseUrl}}"], "path": ["invoices", "reservation", "1"] }
+            "url": { "raw": "{{baseUrl}}/invoices/reservation/{{test_reservation_id}}", "host": ["{{baseUrl}}"], "path": ["invoices", "reservation", "{{test_reservation_id}}"] }
           }
         }
       ]
     },
     {
-      "name": "5. Operaciones Logísticas",
+      "name": "6. Operaciones Logísticas & Averías (HU-04)",
       "item": [
         {
           "name": "Acta de Despacho Inicial (EN_CURSO)",
@@ -212,41 +350,106 @@
             "method": "POST",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token_provider}}" }
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"reservationId\": 1,\n  \"deliveredBy\": \"Operador Logístico de Patio\",\n  \"initialConditionNotes\": \"Equipo probado 100% operativo en patio\",\n  \"clientSignatureAck\": true\n}"
+              "raw": "{\n  \"reservationId\": {{test_reservation_id}},\n  \"deliveredBy\": \"Operador Logístico de Patio\",\n  \"initialConditionNotes\": \"Equipo verificado 100% operativo en bodega\",\n  \"clientSignatureAck\": true\n}"
             },
-            "url": { "raw": "{{baseUrl}}/deliveries/start-rental", "host": ["{{baseUrl}}"], "path": ["deliveries", "start-rental"] }
+            "url": { "raw": "{{baseUrl}}/deliveries", "host": ["{{baseUrl}}"], "path": ["deliveries"] }
           }
         },
         {
-          "name": "Acta de Devolución e Inspección (FINALIZADA)",
+          "name": "Acta de Devolución con Avería (HU-04 -> damage_reports)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "  var data = pm.response.json();",
+                  "  pm.collectionVariables.set('test_return_id', data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token_provider}}" }
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"reservationId\": 1,\n  \"receivedBy\": \"Ingeniero de Inspección\",\n  \"conditionStatus\": \"EXCELENTE\",\n  \"inspectionNotes\": \"Horómetro dentro de rango, sin daños\",\n  \"depositRefunded\": true,\n  \"extraDamageFee\": 0\n}"
+              "raw": "{\n  \"reservationId\": {{test_reservation_id}},\n  \"receivedBy\": \"Ingeniero de Inspección Mecánica\",\n  \"conditionStatus\": \"DANADO\",\n  \"inspectionNotes\": \"El motor presenta recalentamiento y olor a bobinado quemado\",\n  \"depositRefunded\": false,\n  \"extraDamageFee\": 150000.00,\n  \"repairCostEstimate\": 150000.00,\n  \"damageType\": \"MOTOR\",\n  \"damageDescription\": \"Cortocircuito en bobinado de rotor por sobrevoltaje en obra\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/deliveries/finish-rental", "host": ["{{baseUrl}}"], "path": ["deliveries", "finish-rental"] }
+            "url": { "raw": "{{baseUrl}}/returns", "host": ["{{baseUrl}}"], "path": ["returns"] }
+          }
+        },
+        {
+          "name": "Consultar Reporte de Siniestro en damage_reports",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": { "raw": "{{baseUrl}}/damages/return/{{test_return_id}}", "host": ["{{baseUrl}}"], "path": ["damages", "return", "{{test_return_id}}"] }
+          }
+        },
+        {
+          "name": "Consultar Liquidación de Depósito (DepositSettlement)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": { "raw": "{{baseUrl}}/logistics/settlement/{{test_reservation_id}}", "host": ["{{baseUrl}}"], "path": ["logistics", "settlement", "{{test_reservation_id}}"] }
           }
         }
       ]
     },
     {
-      "name": "6. Dashboard Gerencial Admin",
+      "name": "7. Reseñas & Calificaciones",
       "item": [
         {
-          "name": "Métricas Consolidadas de la Plataforma",
+          "name": "Publicar Reseña y Calificación de Herramienta",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_client}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"toolId\": 1,\n  \"clientId\": 1,\n  \"reservationId\": {{test_reservation_id}},\n  \"rating\": 5,\n  \"comment\": \"Excelente rendimiento del equipo en obra, soporte impecable.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/reviews", "host": ["{{baseUrl}}"], "path": ["reviews"] }
+          }
+        },
+        {
+          "name": "Consultar Reseñas y Promedio de Herramienta",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/reviews/tool/1", "host": ["{{baseUrl}}"], "path": ["reviews", "tool", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Analítica & Reportes Globales (HU-05)",
+      "item": [
+        {
+          "name": "Dashboard Gerencial Dinámico (Admin con Top 5 Clientes)",
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
-            "url": { "raw": "{{baseUrl}}/admin/dashboard", "host": ["{{baseUrl}}"], "path": ["admin", "dashboard"] }
+            "url": { "raw": "{{baseUrl}}/reports/admin", "host": ["{{baseUrl}}"], "path": ["reports", "admin"] }
+          }
+        },
+        {
+          "name": "Dashboard Individual del Proveedor",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_provider}}" }],
+            "url": { "raw": "{{baseUrl}}/reports/provider/1", "host": ["{{baseUrl}}"], "path": ["reports", "provider", "1"] }
           }
         }
       ]

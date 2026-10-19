@@ -26,6 +26,8 @@ public interface ToolRepositoryPort {
 
     List<Tool> findAllAvailable();
 
+    List<Tool> findAll();
+
     boolean existsById(Long id);
 
     boolean existsOverlappingReservation(Long toolId, DateRange dateRange);

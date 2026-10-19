@@ -20,10 +20,17 @@ import com.renta.domain.port.out.ReservationRepositoryPort;
 import com.renta.domain.port.out.ToolRepositoryPort;
 import com.renta.domain.port.out.UserRepositoryPort;
 
+import com.renta.application.dto.report.FrequentClientDto;
+import com.renta.domain.model.entity.Client;
+import com.renta.domain.model.entity.User;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 
 public class ReportApplicationService implements ReportUseCase {
 
@@ -49,59 +56,142 @@ public class ReportApplicationService implements ReportUseCase {
         this.paymentRepository = Objects.requireNonNull(paymentRepository);
     }
 
+    /**
+     * ========================================================================
+     * SPRINT 2 (HU-05): PANEL DE ANALÍTICA GLOBAL DINÁMICA
+     * ========================================================================
+     * 1. Consulta conteos reales en base de datos (usuarios, clientes, proveedores, herramientas).
+     * 2. Agrupa dinámicamente ingresos por periodo mensual real (YYYY-MM).
+     * 3. Calcula el ranking Top 5 de Clientes Frecuentes con mayor inversión.
+     */
     @Override
     public AdminDashboardResponse getAdminDashboard() {
-        List<Tool> allTools = toolRepository.findAllAvailable();
+        // 1. Conteos maestros reales desde los repositorios
+        long totalUsers = userRepository.findAll().size();
+        long totalClients = clientRepository.findAll().size();
+        long totalProviders = providerRepository.findAll().size();
+
+        List<Tool> allTools = toolRepository.findAll();
         long totalTools = allTools.size();
 
-        // Calcular estadísticas recorriendo reservas de herramientas conocidas
-        List<Reservation> allReservations = allTools.stream()
-                .flatMap(t -> reservationRepository.findByToolId(t.getId()).stream())
-                .distinct()
-                .toList();
-
+        List<Reservation> allReservations = reservationRepository.findAll();
         long totalRes = allReservations.size();
-        long activeRentals = allReservations.stream()
-                .filter(r -> r.getStatus() == ReservationStatus.EN_CURSO || r.getStatus() == ReservationStatus.APROBADA)
-                .count();
 
-        BigDecimal totalRev = allReservations.stream()
-                .filter(r -> r.getStatus() == ReservationStatus.FINALIZADA || r.getStatus() == ReservationStatus.EN_CURSO)
-                .map(r -> r.getSubtotal().amount())
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        long activeRentals = 0;
+        BigDecimal totalRev = BigDecimal.ZERO;
+        BigDecimal totalDeposits = BigDecimal.ZERO;
 
-        BigDecimal totalDeposits = allReservations.stream()
-                .filter(r -> r.getStatus() == ReservationStatus.EN_CURSO || r.getStatus() == ReservationStatus.APROBADA)
-                .map(r -> r.getDepositTotal().amount())
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        // Estructuras de acumulación rápida O(N)
+        Map<String, MonthAccumulator> monthlyMap = new TreeMap<>();
+        Map<Long, ClientAccumulator> clientAccumulatorMap = new HashMap<>();
 
+        for (Reservation r : allReservations) {
+            ReservationStatus st = r.getStatus();
+
+            // Alquileres activos y garantías en custodia
+            if (st == ReservationStatus.EN_CURSO || st == ReservationStatus.APROBADA) {
+                activeRentals++;
+                if (r.getDepositTotal() != null) {
+                    totalDeposits = totalDeposits.add(r.getDepositTotal().amount());
+                }
+            }
+
+            // Ingresos generados reales (reservas finalizadas o en curso)
+            if (st == ReservationStatus.FINALIZADA || st == ReservationStatus.EN_CURSO) {
+                BigDecimal sub = r.getSubtotal() != null ? r.getSubtotal().amount() : BigDecimal.ZERO;
+                totalRev = totalRev.add(sub);
+
+                // HU-05: Agrupación dinámica por Año-Mes
+                String ym = r.getStartDate() != null
+                        ? String.format("%d-%02d", r.getStartDate().getYear(), r.getStartDate().getMonthValue())
+                        : "2026-03";
+                MonthAccumulator mAcc = monthlyMap.computeIfAbsent(ym, k -> new MonthAccumulator());
+                mAcc.revenue = mAcc.revenue.add(sub);
+                mAcc.rentalsCount++;
+            }
+
+            // HU-05: Acumulación de actividad por cliente
+            if (st != ReservationStatus.CANCELADA && st != ReservationStatus.RECHAZADA) {
+                Long cId = r.getClientId();
+                if (cId != null) {
+                    ClientAccumulator cAcc = clientAccumulatorMap.computeIfAbsent(cId, k -> new ClientAccumulator());
+                    cAcc.reservationsCount++;
+                    BigDecimal tot = r.getTotalAmount() != null ? r.getTotalAmount().amount() : BigDecimal.ZERO;
+                    cAcc.totalSpent = cAcc.totalSpent.add(tot);
+                }
+            }
+        }
+
+        // Construir métricas mensuales ordenadas cronológicamente
+        List<RevenueMetricDto> monthly = new ArrayList<>();
+        for (Map.Entry<String, MonthAccumulator> entry : monthlyMap.entrySet()) {
+            monthly.add(new RevenueMetricDto(entry.getKey(), entry.getValue().revenue, entry.getValue().rentalsCount));
+        }
+        if (monthly.isEmpty()) {
+            monthly.add(new RevenueMetricDto("2026-03", totalRev, totalRes));
+        }
+
+        // Top 5 Herramientas más alquiladas
         List<ToolPopularityDto> topTools = new ArrayList<>();
         for (Tool t : allTools.stream().limit(5).toList()) {
             List<Reservation> toolRes = reservationRepository.findByToolId(t.getId());
             BigDecimal rev = toolRes.stream()
+                    .filter(r -> r.getStatus() == ReservationStatus.FINALIZADA || r.getStatus() == ReservationStatus.EN_CURSO)
                     .map(r -> r.getSubtotal().amount())
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             topTools.add(new ToolPopularityDto(t.getId(), t.getName(), t.getBrand(), "General", toolRes.size(), rev));
         }
+        topTools.sort((a, b) -> Long.compare(b.rentalCount(), a.rentalCount()));
 
-        List<RevenueMetricDto> monthly = List.of(
-                new RevenueMetricDto("2026-01", new BigDecimal("1450000"), 4),
-                new RevenueMetricDto("2026-02", new BigDecimal("2300000"), 6),
-                new RevenueMetricDto("2026-03", totalRev, totalRes)
-        );
+        // HU-05: Top 5 Clientes Frecuentes
+        List<FrequentClientDto> topFrequentClients = new ArrayList<>();
+        List<Map.Entry<Long, ClientAccumulator>> sortedClients = clientAccumulatorMap.entrySet().stream()
+                .sorted((a, b) -> b.getValue().totalSpent.compareTo(a.getValue().totalSpent))
+                .limit(5)
+                .toList();
+
+        for (Map.Entry<Long, ClientAccumulator> entry : sortedClients) {
+            Long cId = entry.getKey();
+            Client client = clientRepository.findById(cId).orElse(null);
+            String clientName = client != null ? (client.getFirstName() + " " + client.getLastName()) : ("Cliente #" + cId);
+            String doc = client != null ? client.getDocumentNumber() : "N/A";
+            String email = (client != null && client.getUserId() != null)
+                    ? userRepository.findById(client.getUserId()).map(u -> u.getEmail() != null ? u.getEmail().value() : null).orElse("cliente" + cId + "@correo.com")
+                    : "cliente" + cId + "@correo.com";
+
+            topFrequentClients.add(new FrequentClientDto(
+                    cId,
+                    clientName,
+                    email,
+                    doc,
+                    entry.getValue().reservationsCount,
+                    entry.getValue().totalSpent
+            ));
+        }
 
         return new AdminDashboardResponse(
-                42, // Total usuarios registrados (según data.sql)
-                20, // Total clientes
-                20, // Total proveedores
+                totalUsers,
+                totalClients,
+                totalProviders,
                 totalTools,
                 totalRes,
                 activeRentals,
                 totalRev,
                 totalDeposits,
                 topTools,
-                monthly
+                monthly,
+                topFrequentClients
         );
+    }
+
+    private static class MonthAccumulator {
+        BigDecimal revenue = BigDecimal.ZERO;
+        long rentalsCount = 0;
+    }
+
+    private static class ClientAccumulator {
+        long reservationsCount = 0;
+        BigDecimal totalSpent = BigDecimal.ZERO;
     }
 
     @Override

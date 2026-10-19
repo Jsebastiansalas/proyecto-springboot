@@ -41,4 +41,14 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     public boolean existsByEmail(Email email) {
         return email != null && repository.existsByEmail(email.value());
     }
+
+    /**
+     * Recupera todos los usuarios de la base de datos y los transforma a entidades de dominio.
+     */
+    @Override
+    public java.util.List<User> findAll() {
+        return repository.findAll().stream()
+                .map(UserJpaMapper::toDomain)
+                .toList();
+    }
 }

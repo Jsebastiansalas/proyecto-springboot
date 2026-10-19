@@ -235,9 +235,12 @@ CREATE TABLE payments (
     client_id BIGINT NOT NULL,
     payment_method VARCHAR(50) NOT NULL, -- TARJETA_CREDITO, PSE, TRANSFERENCIA, PASARELA_SIMULADA
     amount NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
-    payment_status VARCHAR(30) NOT NULL DEFAULT 'COMPLETADO', -- PENDIENTE, COMPLETADO, FALLIDO, REEMBOLSADO
+    payment_status VARCHAR(30) NOT NULL DEFAULT 'COMPLETADO', -- PENDIENTE, COMPLETADO, EN_CUOTAS, FALLIDO, REEMBOLSADO
     payment_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     gateway_reference VARCHAR(100),
+    installment_count INT NOT NULL DEFAULT 1 CHECK (installment_count IN (1, 2, 3, 6, 12)),
+    paid_installments INT NOT NULL DEFAULT 1 CHECK (paid_installments >= 0),
+    monthly_interest_rate NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
     CONSTRAINT fk_payments_reservation FOREIGN KEY (reservation_id) REFERENCES reservations (id) ON DELETE RESTRICT,
     CONSTRAINT fk_payments_client FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE RESTRICT
 );
@@ -330,3 +333,51 @@ CREATE TABLE reviews (
 
 CREATE INDEX idx_reviews_tool ON reviews (tool_id);
 CREATE INDEX idx_reviews_client ON reviews (client_id);
+
+-- ----------------------------------------------------------------------------
+-- 18. TABLA: payment_installments (4FN)
+-- Cronograma y registro individual de cuotas de pago
+-- ----------------------------------------------------------------------------
+CREATE TABLE payment_installments (
+    id BIGSERIAL PRIMARY KEY,
+    payment_id BIGINT NOT NULL,
+    reservation_id BIGINT NOT NULL,
+    installment_number INT NOT NULL CHECK (installment_number > 0),
+    total_installments INT NOT NULL CHECK (total_installments > 0),
+    due_date DATE NOT NULL,
+    principal_amount NUMERIC(12, 2) NOT NULL CHECK (principal_amount >= 0),
+    interest_amount NUMERIC(12, 2) NOT NULL DEFAULT 0 CHECK (interest_amount >= 0),
+    total_installment_amount NUMERIC(12, 2) NOT NULL CHECK (total_installment_amount > 0),
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDIENTE', -- PAGADA, PENDIENTE, VENCIDA
+    paid_at TIMESTAMP WITH TIME ZONE,
+    transaction_ref VARCHAR(100),
+    CONSTRAINT fk_installments_payment FOREIGN KEY (payment_id) REFERENCES payments (id) ON DELETE CASCADE,
+    CONSTRAINT fk_installments_reservation FOREIGN KEY (reservation_id) REFERENCES reservations (id) ON DELETE RESTRICT,
+    CONSTRAINT uq_payment_installment_num UNIQUE (payment_id, installment_number)
+);
+
+CREATE INDEX idx_installments_payment ON payment_installments (payment_id);
+CREATE INDEX idx_installments_reservation ON payment_installments (reservation_id);
+CREATE INDEX idx_installments_status ON payment_installments (status);
+
+-- ----------------------------------------------------------------------------
+-- 19. TABLA: tool_comments (4FN)
+-- Muro de preguntas técnicas y comentarios directos de clientes y respuestas de proveedores
+-- ----------------------------------------------------------------------------
+CREATE TABLE tool_comments (
+    id BIGSERIAL PRIMARY KEY,
+    tool_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    author_name VARCHAR(150) NOT NULL,
+    author_role VARCHAR(50) NOT NULL,
+    comment_text TEXT NOT NULL,
+    provider_reply TEXT,
+    replied_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_comments_tool FOREIGN KEY (tool_id) REFERENCES tools (id) ON DELETE CASCADE,
+    CONSTRAINT fk_comments_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_comments_tool ON tool_comments (tool_id);
+CREATE INDEX idx_comments_user ON tool_comments (user_id);
+

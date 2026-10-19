@@ -38,6 +38,7 @@ public class ToolApplicationService implements ManageToolUseCase, ToolQueryUseCa
     private final ToolRepositoryPort toolRepository;
     private final CategoryRepositoryPort categoryRepository;
     private final ProviderRepositoryPort providerRepository;
+    private final com.renta.domain.port.out.ReviewRepositoryPort reviewRepository;
 
     // Cache local ligero de categorías y proveedores para enriquecer DTOs
     private final Map<Integer, String> categoryNamesCache = new ConcurrentHashMap<>();
@@ -47,9 +48,18 @@ public class ToolApplicationService implements ManageToolUseCase, ToolQueryUseCa
             ToolRepositoryPort toolRepository,
             CategoryRepositoryPort categoryRepository,
             ProviderRepositoryPort providerRepository) {
+        this(toolRepository, categoryRepository, providerRepository, null);
+    }
+
+    public ToolApplicationService(
+            ToolRepositoryPort toolRepository,
+            CategoryRepositoryPort categoryRepository,
+            ProviderRepositoryPort providerRepository,
+            com.renta.domain.port.out.ReviewRepositoryPort reviewRepository) {
         this.toolRepository = Objects.requireNonNull(toolRepository);
         this.categoryRepository = Objects.requireNonNull(categoryRepository);
         this.providerRepository = Objects.requireNonNull(providerRepository);
+        this.reviewRepository = reviewRepository;
     }
 
     @Override
@@ -228,7 +238,20 @@ public class ToolApplicationService implements ManageToolUseCase, ToolQueryUseCa
     private ToolResponse enrichToolResponse(Tool tool) {
         String provName = resolveProviderName(tool.getProviderId());
         String catName = resolveCategoryName(tool.getCategoryId());
-        return ToolDtoMapper.toResponse(tool, provName, catName);
+        Double avgRating = 5.0;
+        Long totalReviews = 0L;
+        if (reviewRepository != null && tool.getId() != null) {
+            List<com.renta.domain.model.entity.Review> revs = reviewRepository.findByToolId(tool.getId());
+            if (revs != null && !revs.isEmpty()) {
+                totalReviews = (long) revs.size();
+                double sum = 0.0;
+                for (com.renta.domain.model.entity.Review r : revs) {
+                    sum += r.getRating();
+                }
+                avgRating = Math.round((sum / revs.size()) * 10.0) / 10.0;
+            }
+        }
+        return ToolDtoMapper.toResponse(tool, provName, catName, avgRating, totalReviews);
     }
 
     private String resolveProviderName(Long providerId) {

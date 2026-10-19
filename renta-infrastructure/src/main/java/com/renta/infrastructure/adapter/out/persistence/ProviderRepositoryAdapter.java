@@ -39,4 +39,14 @@ public class ProviderRepositoryAdapter implements ProviderRepositoryPort {
     public Optional<Provider> findByNitRut(String nitRut) {
         return repository.findByNitRut(nitRut).map(ProviderJpaMapper::toDomain);
     }
+
+    /**
+     * Recupera todos los proveedores registrados en la base de datos.
+     */
+    @Override
+    public java.util.List<Provider> findAll() {
+        return repository.findAll().stream()
+                .map(ProviderJpaMapper::toDomain)
+                .toList();
+    }
 }

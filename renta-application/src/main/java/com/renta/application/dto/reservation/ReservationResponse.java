@@ -23,5 +23,21 @@ public record ReservationResponse(
         ReservationStatus status,
         String notes,
         Instant createdAt,
-        Instant updatedAt
-) {}
+        Instant updatedAt,
+        Boolean hasPayment,
+        String paymentStatus,
+        Integer installmentCount,
+        Integer paidInstallments,
+        BigDecimal paidAmount,
+        BigDecimal pendingAmount
+) {
+    public ReservationResponse(Long id, String reservationCode, Long clientId, String clientName,
+                               Long toolId, String toolName, String toolImageUrl,
+                               LocalDate startDate, LocalDate endDate, int totalDays,
+                               BigDecimal subtotal, BigDecimal depositTotal, BigDecimal totalAmount,
+                               ReservationStatus status, String notes, Instant createdAt, Instant updatedAt) {
+        this(id, reservationCode, clientId, clientName, toolId, toolName, toolImageUrl,
+                startDate, endDate, totalDays, subtotal, depositTotal, totalAmount,
+                status, notes, createdAt, updatedAt, false, null, 1, 0, BigDecimal.ZERO, totalAmount);
+    }
+}

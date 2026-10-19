@@ -2,11 +2,14 @@ package com.renta.infrastructure.adapter.in.rest.advice;
 
 import com.renta.domain.exception.BusinessRuleViolationException;
 import com.renta.domain.exception.DomainException;
+import com.renta.domain.exception.InvalidCredentialsException;
 import com.renta.domain.exception.InvalidDateRangeException;
 import com.renta.domain.exception.ReservationConflictException;
 import com.renta.domain.exception.ResourceNotFoundException;
 import com.renta.domain.exception.ToolNotAvailableException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +27,8 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ProblemDetail> handleResourceNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
@@ -134,11 +139,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problem);
     }
 
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidCredentials(InvalidCredentialsException ex, HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        problem.setTitle("Autenticación fallida");
+        problem.setType(URI.create("urn:problem-type:invalid-credentials"));
+        problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty("timestamp", Instant.now().toString());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problem);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ProblemDetail> handleUnhandledException(Exception ex, HttpServletRequest request) {
+        log.error("Excepción no controlada en el servidor [URI: {}]: ", request.getRequestURI(), ex);
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "Se produjo un error inesperado al procesar la solicitud: " + ex.getMessage()
+                "Se produjo un error interno al procesar la solicitud. Por favor intente más tarde o contacte a soporte técnico."
         );
         problem.setTitle("Error interno del servidor");
         problem.setType(URI.create("urn:problem-type:internal-server-error"));

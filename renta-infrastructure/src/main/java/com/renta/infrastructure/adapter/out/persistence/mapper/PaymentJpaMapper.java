@@ -6,6 +6,8 @@ import com.renta.domain.model.enums.PaymentStatus;
 import com.renta.domain.model.vo.Money;
 import com.renta.infrastructure.adapter.out.persistence.entity.PaymentJpaEntity;
 
+import java.math.BigDecimal;
+
 public final class PaymentJpaMapper {
 
     private PaymentJpaMapper() {}
@@ -35,7 +37,10 @@ public final class PaymentJpaMapper {
                 entity.getAmount() != null ? Money.cop(entity.getAmount()) : null,
                 status,
                 entity.getPaymentDate(),
-                entity.getGatewayReference()
+                entity.getGatewayReference(),
+                entity.getInstallmentCount() != null ? entity.getInstallmentCount() : 1,
+                entity.getPaidInstallments() != null ? entity.getPaidInstallments() : 1,
+                entity.getMonthlyInterestRate() != null ? entity.getMonthlyInterestRate() : BigDecimal.ZERO
         );
     }
 
@@ -50,7 +55,10 @@ public final class PaymentJpaMapper {
                 domain.getAmount() != null ? domain.getAmount().amount() : null,
                 domain.getPaymentStatus() != null ? domain.getPaymentStatus().name() : "COMPLETADO",
                 domain.getPaymentDate(),
-                domain.getGatewayReference()
+                domain.getGatewayReference(),
+                domain.getInstallmentCount() != null ? domain.getInstallmentCount() : 1,
+                domain.getPaidInstallments() != null ? domain.getPaidInstallments() : 1,
+                domain.getMonthlyInterestRate() != null ? domain.getMonthlyInterestRate() : BigDecimal.ZERO
         );
     }
 }

@@ -1,15 +1,51 @@
-/* Plataforma de Renta de Herramientas y Equipos - Styles */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
+/* ============================================================================
+   RentaMaq Industrial Pro - Enterprise Design System & E-Commerce Styles
+   Inspirado en Amazon Business, Caterpillar (Cat Rental) y United Rentals
+   ============================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root {
-  --primary: #f59e0b; /* Amber 500 */
-  --primary-hover: #d97706; /* Amber 600 */
-  --secondary: #0f172a; /* Slate 900 */
-  --accent: #2563eb; /* Blue 600 */
-  --bg-main: #f8fafc; /* Slate 50 */
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --border-light: #e2e8f0;
+  /* Paleta Corporativa Industrial Ejecutiva (Erradicación del amarillo chillón) */
+  --slate-950: #0b1329;
+  --slate-900: #0f172a;
+  --slate-850: #131d36;
+  --slate-800: #1e293b;
+  --slate-700: #334155;
+  --slate-600: #475569;
+  --slate-500: #64748b;
+  --slate-400: #94a3b8;
+  --slate-200: #e2e8f0;
+  --slate-100: #f1f5f9;
+  /* Acento Corporativo de Confianza (Azul Cobalto & Real - Estilo Stripe / Amazon) */
+  --brand-blue: #2563eb;          /* Blue 600 - Acción principal */
+  --brand-blue-hover: #1d4ed8;    /* Blue 700 - Hover */
+  --brand-blue-dark: #1e40af;     /* Blue 800 - Profundidad */
+  --brand-blue-light: #eff6ff;    /* Blue 50 - Fondos suaves */
+  --brand-blue-subtle: rgba(37, 99, 235, 0.08);
+  --brand-blue-border: rgba(37, 99, 235, 0.25);
+
+  /* Alias de compatibilidad */
+  --brand-orange: var(--brand-blue);
+  --brand-orange-hover: var(--brand-blue-hover);
+  --brand-orange-light: var(--brand-blue-light);
+  --brand-orange-subtle: var(--brand-blue-subtle);
+  --brand-orange-border: var(--brand-blue-border);
+
+  /* Estados Operativos de Alta Confianza */
+  --status-available: #059669;    /* Emerald 600 */
+  --status-available-bg: #ecfdf5;
+  --status-available-border: #a7f3d0;
+  --status-rented: #2563eb;       /* Blue 600 */
+  --status-rented-bg: #eff6ff;
+  --status-rented-border: #bfdbfe;
+  --status-maintenance: #d97706;  /* Ochre 600 */
+  --status-maintenance-bg: #fffbeb;
+  --status-maintenance-border: #fde68a;
+
+  /* Curvas de Movimiento Naturales (Emil Kowalski Framework) */
+  --ease-snappy: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 * {
@@ -18,14 +54,23 @@
 
 body {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: var(--slate-50);
+  color: var(--slate-900);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
 .font-mono {
   font-family: 'JetBrains Mono', monospace;
+}
+
+/* Micro-interacción: Feedback táctil en cualquier elemento accionable */
+button, a.btn, input[type="button"], input[type="submit"], .clickable {
+  transition: transform 160ms var(--ease-snappy), background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+button:active, a.btn:active, .clickable:active {
+  transform: scale(0.97) !important;
 }
 
 /* Custom Scrollbars */
@@ -44,125 +89,539 @@ body {
   background: #94a3b8;
 }
 
-.scrollbar-none::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-none {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* Hero Card Styling */
-.hero-card {
-  background: linear-gradient(135deg, #fffbeb 0%, #ffffff 45%, #f8fafc 100%);
-  border: 1px solid #fde68a;
-  box-shadow: 0 4px 20px -2px rgba(245, 158, 11, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+/* ==================== MEGA HEADER & TOP UTILITY BAR ==================== */
+.top-utility-bar {
+  background-color: var(--slate-950);
+  color: #94a3b8;
+  font-size: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.hero-pill-badge {
-  background-color: #fef3c7;
-  color: #92400e;
-  border: 1px solid #fcd34d;
+.top-utility-bar a, .top-utility-bar button {
+  color: #cbd5e1;
+}
+.top-utility-bar a:hover, .top-utility-bar button:hover {
+  color: #ffffff;
 }
 
-.feature-pill {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: all 0.2s ease;
-}
-.feature-pill:hover {
-  border-color: #cbd5e1;
-  transform: translateY(-1px);
-}
-
-/* Category Quick Chips */
-.category-chip {
+.location-badge {
   display: inline-flex;
   align-items: center;
-  white-space: nowrap;
-  padding: 6px 14px;
-  border-radius: 9999px;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.location-badge:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(234, 88, 12, 0.5);
+}
+
+/* Buscador Omnicanal Estilo Amazon */
+.omni-search-container {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 2px solid var(--slate-200);
+  border-radius: 0.875rem;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+.omni-search-container:focus-within {
+  border-color: var(--brand-orange);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+}
+
+.omni-search-category {
+  background: #f8fafc;
+  border: none;
+  border-right: 1px solid var(--slate-200);
+  padding: 0.65rem 0.85rem;
   font-size: 0.75rem;
   font-weight: 700;
-  color: #475569;
-  background-color: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  transition: all 0.15s ease;
+  color: var(--slate-700);
+  outline: none;
   cursor: pointer;
-  user-select: none;
 }
-.category-chip:hover {
-  background-color: #e2e8f0;
+
+.omni-search-input {
+  flex: 1;
+  border: none;
+  padding: 0.65rem 1rem 0.65rem 0.5rem;
+  font-size: 0.875rem;
+  outline: none;
+  color: var(--slate-900);
+  background: transparent;
+}
+
+.omni-search-btn {
+  background: var(--brand-orange);
+  color: #ffffff;
+  border: none;
+  padding: 0.65rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: 800;
+}
+.omni-search-btn:hover {
+  background: var(--brand-orange-hover);
+}
+
+/* Botón Carrito / Cotizador Flotante */
+.quote-cart-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 0.75rem;
+  background: #ffffff;
   color: #0f172a;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  border: 1.5px solid var(--slate-200);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
-.category-chip-active {
-  background-color: #0f172a !important;
-  color: #ffffff !important;
-  border-color: #0f172a !important;
-  box-shadow: 0 2px 6px -1px rgba(15, 23, 42, 0.25);
+.quote-cart-btn:hover {
+  background: #f8fafc;
+  border-color: var(--brand-blue);
+  color: var(--brand-blue);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
 }
-
-/* Tool Cards */
-.tool-card {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+.quote-cart-badge {
+  background: var(--brand-blue);
+  color: #ffffff;
+  font-size: 0.6875rem;
+  font-weight: 900;
+  padding: 0.1rem 0.45rem;
+  border-radius: 9999px;
+  line-height: 1;
 }
-.tool-card:hover {
-  transform: translateY(-4px);
-  border-color: #cbd5e1;
-  box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
-}
-
-/* Status Badges */
-.badge-available {
-  background-color: #ecfdf5;
-  color: #065f46;
-  border: 1px solid #a7f3d0;
-}
-.badge-rented {
-  background-color: #eff6ff;
-  color: #1e40af;
-  border: 1px solid #bfdbfe;
-}
-.badge-maintenance {
-  background-color: #fffbeb;
-  color: #92400e;
-  border: 1px solid #fde68a;
-}
-.badge-retired {
-  background-color: #fef2f2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
-}
-
-/* Reservation State Badges */
-.badge-res-pendiente { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-.badge-res-aprobada { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
-.badge-res-en_curso { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-.badge-res-finalizada { background-color: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; }
-.badge-res-cancelada { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-.badge-res-rechazada { background-color: #ffe4e6; color: #9f1239; border: 1px solid #fecdd3; }
 
 /* Nav Pills */
 .nav-pill-active {
-  background-color: #0f172a !important;
+  background-color: var(--brand-blue) !important;
   color: #ffffff !important;
-  box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.25);
+  box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.35);
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ==================== CHIPS DE CATEGORÍA ULTRA PROFESIONALES ==================== */
+.category-chips-track {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 0.25rem 0.25rem 0.65rem 0.25rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.category-chips-track::-webkit-scrollbar {
+  height: 5px;
 }
 
-/* Toast Notifications */
+.category-chips-track::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 9999px;
+}
+
+.category-chips-track::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+.category-chips-track::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  border-radius: 9999px;
+  background-color: #ffffff;
+  color: var(--slate-700);
+  border: 1.5px solid var(--slate-200);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.category-chip:hover {
+  background-color: #f8fafc;
+  color: var(--brand-blue);
+  border-color: var(--brand-blue-border);
+  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.12);
+  transform: translateY(-1.5px);
+}
+
+.category-chip:active {
+  transform: translateY(0);
+}
+
+.category-chip-active {
+  background-color: var(--brand-blue) !important;
+  color: #ffffff !important;
+  border-color: var(--brand-blue) !important;
+  box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.35) !important;
+}
+
+.category-chip-active:hover {
+  background-color: var(--brand-blue-hover) !important;
+  color: #ffffff !important;
+  border-color: var(--brand-blue-hover) !important;
+}
+
+.category-chip-icon {
+  font-size: 0.95rem;
+  line-height: 1;
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.category-chip:hover .category-chip-icon {
+  transform: scale(1.15);
+}
+
+.category-chip-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+  background-color: var(--slate-100);
+  color: var(--slate-600);
+  line-height: 1;
+}
+
+.category-chip-active .category-chip-badge {
+  background-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+/* ==================== HERO INDUSTRIAL TITANIO ==================== */
+.hero-industrial-banner {
+  position: relative;
+  background-image: linear-gradient(120deg, rgba(15, 23, 42, 0.94) 0%, rgba(30, 58, 138, 0.88) 60%, rgba(15, 23, 42, 0.85) 100%), url('../images/banner/hero-construction.jpg');
+  background-size: cover;
+  background-position: center 30%;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 45px -15px rgba(15, 23, 42, 0.35);
+  overflow: hidden;
+}
+
+.kpi-industrial-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  transition: all 0.2s ease;
+}
+.kpi-industrial-card:hover {
+  border-color: rgba(96, 165, 250, 0.6);
+  background: rgba(255, 255, 255, 0.14);
+  transform: translateY(-2px);
+}
+
+/* ==================== BADGES COMERCIALES ESTILO AMAZON ==================== */
+.badge-bestseller {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  font-size: 0.625rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.375rem;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+
+.badge-choice {
+  background: #0f172a;
+  color: #f8fafc;
+  border-left: 3px solid var(--brand-blue);
+  font-size: 0.625rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.55rem;
+  border-radius: 0.25rem;
+}
+
+.badge-available {
+  background-color: var(--status-available-bg);
+  color: var(--status-available);
+  border: 1px solid var(--status-available-border);
+  font-weight: 700;
+}
+
+.badge-rented {
+  background-color: var(--status-rented-bg);
+  color: var(--status-rented);
+  border: 1px solid var(--status-rented-border);
+  font-weight: 700;
+}
+
+.badge-maintenance {
+  background-color: var(--status-maintenance-bg);
+  color: var(--status-maintenance);
+  border: 1px solid var(--status-maintenance-border);
+  font-weight: 700;
+}
+
+.badge-retired {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  font-weight: 700;
+}
+
+/* ==================== SIDEBAR DE FILTROS FACETADOS ==================== */
+.faceted-sidebar {
+  background: #ffffff;
+  border: 1px solid var(--slate-200);
+  border-radius: 1.25rem;
+  padding: 1.25rem;
+}
+
+.faceted-group-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--slate-700);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.faceted-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+  font-size: 0.8125rem;
+  color: var(--slate-600);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.faceted-item:hover {
+  color: var(--slate-900);
+}
+.faceted-item input[type="checkbox"] {
+  accent-color: var(--brand-blue);
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.faceted-count {
+  font-size: 0.6875rem;
+  color: var(--slate-400);
+  font-mono: true;
+}
+
+/* ==================== VISTA CUADRÍCULA VS VISTA LISTA ==================== */
+.view-mode-btn {
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--slate-200);
+  background: #ffffff;
+  color: var(--slate-600);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.view-mode-btn-active {
+  background: var(--brand-blue);
+  color: #ffffff;
+  border-color: var(--brand-blue);
+  box-shadow: 0 2px 8px -2px rgba(37, 99, 235, 0.35);
+}
+
+.tool-card {
+  background-color: #ffffff;
+  border: 1px solid var(--slate-200);
+  border-radius: 1.25rem;
+  transition: transform 0.25s var(--ease-snappy), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.tool-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--brand-blue-border);
+  box-shadow: 0 16px 30px -10px rgba(37, 99, 235, 0.12);
+}
+
+/* Tarjeta en modo lista técnica de contratista */
+.tool-list-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 220px;
+  gap: 1.25rem;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid var(--slate-200);
+  border-radius: 1.25rem;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+.tool-list-row:hover {
+  border-color: var(--brand-blue-border);
+  box-shadow: 0 8px 20px -5px rgba(37, 99, 235, 0.10);
+}
+
+@media (max-width: 768px) {
+  .tool-list-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==================== COMBO FRECUENTEMENTE ALQUILADOS JUNTOS ==================== */
+.combo-bundle-box {
+  background: #f8fafc;
+  border: 1px solid var(--slate-200);
+  border-radius: 1.25rem;
+  padding: 1.25rem;
+}
+
+/* ==================== SLIDING QUOTE DRAWER (CARRITO DE OBRA) ==================== */
+#quote-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 19, 41, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+#quote-drawer-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#quote-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 440px;
+  max-width: 92vw;
+  background: #ffffff;
+  z-index: 999;
+  transform: translateX(100%);
+  transition: transform 0.35s var(--ease-drawer);
+  box-shadow: -15px 0 40px rgba(11, 19, 41, 0.25);
+  display: flex;
+  flex-direction: column;
+}
+#quote-drawer.active {
+  transform: translateX(0);
+}
+
+/* ==================== STEPPER OPERACIONAL DEL CONTRATISTA ==================== */
+.contractor-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  padding: 0.75rem 0;
+}
+.contractor-stepper::before {
+  content: '';
+  position: absolute;
+  top: 22px;
+  left: 20px;
+  right: 20px;
+  height: 2px;
+  background: var(--slate-200);
+  z-index: 1;
+}
+
+.step-node {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.step-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: #ffffff;
+  border: 2px solid var(--slate-300);
+  color: var(--slate-500);
+  transition: all 0.2s ease;
+}
+.step-dot.active {
+  background: var(--brand-blue);
+  border-color: var(--brand-blue);
+  color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+}
+.step-dot.completed {
+  background: var(--status-available);
+  border-color: var(--status-available);
+  color: #ffffff;
+}
+
+/* ==================== CALCULADORA RÁPIDA & TESTIMONIOS ==================== */
+.calc-card-container {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 15px 35px -10px rgba(15, 23, 42, 0.3);
+}
+
+.testimonial-card {
+  background-color: #ffffff;
+  border: 1px solid var(--slate-200);
+  border-radius: 1.25rem;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.testimonial-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--slate-300);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06);
+}
+
+.faq-card {
+  border-radius: 1rem;
+  border: 1px solid var(--slate-200);
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+.faq-card:hover {
+  border-color: var(--slate-300);
+}
+
+/* ==================== NOTIFICACIONES TOAST ==================== */
 #toast-container {
   position: fixed;
   bottom: 24px;
@@ -189,44 +648,71 @@ body {
 .toast-error { background: #881337; color: #fff1f2; border-left: 5px solid #f43f5e; }
 .toast-info { background: #0f172a; color: #f8fafc; border-left: 5px solid #38bdf8; }
 
-/* Factura Electrónica y Estilos de Impresión */
-.invoice-paper {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.25s var(--ease-snappy) forwards;
 }
 
-@media print {
-  body {
-    background: #ffffff !important;
-    color: #000000 !important;
-  }
-  body * {
-    visibility: hidden;
-  }
-  #modal-invoice, #modal-invoice * {
-    visibility: visible;
-  }
-  #modal-invoice {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 100% !important;
-    height: auto !important;
-    background: #ffffff !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    display: block !important;
-  }
-  .invoice-modal-dialog {
-    max-width: 100% !important;
-    box-shadow: none !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-  .no-print {
-    display: none !important;
-  }
+/* ==================== MODO OSCURO EJECUTIVO ==================== */
+html.dark {
+  color-scheme: dark;
 }
-
+html.dark body {
+  background-color: #080d1a;
+  color: #f1f5f9;
+}
+html.dark header {
+  background-color: rgba(11, 19, 41, 0.95);
+  border-color: #1e293b;
+}
+html.dark .bg-white {
+  background-color: #0f172a !important;
+  border-color: #1e293b !important;
+  color: #f1f5f9;
+}
+html.dark .text-slate-900 {
+  color: #f8fafc !important;
+}
+html.dark .text-slate-800 {
+  color: #f1f5f9 !important;
+}
+html.dark .text-slate-700 {
+  color: #cbd5e1 !important;
+}
+html.dark .text-slate-600 {
+  color: #94a3b8 !important;
+}
+html.dark .bg-slate-50, html.dark .bg-slate-100 {
+  background-color: #131d36 !important;
+  border-color: #1e293b !important;
+}
+html.dark .border-slate-200 {
+  border-color: #1e293b !important;
+}
+html.dark .border-slate-300 {
+  border-color: #334155 !important;
+}
+html.dark .tool-card, html.dark .faceted-sidebar, html.dark .testimonial-card, html.dark .faq-card {
+  background-color: #0f172a;
+  border-color: #1e293b;
+}
+html.dark .omni-search-container {
+  background: #0f172a;
+  border-color: #334155;
+}
+html.dark .omni-search-category {
+  background: #131d36;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+html.dark .omni-search-input {
+  color: #f8fafc;
+}
+html.dark #quote-drawer {
+  background: #0f172a;
+  border-left: 1px solid #1e293b;
+  color: #f1f5f9;
+}

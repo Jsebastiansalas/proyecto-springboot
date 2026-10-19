@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,22 +28,25 @@ public class InvoiceController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("@authz.canAccessInvoice(principal, #id)")
     @SecurityRequirement(name = "BearerAuth")
-    @Operation(summary = "Consultar factura por ID", description = "Obtiene los datos fiscales de una factura por su ID interno.")
+    @Operation(summary = "Consultar factura por ID", description = "Obtiene los datos fiscales de una factura por su ID interno. Restringido al titular o ADMIN.")
     public ResponseEntity<InvoiceResponse> getInvoiceById(@PathVariable Long id) {
         return ResponseEntity.ok(invoiceService.getInvoiceById(id));
     }
 
     @GetMapping("/reservation/{reservationId}")
+    @PreAuthorize("@authz.canAccessReservation(principal, #reservationId)")
     @SecurityRequirement(name = "BearerAuth")
-    @Operation(summary = "Consultar factura por reserva", description = "Obtiene la factura asociada a una reserva específica.")
+    @Operation(summary = "Consultar factura por reserva", description = "Obtiene la factura asociada a una reserva específica. Restringido a las partes involucradas o ADMIN.")
     public ResponseEntity<InvoiceResponse> getInvoiceByReservationId(@PathVariable Long reservationId) {
         return ResponseEntity.ok(invoiceService.getInvoiceByReservationId(reservationId));
     }
 
     @GetMapping("/{id}/pdf")
+    @PreAuthorize("@authz.canAccessInvoice(principal, #id)")
     @SecurityRequirement(name = "BearerAuth")
-    @Operation(summary = "Descarga de factura digital", description = "Genera y descarga el comprobante oficial de la factura en formato digital.")
+    @Operation(summary = "Descarga de factura digital", description = "Genera y descarga el comprobante oficial de la factura en formato digital. Restringido al titular o ADMIN.")
     public ResponseEntity<byte[]> downloadInvoicePdf(@PathVariable Long id) {
         InvoiceResponse invoice = invoiceService.getInvoiceById(id);
 

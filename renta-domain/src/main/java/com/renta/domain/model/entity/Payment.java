@@ -21,6 +21,9 @@ public class Payment {
     private PaymentStatus paymentStatus = PaymentStatus.PENDIENTE;
     private Instant paymentDate;
     private String gatewayReference;
+    private Integer installmentCount = 1;
+    private Integer paidInstallments = 1;
+    private BigDecimal monthlyInterestRate = BigDecimal.ZERO;
 
     public Payment() {
     }
@@ -28,6 +31,14 @@ public class Payment {
     public Payment(Long id, String transactionReference, Long reservationId, Long clientId,
                    PaymentMethod paymentMethod, Money amount, PaymentStatus paymentStatus,
                    Instant paymentDate, String gatewayReference) {
+        this(id, transactionReference, reservationId, clientId, paymentMethod, amount, paymentStatus,
+                paymentDate, gatewayReference, 1, 1, BigDecimal.ZERO);
+    }
+
+    public Payment(Long id, String transactionReference, Long reservationId, Long clientId,
+                   PaymentMethod paymentMethod, Money amount, PaymentStatus paymentStatus,
+                   Instant paymentDate, String gatewayReference,
+                   Integer installmentCount, Integer paidInstallments, BigDecimal monthlyInterestRate) {
         this.id = id;
         this.transactionReference = transactionReference;
         this.reservationId = reservationId;
@@ -37,24 +48,52 @@ public class Payment {
         this.paymentStatus = paymentStatus != null ? paymentStatus : PaymentStatus.PENDIENTE;
         this.paymentDate = paymentDate != null ? paymentDate : Instant.now();
         this.gatewayReference = gatewayReference;
+        this.installmentCount = installmentCount != null ? installmentCount : 1;
+        this.paidInstallments = paidInstallments != null ? paidInstallments : 1;
+        this.monthlyInterestRate = monthlyInterestRate != null ? monthlyInterestRate : BigDecimal.ZERO;
     }
 
     public Payment(Long id, String transactionReference, Long reservationId, Long clientId,
                    PaymentMethod paymentMethod, BigDecimal amount, PaymentStatus paymentStatus,
                    Instant paymentDate, String gatewayReference) {
         this(id, transactionReference, reservationId, clientId, paymentMethod,
-                amount != null ? Money.cop(amount) : null, paymentStatus, paymentDate, gatewayReference);
+                amount != null ? Money.cop(amount) : null, paymentStatus, paymentDate, gatewayReference, 1, 1, BigDecimal.ZERO);
+    }
+
+    public Payment(Long id, String transactionReference, Long reservationId, Long clientId,
+                   PaymentMethod paymentMethod, BigDecimal amount, PaymentStatus paymentStatus,
+                   Instant paymentDate, String gatewayReference,
+                   Integer installmentCount, Integer paidInstallments, BigDecimal monthlyInterestRate) {
+        this(id, transactionReference, reservationId, clientId, paymentMethod,
+                amount != null ? Money.cop(amount) : null, paymentStatus, paymentDate, gatewayReference,
+                installmentCount, paidInstallments, monthlyInterestRate);
     }
 
     public static Payment create(String transactionReference, Long reservationId, Long clientId,
                                   PaymentMethod paymentMethod, Money amount) {
         return new Payment(null, transactionReference, reservationId, clientId,
-                paymentMethod, amount, PaymentStatus.COMPLETADO, Instant.now(), null);
+                paymentMethod, amount, PaymentStatus.COMPLETADO, Instant.now(), null, 1, 1, BigDecimal.ZERO);
     }
 
     public void markCompleted(String gatewayReference) {
         this.paymentStatus = PaymentStatus.COMPLETADO;
         this.gatewayReference = gatewayReference;
+        this.paidInstallments = this.installmentCount;
+    }
+
+    public void payInstallment() {
+        if (this.paidInstallments == null) this.paidInstallments = 0;
+        this.paidInstallments++;
+        if (this.installmentCount != null && this.paidInstallments >= this.installmentCount) {
+            this.paymentStatus = PaymentStatus.COMPLETADO;
+        } else {
+            this.paymentStatus = PaymentStatus.EN_CUOTAS;
+        }
+    }
+
+    public boolean isFullyPaid() {
+        return this.paymentStatus == PaymentStatus.COMPLETADO ||
+                (this.installmentCount != null && this.paidInstallments != null && this.paidInstallments >= this.installmentCount);
     }
 
     public void markFailed() {
@@ -141,6 +180,30 @@ public class Payment {
 
     public void setGatewayReference(String gatewayReference) {
         this.gatewayReference = gatewayReference;
+    }
+
+    public Integer getInstallmentCount() {
+        return installmentCount;
+    }
+
+    public void setInstallmentCount(Integer installmentCount) {
+        this.installmentCount = installmentCount;
+    }
+
+    public Integer getPaidInstallments() {
+        return paidInstallments;
+    }
+
+    public void setPaidInstallments(Integer paidInstallments) {
+        this.paidInstallments = paidInstallments;
+    }
+
+    public BigDecimal getMonthlyInterestRate() {
+        return monthlyInterestRate;
+    }
+
+    public void setMonthlyInterestRate(BigDecimal monthlyInterestRate) {
+        this.monthlyInterestRate = monthlyInterestRate;
     }
 
     @Override

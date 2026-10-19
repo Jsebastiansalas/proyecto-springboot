@@ -7,14 +7,19 @@ FROM maven:3.9.9-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /build
 
+# Instalar Node.js y npm en la etapa de compilación para construir el frontend Vite
+RUN apk add --no-cache nodejs npm
+
 # Copiar descriptores de dependencias primero para optimizar cache de capas
 COPY pom.xml .
 COPY renta-domain/pom.xml renta-domain/
 COPY renta-application/pom.xml renta-application/
 COPY renta-infrastructure/pom.xml renta-infrastructure/
 COPY renta-boot/pom.xml renta-boot/
+COPY frontend/package.json frontend/
 
 # Descargar dependencias en cache
+RUN cd frontend && npm install
 RUN mvn dependency:go-offline -B || true
 
 # Copiar el código fuente completo
@@ -22,6 +27,13 @@ COPY renta-domain/src renta-domain/src
 COPY renta-application/src renta-application/src
 COPY renta-infrastructure/src renta-infrastructure/src
 COPY renta-boot/src renta-boot/src
+COPY frontend/src frontend/src
+COPY frontend/public frontend/public
+COPY frontend/index.html frontend/index.html
+COPY frontend/vite.config.js frontend/vite.config.js
+
+# Compilar frontend Vite antes de empaquetar Maven
+RUN cd frontend && npm run build
 
 # Compilar y empaquetar el artefacto WAR sin ejecutar pruebas en el contenedor
 RUN mvn clean package -DskipTests -B

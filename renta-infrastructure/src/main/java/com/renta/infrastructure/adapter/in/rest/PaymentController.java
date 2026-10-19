@@ -29,18 +29,35 @@ public class PaymentController {
     }
 
     @PostMapping("/process")
-    @PreAuthorize("hasAnyRole('CLIENTE', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('CLIENTE', 'ADMIN') and @authz.canAccessReservation(principal, #request.reservationId())")
     @SecurityRequirement(name = "BearerAuth")
-    @Operation(summary = "Procesar pago de reserva", description = "Procesa el pago con la pasarela integrada, actualiza el estado de la reserva y genera automáticamente la factura fiscal.")
+    @Operation(summary = "Procesar pago de reserva", description = "Procesa el pago con la pasarela integrada, actualiza el estado de la reserva y genera automáticamente la factura fiscal. Restringido al titular o ADMIN.")
     public ResponseEntity<PaymentResponse> processPayment(@Valid @RequestBody ProcessPaymentRequest request) {
         PaymentResponse response = paymentService.processFromRequest(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/reservation/{reservationId}")
+    @PreAuthorize("@authz.canAccessReservation(principal, #reservationId)")
     @SecurityRequirement(name = "BearerAuth")
-    @Operation(summary = "Consultar pago de una reserva", description = "Obtiene el detalle de la transacción de pago realizada para una reserva determinada.")
+    @Operation(summary = "Consultar pago de una reserva", description = "Obtiene el detalle de la transacción de pago realizada para una reserva determinada. Restringido a las partes de la reserva o ADMIN.")
     public ResponseEntity<PaymentResponse> getPaymentByReservationId(@PathVariable Long reservationId) {
         return ResponseEntity.ok(paymentService.getPaymentByReservationId(reservationId));
+    }
+
+    @GetMapping("/reservation/{reservationId}/installments")
+    @PreAuthorize("@authz.canAccessReservation(principal, #reservationId)")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Consultar cronograma de cuotas", description = "Obtiene el desglose de cuotas pagadas y pendientes para una reserva financiada. Restringido al titular o ADMIN.")
+    public ResponseEntity<com.renta.application.dto.payment.InstallmentPlanSummaryResponse> getReservationInstallments(@PathVariable Long reservationId) {
+        return ResponseEntity.ok(paymentService.getReservationInstallments(reservationId));
+    }
+
+    @PostMapping("/installments/{installmentId}/pay")
+    @PreAuthorize("hasAnyRole('CLIENTE', 'ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Pagar cuota individual", description = "Procesa el pago de una cuota pendiente del cronograma de financiación.")
+    public ResponseEntity<com.renta.application.dto.payment.PaymentInstallmentResponse> payInstallment(@PathVariable Long installmentId) {
+        return ResponseEntity.ok(paymentService.payInstallment(installmentId));
     }
 }

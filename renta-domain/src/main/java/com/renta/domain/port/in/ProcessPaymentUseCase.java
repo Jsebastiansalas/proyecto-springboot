@@ -16,6 +16,11 @@ public interface ProcessPaymentUseCase {
             Long clientId,
             PaymentMethod method,
             Money amount,
-            String gatewayReference
-    ) {}
+            String gatewayReference,
+            Integer installmentCount
+    ) {
+        public ProcessPaymentCommand(Long reservationId, Long clientId, PaymentMethod method, Money amount, String gatewayReference) {
+            this(reservationId, clientId, method, amount, gatewayReference, 1);
+        }
+    }
 }
