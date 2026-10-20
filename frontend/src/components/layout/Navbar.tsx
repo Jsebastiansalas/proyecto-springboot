@@ -7,9 +7,7 @@ import {
   LogOut, 
   Building2, 
   ShieldAlert, 
-  ChevronDown, 
-  Layers,
-  HardHat
+  ChevronDown
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
@@ -23,12 +21,10 @@ export const Navbar: React.FC = () => {
     setIsCommandPaletteOpen, 
     setIsAuthModalOpen,
     setIsChangePasswordModalOpen,
-    quickDemoLogin,
     logout 
   } = useApp();
 
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isDemoMenuOpen, setIsDemoMenuOpen] = useState(false);
 
   const totalCartItems = cart.length;
 
@@ -113,72 +109,7 @@ export const Navbar: React.FC = () => {
             )}
           </button>
 
-          {/* Menú de Roles Demo (Acceso Rápido) */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsDemoMenuOpen(prev => !prev)}
-              className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg bg-[#232320] hover:bg-[#2C2C28] text-[#F5F4F0] border border-[#363632] text-xs font-semibold transition-colors"
-              title="Perfiles Demostrativos"
-            >
-              <Layers className="w-3.5 h-3.5 text-[#D94E1F]" />
-              <span className="hidden xl:inline">Roles Demo</span>
-              <ChevronDown className="w-3 h-3 text-[#A8A69E]" />
-            </button>
 
-            {isDemoMenuOpen && (
-              <div 
-                className="absolute right-0 mt-2 w-52 bg-[#232320] rounded-xl border border-[#363632] shadow-2xl py-2 z-50 text-xs"
-                onMouseLeave={() => setIsDemoMenuOpen(false)}
-              >
-                <div className="px-3 py-1.5 text-[10px] uppercase font-mono font-bold text-[#A8A69E] border-b border-[#363632]">
-                  Cambiar Perfil de Prueba
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    quickDemoLogin('ROLE_CLIENTE');
-                    setIsDemoMenuOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 hover:bg-[#2C2C28] text-[#F5F4F0] flex items-center gap-2"
-                >
-                  <HardHat className="w-3.5 h-3.5 text-[#D94E1F]" />
-                  <div>
-                    <div className="font-bold">Contratista Demo</div>
-                    <div className="text-[10px] text-[#A8A69E]">Constructora Andina</div>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    quickDemoLogin('ROLE_PROVEEDOR');
-                    setIsDemoMenuOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 hover:bg-[#2C2C28] text-[#F5F4F0] flex items-center gap-2"
-                >
-                  <Building2 className="w-3.5 h-3.5 text-[#1E6F43]" />
-                  <div>
-                    <div className="font-bold">Proveedor Demo</div>
-                    <div className="text-[10px] text-[#A8A69E]">Ferretools SAS</div>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    quickDemoLogin('ROLE_ADMIN');
-                    setIsDemoMenuOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 hover:bg-[#2C2C28] text-[#F5F4F0] flex items-center gap-2"
-                >
-                  <ShieldAlert className="w-3.5 h-3.5 text-[#B91C1C]" />
-                  <div>
-                    <div className="font-bold">Administrador Demo</div>
-                    <div className="text-[10px] text-[#A8A69E]">Superintendencia Obra</div>
-                  </div>
-                </button>
-              </div>
-            )}
-          </div>
 
           {/* Estado de Sesión del Usuario */}
           {user ? (
