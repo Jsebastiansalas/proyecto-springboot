@@ -4,7 +4,6 @@ import { rentaService } from './services/rentaService';
 import { Tool, Category } from './types';
 
 // Layout & Common
-import { TopUtilityBar } from './components/layout/TopUtilityBar';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { ToastContainer } from './components/common/ToastContainer';
@@ -149,10 +148,7 @@ export const App: React.FC = () => {
   }, [tools, selectedCategoryId, searchQuery, selectedBrands, priceLimit, onlyAvailable, sortBy]);
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col font-sans selection:bg-indigo-600 selection:text-white">
-      {/* Top Utility Announcement Bar */}
-      <TopUtilityBar />
-
+    <div className="min-h-screen bg-[#F2F0EA] text-[#181816] flex flex-col font-sans selection:bg-[#D94E1F]/20 selection:text-[#B83D14]">
       {/* Main Navigation Bar */}
       <Navbar />
 
@@ -167,24 +163,24 @@ export const App: React.FC = () => {
         {activeView === 'catalog' && (
           <div className="space-y-8 pb-16 animate-in fade-in duration-200">
             {/* Encabezado Técnico de Catálogo Espacioso y Limpio */}
-            <div className="border-b border-slate-800/60 bg-gradient-to-b from-[#0e1629] via-[#090d16] to-[#090d16] py-10">
+            <div className="border-b border-[#363632] bg-[#181816] blueprint-grid py-10">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[11px] font-semibold mb-2">
-                      <HardHat className="w-3.5 h-3.5 text-indigo-400" />
+                    <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-[#232320] border border-[#3F3E3A] text-[#F5F4F0] text-[11px] font-mono font-semibold mb-2">
+                      <HardHat className="w-3.5 h-3.5 text-[#D94E1F]" />
                       <span>Patio Norte Bogotá · Flota Certificada 4FN</span>
                     </div>
-                    <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+                    <h1 className="text-2xl sm:text-4xl font-black text-[#F5F4F0] tracking-tight">
                       Catálogo de Flota & Maquinaria
                     </h1>
-                    <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                    <p className="text-xs sm:text-sm text-[#A8A69E] mt-1">
                       Filtra por categoría, tarifa y fabricante con inspección técnica y telemetría en vivo.
                     </p>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-xl font-semibold">
+                    <span className="text-xs font-mono bg-[#E3F1E8] text-[#1E6F43] border border-[#A7D7B8] px-3 py-1.5 rounded-lg font-bold">
                       {filteredTools.length} Equipos Listos
                     </span>
                   </div>
