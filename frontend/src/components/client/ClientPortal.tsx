@@ -51,7 +51,7 @@ export const ClientPortal: React.FC = () => {
   if (!user || (user.role !== 'ROLE_CLIENTE' && user.role !== 'ROLE_ADMIN')) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center space-y-6">
-        <div className="w-16 h-16 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mx-auto">
+        <div className="w-16 h-16 rounded-2xl bg-[#D94E1F]/20 border border-[#D94E1F] flex items-center justify-center text-[#D94E1F] mx-auto">
           <HardHat className="w-8 h-8" />
         </div>
         <div className="space-y-2">
@@ -62,7 +62,7 @@ export const ClientPortal: React.FC = () => {
         </div>
         <button
           onClick={() => quickDemoLogin('ROLE_CLIENTE')}
-          className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold text-xs inline-flex items-center gap-2 shadow-xl shadow-indigo-600/30 transition-all"
+          className="px-6 py-3 bg-[#D94E1F] hover:bg-[#E05A2B] text-white rounded-xl font-semibold text-xs inline-flex items-center gap-2 shadow-xl shadow-sm transition-all"
         >
           <UserCheck className="w-4 h-4" />
           <span>Acceder con Perfil Demo Cliente (Constructora)</span>
@@ -82,7 +82,7 @@ export const ClientPortal: React.FC = () => {
       {/* Header & Client Info */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
         <div>
-          <div className="flex items-center gap-2 text-indigo-400 text-xs font-semibold mb-1">
+          <div className="flex items-center gap-2 text-[#D94E1F] text-xs font-semibold mb-1">
             <HardHat className="w-4 h-4" />
             <span>Portal de Operaciones B2B</span>
           </div>
@@ -107,7 +107,7 @@ export const ClientPortal: React.FC = () => {
         <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
           <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
             <span className="font-semibold uppercase tracking-wider">Equipos en Despacho/Obra</span>
-            <Clock className="w-4 h-4 text-indigo-400" />
+            <Clock className="w-4 h-4 text-[#D94E1F]" />
           </div>
           <div className="text-2xl font-black font-mono text-white">{activosCount}</div>
           <div className="text-[11px] text-slate-500 mt-1">Frentes de trabajo en Bogotá y Cundinamarca</div>
@@ -140,12 +140,12 @@ export const ClientPortal: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-            <FileText className="w-4 h-4 text-indigo-400" />
+            <FileText className="w-4 h-4 text-[#D94E1F]" />
             <span>Contratos de Maquinaria Registrados ({reservations.length})</span>
           </h2>
           <button
             onClick={fetchReservations}
-            className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
+            className="text-xs text-[#D94E1F] hover:text-[#D94E1F] font-semibold"
           >
             Actualizar Estado
           </button>
@@ -182,7 +182,7 @@ export const ClientPortal: React.FC = () => {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-[11px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+                        <span className="font-mono text-[11px] font-bold text-[#D94E1F] bg-[#E05A2B]/10 px-2 py-0.5 rounded border border-[#D94E1F]">
                           {res.reservationCode}
                         </span>
                         <span className="text-[11px] text-slate-400 font-mono">
@@ -197,7 +197,7 @@ export const ClientPortal: React.FC = () => {
 
                   <div className="flex items-center gap-2">
                     {/* Status Badge */}
-                    <span className="text-xs font-mono font-semibold px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
+                    <span className="text-xs font-mono font-semibold px-2.5 py-1 rounded-full bg-[#E05A2B]/10 text-[#D94E1F] border border-[#D94E1F]">
                       {res.status}
                     </span>
 
@@ -268,7 +268,7 @@ export const ClientPortal: React.FC = () => {
 
                     <button
                       onClick={() => setSelectedForPayment(res)}
-                      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md shadow-indigo-600/30"
+                      className="px-4 py-2 rounded-xl bg-[#D94E1F] hover:bg-[#E05A2B] text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md shadow-sm"
                     >
                       <CreditCard className="w-3.5 h-3.5" />
                       <span>{res.paymentStatus === 'PAGADO' ? 'Detalles de Pago' : 'Gestionar Pago'}</span>
@@ -297,7 +297,7 @@ export const ClientPortal: React.FC = () => {
           <div className="bg-[#0f172a] border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-5 glass-modal">
             <div className="flex items-center justify-between pb-4 border-b border-slate-800">
               <div className="flex items-center gap-2 text-white font-bold text-base">
-                <Receipt className="w-5 h-5 text-indigo-400" />
+                <Receipt className="w-5 h-5 text-[#D94E1F]" />
                 <span>Factura Electrónica de Venta</span>
               </div>
               <button
@@ -311,7 +311,7 @@ export const ClientPortal: React.FC = () => {
             <div className="space-y-3 text-xs">
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1 font-mono">
                 <div className="text-slate-400 text-[10px] uppercase">Código Único de Factura Electrónica (CUFE)</div>
-                <div className="text-indigo-300 break-all text-[11px]">
+                <div className="text-[#D94E1F] break-all text-[11px]">
                   fe80::1ff:fe00:3a60:8b9c:5421:9a8f:c712:44bb:92e1:810f
                 </div>
               </div>
@@ -341,7 +341,7 @@ export const ClientPortal: React.FC = () => {
                 </div>
                 <div className="flex justify-between pt-1 border-t border-slate-800 font-bold text-white">
                   <span>Total Timbrado DIAN:</span>
-                  <span className="font-mono text-indigo-400">${activeDianModal.totalPrice.toLocaleString('es-CO')}</span>
+                  <span className="font-mono text-[#D94E1F]">${activeDianModal.totalPrice.toLocaleString('es-CO')}</span>
                 </div>
               </div>
             </div>
@@ -355,7 +355,7 @@ export const ClientPortal: React.FC = () => {
               </button>
               <button
                 onClick={() => showToast('Generando representación gráfica PDF timbrada por la DIAN...', 'info')}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5"
+                className="px-4 py-2 bg-[#D94E1F] hover:bg-[#E05A2B] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
                 <span>Descargar PDF Oficial</span>

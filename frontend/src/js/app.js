@@ -196,9 +196,9 @@ const App = (() => {
       const roleBadge = document.getElementById('user-role-badge');
       const role = state.profile.role;
       roleBadge.textContent = role.replace('ROLE_', '');
-      roleBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded-full ' +
+      roleBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded-lg ' +
         (role === 'ROLE_ADMIN' ? 'bg-purple-100 text-purple-800' :
-         role === 'ROLE_PROVEEDOR' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800');
+         role === 'ROLE_PROVEEDOR' ? 'bg-[#FFE8DE] text-blue-800' : 'bg-emerald-100 text-emerald-800');
 
       // Mostrar pestaña de portal correspondiente
       document.getElementById('btn-nav-client').classList.toggle('hidden', role !== 'ROLE_CLIENTE' && role !== 'ROLE_ADMIN');
@@ -262,7 +262,7 @@ const App = (() => {
   async function loadTools() {
     const grid = document.getElementById('tools-grid');
     if (!grid) return;
-    grid.innerHTML = '<div class="col-span-full py-16 text-center text-slate-400"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500 mb-3"></div><p>Cargando catálogo de maquinaria y equipos...</p></div>';
+    grid.innerHTML = '<div class="col-span-full py-16 text-center text-slate-400"><div class="inline-block animate-spin rounded-lg h-8 w-8 border-b-2 border-amber-500 mb-3"></div><p>Cargando catálogo de maquinaria y equipos...</p></div>';
 
     try {
       const tools = await API.tools.getTools(state.filters);
@@ -334,7 +334,7 @@ const App = (() => {
 
     if (processed.length === 0) {
       grid.innerHTML = `
-        <div class="col-span-full py-16 text-center text-slate-500 bg-white rounded-2xl border border-slate-200">
+        <div class="col-span-full py-16 text-center text-slate-500 bg-white rounded-2xl border border-[#D6D3C9]">
           <svg class="w-16 h-16 mx-auto mb-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
           <p class="text-lg font-semibold text-slate-700">No se encontraron herramientas con esos criterios</p>
           <p class="text-sm text-slate-400 mt-1">Intenta ajustando el término de búsqueda o seleccionando otra categoría.</p>
@@ -368,7 +368,7 @@ const App = (() => {
               </div>
               <div class="absolute bottom-2 left-2 flex gap-1">
                 <span class="tech-spec-tag">RETIE VIGENTE</span>
-                <span class="tech-spec-tag bg-slate-900/90 text-amber-300 border-amber-500/40">-15% SEMANAL</span>
+                <span class="tech-spec-tag bg-[#232320]/90 text-amber-300 border-amber-500/40">-15% SEMANAL</span>
               </div>
             </div>
 
@@ -377,14 +377,14 @@ const App = (() => {
               <h3 class="text-base font-display font-black text-slate-950 uppercase tracking-tight line-clamp-1 leading-snug">${tool.name}</h3>
               <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">${tool.description}</p>
               
-              <div class="flex items-center justify-between pt-1 text-xs border-t border-slate-100 font-mono">
+              <div class="flex items-center justify-between pt-1 text-xs border-t border-[#D6D3C9] font-mono">
                 <span class="text-slate-400 text-[10px] uppercase font-bold">Operador:</span>
                 <strong class="text-slate-800 text-[11px]">${tool.providerName || 'Parque RentaMaq Central'}</strong>
               </div>
             </div>
           </div>
 
-          <div class="p-4 pt-0 bg-slate-50 border-t border-slate-200 mt-auto space-y-3">
+          <div class="p-4 pt-0 bg-slate-50 border-t border-[#D6D3C9] mt-auto space-y-3">
             <div class="flex items-baseline justify-between py-2.5">
               <div>
                 <span class="text-[10px] font-display font-bold text-slate-400 uppercase tracking-wider block">Tarifa Día (1-6 Días):</span>
@@ -417,7 +417,7 @@ const App = (() => {
     const modal = document.getElementById('modal-tool-detail');
     const content = document.getElementById('tool-detail-content');
     modal.classList.remove('hidden');
-    content.innerHTML = '<div class="py-24 text-center"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div><p class="mt-2 text-sm text-slate-500">Cargando relaciones 4FN...</p></div>';
+    content.innerHTML = '<div class="py-24 text-center"><div class="inline-block animate-spin rounded-lg h-8 w-8 border-b-2 border-amber-500"></div><p class="mt-2 text-sm text-slate-500">Cargando relaciones 4FN...</p></div>';
 
     try {
       const [tool, occupied, reviewData] = await Promise.all([
@@ -477,7 +477,7 @@ const App = (() => {
                 <h4 class="text-[11px] font-display font-bold uppercase tracking-wider text-slate-400 mb-2">Inspección Visual de Flota (4FN)</h4>
                 <div class="flex gap-2 overflow-x-auto pb-2">
                   ${tool.images.map(img => `
-                    <img src="${img.imageUrl}" onclick="document.getElementById('detail-main-img').src='${img.imageUrl}'" class="w-20 h-20 rounded object-cover cursor-pointer border-2 hover:border-amber-500 transition-colors border-slate-200" title="${img.caption || ''}">
+                    <img src="${img.imageUrl}" onclick="document.getElementById('detail-main-img').src='${img.imageUrl}'" class="w-20 h-20 rounded object-cover cursor-pointer border-2 hover:border-amber-500 transition-colors border-[#D6D3C9]" title="${img.caption || ''}">
                   `).join('')}
                 </div>
               </div>
@@ -490,7 +490,7 @@ const App = (() => {
             </div>
 
             <!-- Especificaciones Técnicas (4FN Relación 2) -->
-            <div class="bg-slate-50 p-5 rounded border border-slate-200">
+            <div class="bg-slate-50 p-5 rounded border border-[#D6D3C9]">
               <h3 class="text-xs font-display font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2 mb-3">
                 <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
                 Ficha Técnica Normalizada de Maquinaria
@@ -498,7 +498,7 @@ const App = (() => {
               <div class="grid grid-cols-2 gap-2.5 text-xs font-mono">
                 ${tool.specifications && tool.specifications.length > 0 ?
                   tool.specifications.map(s => `
-                    <div class="p-2.5 bg-white rounded border border-slate-200 flex justify-between">
+                    <div class="p-2.5 bg-white rounded border border-[#D6D3C9] flex justify-between">
                       <span class="text-slate-500 uppercase text-[10px]">${s.specName}:</span>
                       <strong class="text-slate-900 text-[11px]">${s.specValue}</strong>
                     </div>
@@ -517,7 +517,7 @@ const App = (() => {
                 ${tool.safetyRequirements && tool.safetyRequirements.length > 0 ?
                   tool.safetyRequirements.map(sr => `
                     <span class="px-3 py-1 bg-white rounded border border-amber-300 text-xs font-semibold text-amber-950 shadow-xs flex items-center gap-1.5" title="${sr.description || ''}">
-                      <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                      <span class="w-1.5 h-1.5 rounded-lg bg-amber-500"></span>
                       ${sr.requirementName}
                     </span>
                   `).join('') : '<span class="text-xs text-amber-800">Equipamiento estándar de protección certificado requerido.</span>'
@@ -526,8 +526,8 @@ const App = (() => {
             </div>
 
             <!-- Calificaciones y Reseñas de Clientes (Pilar 2) -->
-            <div class="bg-white p-5 rounded border border-slate-200 space-y-4">
-              <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="bg-white p-5 rounded border border-[#D6D3C9] space-y-4">
+              <div class="flex items-center justify-between border-b border-[#D6D3C9] pb-3">
                 <div class="flex items-center gap-2">
                   <span class="font-display font-bold text-xs uppercase tracking-wider text-slate-900">Bitácora de Rendimiento en Obra</span>
                 </div>
@@ -540,7 +540,7 @@ const App = (() => {
               ${reviewData && reviewData.reviews && reviewData.reviews.length > 0 ? `
                 <div class="space-y-3">
                   ${reviewData.reviews.map(rev => `
-                    <div class="p-3 bg-slate-50 rounded border border-slate-200 text-xs space-y-1">
+                    <div class="p-3 bg-slate-50 rounded border border-[#D6D3C9] text-xs space-y-1">
                       <div class="flex items-center justify-between">
                         <span class="font-extrabold text-slate-800 font-display uppercase tracking-wider">${rev.clientName || 'Contratista'}</span>
                         <span class="text-amber-500 text-xs font-bold tracking-wider">${''.repeat(rev.rating)}${''.repeat(5 - rev.rating)}</span>
@@ -551,7 +551,7 @@ const App = (() => {
                   `).join('')}
                 </div>
               ` : `
-                <div class="p-4 text-center text-xs text-slate-400 bg-slate-50 rounded border border-slate-200">
+                <div class="p-4 text-center text-xs text-slate-400 bg-slate-50 rounded border border-[#D6D3C9]">
                   Equipo certificado listo para faena. ¡Alquílalo e ingresa el reporte de operación!
                 </div>
               `}
@@ -560,15 +560,15 @@ const App = (() => {
 
           <!-- Columna Derecha: Tarifas 4FN y Cotizador en Vivo -->
           <div class="lg:col-span-5 flex flex-col justify-between">
-            <div class="bg-white p-6 rounded border border-slate-200 shadow-sm space-y-5">
-              <div class="border-b border-slate-100 pb-3">
+            <div class="bg-white p-6 rounded border border-[#D6D3C9] shadow-sm space-y-5">
+              <div class="border-b border-[#D6D3C9] pb-3">
                 <h3 class="text-base font-display font-black uppercase tracking-tight text-slate-950">Liquidación Operativa de Faena</h3>
                 <p class="text-xs text-slate-500 mt-0.5">Tarifa vinculante con IVA 19% y descuento semanal automático.</p>
               </div>
 
               <!-- Tarifas Normalizadas (4FN Relación 3) -->
               ${tool.pricingTiers && tool.pricingTiers.length > 0 ? `
-                <div class="p-3 bg-slate-50 rounded border border-slate-200">
+                <div class="p-3 bg-slate-50 rounded border border-[#D6D3C9]">
                   <div class="text-xs font-display font-bold text-slate-700 uppercase mb-2">Escalas de Tarifa por Volumen:</div>
                   <div class="space-y-1.5 text-xs font-mono">
                     ${tool.pricingTiers.map(t => `
@@ -597,7 +597,7 @@ const App = (() => {
               </div>
 
               <!-- Calendario Visual de Disponibilidad (28 Días) -->
-              <div class="p-3 bg-slate-50 rounded border border-slate-200 space-y-2">
+              <div class="p-3 bg-slate-50 rounded border border-[#D6D3C9] space-y-2">
                 <div class="flex justify-between items-center">
                   <span class="text-[11px] font-display font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                     Disponibilidad Próximos 28 Días
@@ -610,7 +610,7 @@ const App = (() => {
                 </div>
 
                 <!-- Leyenda del calendario -->
-                <div class="flex items-center justify-between pt-1.5 text-[10px] font-mono text-slate-500 border-t border-slate-200">
+                <div class="flex items-center justify-between pt-1.5 text-[10px] font-mono text-slate-500 border-t border-[#D6D3C9]">
                   <div class="flex items-center gap-1">
                     <span class="w-2.5 h-2.5 rounded-sm bg-white border border-slate-300"></span>
                     <span>Libre</span>
@@ -757,7 +757,7 @@ const App = (() => {
         cellTitle = `Tu selección (${isoStr})`;
         clickAttr = `onclick="App.selectDateFromCalendar('${isoStr}')"`;
       } else {
-        cellClass = 'bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200 hover:border-emerald-300 cursor-pointer font-semibold';
+        cellClass = 'bg-white hover:bg-emerald-50 text-slate-700 border border-[#D6D3C9] hover:border-emerald-300 cursor-pointer font-semibold';
         cellTitle = `Disponible (${isoStr}) - Clic para fijar fecha`;
         clickAttr = `onclick="App.selectDateFromCalendar('${isoStr}')"`;
       }
@@ -1071,7 +1071,7 @@ const App = (() => {
               <span class="text-slate-400 text-[10px] uppercase">${tool.categoryName || 'GENERAL'}</span>
             </div>
 
-            <div class="h-40 bg-[#111722] overflow-hidden relative border-b border-slate-100 group">
+            <div class="h-40 bg-[#111722] overflow-hidden relative border-b border-[#D6D3C9] group">
               <img src="${imgSrc}" alt="${tool.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-code-src="${imgCodeSrc}" onerror="window.rmImgFallback(this)">
               <span class="absolute top-2 left-2 px-2 py-0.5 text-[10px] font-mono font-bold uppercase bg-emerald-600 text-white rounded">Flota Operativa</span>
               <span class="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-mono font-bold bg-[#0c1017]/90 text-white rounded border border-[#182030]">${tool.brand}</span>
@@ -1084,7 +1084,7 @@ const App = (() => {
             </div>
           </div>
 
-          <div class="p-3.5 pt-0 bg-slate-50 border-t border-slate-200 mt-auto space-y-2.5">
+          <div class="p-3.5 pt-0 bg-slate-50 border-t border-[#D6D3C9] mt-auto space-y-2.5">
             <div class="flex items-baseline justify-between pt-2">
               <div>
                 <span class="text-[9px] font-display font-bold text-slate-400 block uppercase tracking-wider">Tarifa Día:</span>
@@ -1237,18 +1237,18 @@ const App = (() => {
     try {
       const reservations = await API.reservations.getByClient(state.profile.clientId);
       if (reservations.length === 0) {
-        listEl.innerHTML = '<div class="p-8 text-center text-slate-400 bg-white rounded-xl border border-slate-200">No tienes reservas activas en este momento.</div>';
+        listEl.innerHTML = '<div class="p-8 text-center text-slate-400 bg-white rounded-xl border border-[#D6D3C9]">No tienes reservas activas en este momento.</div>';
         return;
       }
 
       listEl.innerHTML = reservations.map(r => `
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-[#D6D3C9] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div class="flex items-center gap-4">
-            <img src="${r.toolImageUrl || 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=200&q=80'}" class="w-16 h-16 rounded-xl object-cover bg-slate-100 border border-slate-200">
+            <img src="${r.toolImageUrl || 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=200&q=80'}" class="w-16 h-16 rounded-xl object-cover bg-slate-100 border border-[#D6D3C9]">
             <div>
               <div class="flex items-center gap-2 mb-1">
                 <span class="text-xs font-mono font-bold text-slate-700">${r.reservationCode}</span>
-                <span class="text-xs px-2.5 py-0.5 rounded-full font-bold badge-res-${r.status.toLowerCase()}">${r.status}</span>
+                <span class="text-xs px-2.5 py-0.5 rounded-lg font-bold badge-res-${r.status.toLowerCase()}">${r.status}</span>
               </div>
               <h4 class="font-bold text-slate-900 text-base">${r.toolName}</h4>
               <p class="text-xs text-slate-500">${formatDate(r.startDate)} → ${formatDate(r.endDate)} (${r.totalDays} días)</p>
@@ -1271,7 +1271,7 @@ const App = (() => {
               ` : ''}
 
               ${r.status === 'APROBADA' || r.status === 'EN_CURSO' || r.status === 'FINALIZADA' ? `
-                <button onclick="App.openInvoiceModal(${r.id})" class="px-3.5 py-1.5 bg-slate-900 hover:bg-amber-500 hover:text-slate-950 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
+                <button onclick="App.openInvoiceModal(${r.id})" class="px-3.5 py-1.5 bg-[#232320] hover:bg-amber-500 hover:text-slate-950 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
                   <span>Factura DIAN</span>
                 </button>
               ` : ''}
@@ -1318,18 +1318,18 @@ const App = (() => {
           resContainer.innerHTML = '<div class="p-6 text-center text-slate-400">No hay reservas para tus equipos aún.</div>';
         } else {
           resContainer.innerHTML = reservations.map(r => `
-            <div class="p-4 bg-white rounded-xl border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="p-4 bg-white rounded-xl border border-[#D6D3C9] flex flex-col md:flex-row justify-between items-center gap-3">
               <div>
                 <div class="flex items-center gap-2 mb-1">
                   <span class="font-mono font-bold text-xs text-slate-700">${r.reservationCode}</span>
-                  <span class="text-xs px-2 py-0.5 rounded-full font-bold badge-res-${r.status.toLowerCase()}">${r.status}</span>
+                  <span class="text-xs px-2 py-0.5 rounded-lg font-bold badge-res-${r.status.toLowerCase()}">${r.status}</span>
                 </div>
                 <div class="font-bold text-slate-900">${r.toolName}</div>
                 <div class="text-xs text-slate-500">Cliente: <strong>${r.clientName}</strong> • ${formatDate(r.startDate)} a ${formatDate(r.endDate)}</div>
               </div>
               <div class="flex items-center gap-2">
                 ${r.status === 'PENDIENTE' ? `
-                  <button onclick="App.approveReservationAction(${r.id})" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg">Aprobar</button>
+                  <button onclick="App.approveReservationAction(${r.id})" class="px-3 py-1.5 bg-[#181816] hover:bg-[#D94E1F] text-white font-bold text-xs rounded-lg">Aprobar</button>
                   <button onclick="App.rejectReservationAction(${r.id})" class="px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold text-xs rounded-lg">Rechazar</button>
                 ` : ''}
                 ${r.status === 'APROBADA' ? `
@@ -1357,7 +1357,7 @@ const App = (() => {
       if (toolsContainer) {
         if (!tools || tools.length === 0) {
           toolsContainer.innerHTML = `
-            <div class="text-center py-8 text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+            <div class="text-center py-8 text-slate-400 bg-slate-50 rounded-xl border border-dashed border-[#D6D3C9]">
               <span class="text-xs font-bold text-slate-400 block mb-2">EQUIPOS</span>
               <p class="font-bold text-sm">No tienes maquinaria registrada en tu catálogo.</p>
               <button type="button" onclick="App.openCreateToolModal()" class="mt-2 text-xs font-bold text-amber-600 hover:underline">+ Publica tu primera herramienta en 4FN</button>
@@ -1365,15 +1365,15 @@ const App = (() => {
           `;
         } else {
           toolsContainer.innerHTML = tools.map(t => `
-            <div class="p-3.5 bg-white rounded-xl border border-slate-200 flex flex-wrap justify-between items-center gap-3 text-xs shadow-sm hover:border-amber-300 transition-colors">
+            <div class="p-3.5 bg-white rounded-xl border border-[#D6D3C9] flex flex-wrap justify-between items-center gap-3 text-xs shadow-sm hover:border-amber-300 transition-colors">
               <div class="flex items-center gap-3.5">
-                <img src="${t.mainImageUrl || 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=100&q=80'}" class="w-12 h-12 rounded-xl object-cover border border-slate-100" onerror="this.src='https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=100&q=80'">
+                <img src="${t.mainImageUrl || 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=100&q=80'}" class="w-12 h-12 rounded-xl object-cover border border-[#D6D3C9]" onerror="this.src='https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=100&q=80'">
                 <div>
                   <div class="flex items-center gap-2">
                     <strong class="text-slate-900 text-sm">${escapeHtml(t.name)}</strong>
                     <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
                       t.status === 'DISPONIBLE' ? 'bg-emerald-100 text-emerald-800' :
-                      t.status === 'ALQUILADA' ? 'bg-blue-100 text-blue-800' :
+                      t.status === 'ALQUILADA' ? 'bg-[#FFE8DE] text-blue-800' :
                       t.status === 'MANTENIMIENTO' ? 'bg-amber-100 text-amber-800' :
                       'bg-slate-200 text-slate-700'
                     }">${t.status}</span>
@@ -1432,7 +1432,7 @@ const App = (() => {
       const topList = document.getElementById('adm-top-tools-list');
       if (topList && dash.topRentedTools) {
         topList.innerHTML = dash.topRentedTools.map(t => `
-          <div class="flex justify-between items-center p-3 bg-white rounded-lg border border-slate-200 text-xs">
+          <div class="flex justify-between items-center p-3 bg-white rounded-lg border border-[#D6D3C9] text-xs">
             <div>
               <strong class="text-slate-900">${t.toolName}</strong> (${t.brand})
               <div class="text-slate-500">${t.rentalCount} alquileres completados</div>
@@ -1446,7 +1446,7 @@ const App = (() => {
       const monthlyList = document.getElementById('adm-monthly-revenue-list');
       if (monthlyList && dash.monthlyRevenue) {
         monthlyList.innerHTML = dash.monthlyRevenue.map(m => `
-          <div class="flex justify-between items-center p-3 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 text-xs transition-colors">
+          <div class="flex justify-between items-center p-3 bg-slate-50 hover:bg-slate-100 rounded-xl border border-[#D6D3C9] text-xs transition-colors">
             <div class="flex items-center gap-2">
               <span class="px-2 py-0.5 bg-amber-500/10 text-amber-900 border border-amber-300 rounded font-mono font-bold">${m.period}</span>
               <span class="text-slate-500">${m.rentalCount} alquiler(es)</span>
@@ -1463,9 +1463,9 @@ const App = (() => {
           clientList.innerHTML = `<div class="p-3 text-slate-400 text-xs text-center">No hay clientes con compras aún.</div>`;
         } else {
           clientList.innerHTML = dash.topFrequentClients.map((c, idx) => `
-            <div class="flex justify-between items-center p-3 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 text-xs transition-colors">
+            <div class="flex justify-between items-center p-3 bg-slate-50 hover:bg-slate-100 rounded-xl border border-[#D6D3C9] text-xs transition-colors">
               <div class="flex items-center gap-2.5">
-                <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 font-black flex items-center justify-center text-xs">#${idx + 1}</span>
+                <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 font-black flex items-center justify-center text-xs">#${idx + 1}</span>
                 <div>
                   <div class="font-bold text-slate-900">${escapeHtml(c.clientName)}</div>
                   <div class="text-[10px] text-slate-500 font-mono">${escapeHtml(c.email)} • Doc: ${escapeHtml(c.documentNumber)}</div>
@@ -1484,13 +1484,13 @@ const App = (() => {
       const admResList = document.getElementById('adm-all-reservations-list');
       if (admResList) {
         admResList.innerHTML = allRes.map(r => `
-          <tr class="border-b border-slate-100 text-xs">
+          <tr class="border-b border-[#D6D3C9] text-xs">
             <td class="py-2.5 font-mono font-bold text-slate-800">${r.reservationCode}</td>
             <td class="py-2.5">${r.toolName}</td>
             <td class="py-2.5 text-slate-600">${r.clientName}</td>
             <td class="py-2.5">${formatDate(r.startDate)} a ${formatDate(r.endDate)}</td>
             <td class="py-2.5 font-bold text-slate-900">${formatCOP(r.totalAmount)}</td>
-            <td class="py-2.5"><span class="px-2 py-0.5 rounded-full font-bold badge-res-${r.status.toLowerCase()}">${r.status}</span></td>
+            <td class="py-2.5"><span class="px-2 py-0.5 rounded-lg font-bold badge-res-${r.status.toLowerCase()}">${r.status}</span></td>
           </tr>
         `).join('');
       }
@@ -1564,11 +1564,11 @@ const App = (() => {
         const roleBadge = u.role === 'ROLE_ADMIN' 
           ? 'bg-rose-100 text-rose-800 border border-rose-200' 
           : u.role === 'ROLE_PROVEEDOR' 
-            ? 'bg-blue-100 text-blue-800 border border-blue-200' 
+            ? 'bg-[#FFE8DE] text-blue-800 border border-[#D6D3C9]' 
             : 'bg-emerald-100 text-emerald-800 border border-emerald-200';
         const statusBadge = u.active 
-          ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Activo</span>'
-          : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-600">Inactivo</span>';
+          ? '<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Activo</span>'
+          : '<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-200 text-slate-600">Inactivo</span>';
         const actionBtn = u.active
           ? `<button type="button" onclick="App.toggleUserStatusAction(${u.id}, true)" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg font-bold text-[11px] border border-rose-200 transition-colors">Desactivar</button>`
           : `<button type="button" onclick="App.toggleUserStatusAction(${u.id}, false)" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg font-bold text-[11px] border border-emerald-200 transition-colors">Activar</button>`;
@@ -1577,7 +1577,7 @@ const App = (() => {
             <td class="py-2.5 font-mono font-bold text-slate-700">#${u.id}</td>
             <td class="py-2.5 font-bold text-slate-900">${escapeHtml(u.profileName || 'Usuario')}</td>
             <td class="py-2.5 text-slate-600 font-mono text-[11px]">${escapeHtml(u.email)}</td>
-            <td class="py-2.5"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${roleBadge}">${u.role}</span></td>
+            <td class="py-2.5"><span class="px-2 py-0.5 rounded-lg text-[10px] font-bold ${roleBadge}">${u.role}</span></td>
             <td class="py-2.5">${statusBadge}</td>
             <td class="py-2.5 text-right">${actionBtn}</td>
           </tr>
@@ -1614,8 +1614,8 @@ const App = (() => {
       }
       listEl.innerHTML = providers.map(p => {
         const verifiedBadge = p.verified
-          ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Verificado</span>'
-          : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">Pendiente</span>';
+          ? '<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Verificado</span>'
+          : '<span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">Pendiente</span>';
         const actionBtn = p.verified
           ? `<button type="button" onclick="App.verifyProviderAction(${p.id}, true)" class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg font-bold text-[11px] border border-amber-200 transition-colors">Suspender</button>`
           : `<button type="button" onclick="App.verifyProviderAction(${p.id}, false)" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-lg font-bold text-[11px] border border-emerald-300 transition-colors shadow-sm">Aprobar Empresa</button>`;
@@ -2088,7 +2088,7 @@ const App = (() => {
       const panel = document.getElementById('pay-panel-' + t);
       if (t === tab) {
         if (btn) {
-          btn.className = 'py-2.5 px-2 rounded-xl transition-all flex items-center justify-center gap-1.5 bg-slate-950 text-white shadow-sm';
+          btn.className = 'py-2.5 px-2 rounded-xl transition-all flex items-center justify-center gap-1.5 bg-[#181816] text-white shadow-sm';
         }
         if (panel) panel.classList.remove('hidden');
       } else {
@@ -2127,7 +2127,7 @@ const App = (() => {
     if (brandEl) {
       if (val.startsWith('4')) {
         brandEl.textContent = 'VISA';
-        brandEl.className = 'text-sm font-black italic tracking-wider text-blue-400';
+        brandEl.className = 'text-sm font-black italic tracking-wider text-[#D94E1F]';
       } else if (val.startsWith('5') || val.startsWith('2')) {
         brandEl.textContent = 'MASTERCARD';
         brandEl.className = 'text-sm font-black italic tracking-wider text-amber-400';
@@ -2587,7 +2587,7 @@ const App = (() => {
       if (data.toolConditionStatus === 'EXCELENTE') {
         badge.className = 'px-2 py-0.5 rounded text-[11px] font-extrabold bg-emerald-100 text-emerald-800';
       } else if (data.toolConditionStatus === 'BUENO') {
-        badge.className = 'px-2 py-0.5 rounded text-[11px] font-extrabold bg-blue-100 text-blue-800';
+        badge.className = 'px-2 py-0.5 rounded text-[11px] font-extrabold bg-[#FFE8DE] text-blue-800';
       } else {
         badge.className = 'px-2 py-0.5 rounded text-[11px] font-extrabold bg-rose-100 text-rose-800';
       }
@@ -3222,7 +3222,7 @@ const App = (() => {
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between gap-1">
               <strong class="text-slate-900 font-bold truncate block text-xs">${escapeHtml(n.title)}</strong>
-              ${!n.read ? '<span class="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>' : ''}
+              ${!n.read ? '<span class="w-2 h-2 rounded-lg bg-amber-500 shrink-0"></span>' : ''}
             </div>
             <p class="text-[11px] text-slate-600 line-clamp-2 mt-0.5 leading-snug">${escapeHtml(n.message)}</p>
             <span class="text-[9px] text-slate-400 font-mono mt-1 block">${formatDate(n.createdAt)}</span>

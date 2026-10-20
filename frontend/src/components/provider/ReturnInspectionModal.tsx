@@ -97,7 +97,7 @@ export const ReturnInspectionModal: React.FC<ReturnInspectionModalProps> = ({
               onChange={(e) => setFinalHours(Number(e.target.value))}
               min="0"
               required
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-[#D94E1F]"
             />
           </div>
 
@@ -113,7 +113,7 @@ export const ReturnInspectionModal: React.FC<ReturnInspectionModalProps> = ({
               min="0"
               max={reservation.depositAmount}
               required
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-[#D94E1F]"
             />
             <span className="text-[11px] text-slate-500">
               0 si el equipo ingresó en óptimas condiciones
@@ -122,14 +122,14 @@ export const ReturnInspectionModal: React.FC<ReturnInspectionModalProps> = ({
 
           <div className="space-y-1.5">
             <label className="text-slate-300 font-semibold flex items-center gap-1.5">
-              <ClipboardCheck className="w-3.5 h-3.5 text-indigo-400" />
+              <ClipboardCheck className="w-3.5 h-3.5 text-[#D94E1F]" />
               Informe Técnico 4FN de Retorno
             </label>
             <textarea
               value={damageReport}
               onChange={(e) => setDamageReport(e.target.value)}
               rows={2}
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white text-xs focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white text-xs focus:outline-none focus:border-[#D94E1F]"
             />
           </div>
 

@@ -27,19 +27,19 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   totalFiltered
 }) => {
   return (
-    <div className="bg-[#0c1220] border border-slate-800/80 rounded-2xl p-5 space-y-6 glass-panel">
+    <div className="bg-[#FAF9F5] border border-[#D6D3C9] rounded-xl p-5 space-y-6 shadow-xs">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-        <div className="flex items-center gap-2 text-white font-semibold text-sm">
-          <Filter className="w-4 h-4 text-indigo-400" />
+      <div className="flex items-center justify-between pb-4 border-b border-[#D6D3C9]">
+        <div className="flex items-center gap-2 text-[#181816] font-semibold text-sm">
+          <Filter className="w-4 h-4 text-[#D94E1F]" />
           <span>Filtros Operativos</span>
-          <span className="text-[11px] font-mono bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30">
+          <span className="text-[11px] font-mono bg-[#D94E1F]/10 text-[#D94E1F] px-2 py-0.5 rounded-md border border-[#D94E1F]/20 font-bold">
             {totalFiltered}
           </span>
         </div>
         <button
           onClick={onResetFilters}
-          className="text-xs text-slate-400 hover:text-indigo-400 flex items-center gap-1 transition-colors"
+          className="text-xs text-[#78766F] hover:text-[#D94E1F] flex items-center gap-1 transition-colors"
           title="Restablecer filtros"
         >
           <RotateCcw className="w-3.5 h-3.5" />
@@ -49,82 +49,95 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
 
       {/* Disponibilidad Inmediata */}
       <div className="space-y-3">
-        <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 block">
+        <label className="text-xs font-mono font-semibold uppercase tracking-wider text-[#78766F] block">
           Disponibilidad
         </label>
         <button
           onClick={() => onToggleOnlyAvailable(!onlyAvailable)}
-          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium border transition-all ${
+          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium border transition-all ${
             onlyAvailable
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-              : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700'
+              ? 'bg-[#E3F1E8] border-[#A7D7B8] text-[#1E6F43]'
+              : 'bg-[#E8E5DC] border-[#D6D3C9] text-[#57564F] hover:border-[#B8B5AB]'
           }`}
         >
           <span className="flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full ${onlyAvailable ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
+            <span className={`w-2 h-2 rounded-full ${onlyAvailable ? 'bg-[#1E6F43] animate-pulse' : 'bg-[#969389]'}`} />
             Solo Equipos Disponibles
           </span>
-          {onlyAvailable && <Check className="w-4 h-4 text-emerald-400" />}
+          {onlyAvailable && <Check className="w-4 h-4 text-[#1E6F43]" />}
         </button>
       </div>
 
       {/* Rango de Tarifa Diaria */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-            <DollarSign className="w-3.5 h-3.5 text-indigo-400" />
+          <label className="text-xs font-mono font-semibold uppercase tracking-wider text-[#78766F] flex items-center gap-1">
+            <DollarSign className="w-3.5 h-3.5 text-[#D94E1F]" />
             Tarifa Diaria Máx.
           </label>
-          <span className="text-xs font-mono font-bold text-indigo-400">
+          <span className="text-xs font-mono font-bold text-[#D94E1F]">
             ${priceLimit.toLocaleString('es-CO')}
           </span>
         </div>
+
         <input
           type="range"
           min="50000"
-          max={maxPrice > 0 ? maxPrice : 1500000}
+          max={maxPrice || 2000000}
           step="25000"
           value={priceLimit}
           onChange={(e) => onPriceChange(Number(e.target.value))}
-          className="w-full accent-indigo-500 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+          className="w-full accent-[#D94E1F] cursor-pointer h-2 bg-[#E8E5DC] rounded-lg"
         />
-        <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
+
+        <div className="flex justify-between text-[11px] font-mono text-[#78766F]">
           <span>$50.000</span>
-          <span>${(maxPrice > 0 ? maxPrice : 1500000).toLocaleString('es-CO')}</span>
+          <span>Max ${(maxPrice || 2000000).toLocaleString('es-CO')}</span>
         </div>
       </div>
 
-      {/* Marcas Fabricantes */}
-      <div className="space-y-3">
-        <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-          <Wrench className="w-3.5 h-3.5 text-indigo-400" />
-          Fabricantes
+      {/* Filtro por Fabricantes / Marcas */}
+      <div className="space-y-3 pt-2 border-t border-[#D6D3C9]">
+        <label className="text-xs font-mono font-semibold uppercase tracking-wider text-[#78766F] flex items-center gap-1.5">
+          <Wrench className="w-3.5 h-3.5 text-[#D94E1F]" />
+          Fabricante de Equipo
         </label>
-        <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
+        
+        <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
           {brands.map(brand => {
             const isChecked = selectedBrands.includes(brand);
             return (
-              <button
+              <label 
                 key={brand}
-                onClick={() => onToggleBrand(brand)}
-                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
-                  isChecked
-                    ? 'bg-indigo-600/20 text-indigo-200 border border-indigo-500/30'
-                    : 'text-slate-300 hover:bg-slate-800/60'
-                }`}
+                className="flex items-center justify-between p-2 rounded-lg bg-[#E8E5DC]/50 hover:bg-[#E8E5DC] border border-[#D6D3C9] cursor-pointer transition-colors text-xs text-[#181816]"
               >
-                <span>{brand}</span>
-                {isChecked && <Check className="w-3.5 h-3.5 text-indigo-400" />}
-              </button>
+                <div className="flex items-center gap-2.5">
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => onToggleBrand(brand)}
+                    className="rounded border-[#D6D3C9] text-[#D94E1F] focus:ring-[#D94E1F] accent-[#D94E1F] w-3.5 h-3.5"
+                  />
+                  <span className="font-medium">{brand}</span>
+                </div>
+                {isChecked && <span className="w-1.5 h-1.5 rounded-full bg-[#D94E1F]" />}
+              </label>
             );
           })}
         </div>
       </div>
 
-      {/* Info Box */}
-      <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] text-slate-400 leading-relaxed">
-        Todos los equipos incluyen inspección técnica pre-entrega 4FN y certificado de calibración vigente.
+      {/* Sello de Aseguramiento */}
+      <div className="pt-3 border-t border-[#D6D3C9] text-[11px] text-[#78766F] space-y-1">
+        <div className="flex items-center gap-1.5 text-[#1E6F43] font-semibold">
+          <span className="w-2 h-2 rounded-full bg-[#1E6F43]" />
+          Póliza Todo Riesgo Activa
+        </div>
+        <p className="text-[10px] leading-relaxed text-[#57564F]">
+          Todas las tarifas incluyen seguro SURA y telemetría horométrica en tiempo real.
+        </p>
       </div>
+
     </div>
   );
 };

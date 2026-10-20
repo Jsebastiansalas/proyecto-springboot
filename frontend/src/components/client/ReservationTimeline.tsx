@@ -53,7 +53,7 @@ export const ReservationTimeline: React.FC<ReservationTimelineProps> = ({ status
           if (isCompleted) {
             circleStyle = 'bg-emerald-600 border-emerald-400 text-white shadow-lg shadow-emerald-600/30';
           } else if (isCurrent) {
-            circleStyle = 'bg-indigo-600 border-indigo-400 text-white shadow-lg shadow-indigo-600/40 ring-4 ring-indigo-500/20';
+            circleStyle = 'bg-[#D94E1F] border-[#D94E1F] text-white shadow-lg shadow-sm ring-4 ring-indigo-500/20';
           }
 
           return (
@@ -61,7 +61,7 @@ export const ReservationTimeline: React.FC<ReservationTimelineProps> = ({ status
               <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${circleStyle}`}>
                 <Icon className="w-3.5 h-3.5" />
               </div>
-              <span className={`text-[11px] font-semibold mt-2 ${isCurrent ? 'text-indigo-400' : isCompleted ? 'text-emerald-400' : 'text-slate-500'}`}>
+              <span className={`text-[11px] font-semibold mt-2 ${isCurrent ? 'text-[#D94E1F]' : isCompleted ? 'text-emerald-400' : 'text-slate-500'}`}>
                 {step.label}
               </span>
               <span className="text-[9px] text-slate-500 hidden sm:block">

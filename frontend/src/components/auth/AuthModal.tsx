@@ -45,7 +45,7 @@ export const AuthModal: React.FC = () => {
         {/* Header */}
         <div className="p-5 border-b border-slate-800 bg-[#0a0f1d] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+            <div className="w-9 h-9 rounded-xl bg-[#E05A2B]/10 border border-[#D94E1F] flex items-center justify-center text-[#D94E1F]">
               <Lock className="w-4 h-4" />
             </div>
             <div>
@@ -115,7 +115,7 @@ export const AuthModal: React.FC = () => {
         <form onSubmit={handleSubmit} className="p-5 space-y-4 text-xs">
           <div className="space-y-1.5">
             <label className="text-slate-300 font-semibold flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5 text-indigo-400" />
+              <Mail className="w-3.5 h-3.5 text-[#D94E1F]" />
               Correo Electrónico Corporativo
             </label>
             <input
@@ -124,13 +124,13 @@ export const AuthModal: React.FC = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="usuario@empresa.com"
               required
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-[#D94E1F]"
             />
           </div>
 
           <div className="space-y-1.5">
             <label className="text-slate-300 font-semibold flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-indigo-400" />
+              <Lock className="w-3.5 h-3.5 text-[#D94E1F]" />
               Contraseña
             </label>
             <input
@@ -139,14 +139,14 @@ export const AuthModal: React.FC = () => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••••"
               required
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-indigo-500 font-mono"
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-[#D94E1F] font-mono"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-600/30"
+            className="w-full py-2.5 rounded-lg bg-[#D94E1F] hover:bg-[#E05A2B] text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-sm"
           >
             <span>{loading ? 'Validando credenciales...' : 'Iniciar Sesión'}</span>
             <ArrowRight className="w-4 h-4" />

@@ -63,19 +63,16 @@ export const QuoteCartDrawer: React.FC = () => {
 
   const handleCheckout = async () => {
     if (!user) {
-      showToast('Inicia sesión o usa el modo Demo para generar tu contrato de alquiler', 'info');
       setIsAuthModalOpen(true);
+      showToast('Por favor inicia sesión como Contratista para formalizar la reserva.', 'info');
       return;
     }
 
-    if (cart.length === 0) {
-      showToast('Tu cotización está vacía', 'error');
-      return;
-    }
+    if (cart.length === 0) return;
 
     setSubmitting(true);
     try {
-      // Crear reservas para los items en carrito
+      // Crear reservaciones en paralelo o secuencial
       for (const item of cart) {
         const start = new Date(startDate);
         const end = new Date(start);
@@ -102,30 +99,30 @@ export const QuoteCartDrawer: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-black/75 backdrop-blur-sm animate-in fade-in">
+    <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-xs animate-in fade-in">
       <div className="absolute inset-0" onClick={() => setIsQuoteDrawerOpen(false)} />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-[#0c1220] border-l border-slate-800 flex flex-col shadow-2xl glass-modal">
+        <div className="w-screen max-w-md bg-[#FAF9F5] border-l border-[#D6D3C9] flex flex-col shadow-2xl text-[#181816]">
           
           {/* Header */}
-          <div className="p-4 sm:p-5 border-b border-slate-800 bg-[#090d16] flex items-center justify-between">
+          <div className="p-4 sm:p-5 border-b border-[#D6D3C9] bg-[#E8E5DC] flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+              <div className="w-9 h-9 rounded-lg bg-[#D94E1F] flex items-center justify-center text-white shadow-xs">
                 <SlidersHorizontal className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white tracking-tight">
+                <h3 className="text-base font-bold text-[#181816] tracking-tight">
                   Cotización Activa de Obra
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-[#78766F]">
                   {cart.length} {cart.length === 1 ? 'equipo seleccionado' : 'equipos seleccionados'}
                 </p>
               </div>
             </div>
             <button
               onClick={() => setIsQuoteDrawerOpen(false)}
-              className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition-colors"
+              className="w-8 h-8 rounded-lg bg-[#FAF9F5] hover:bg-[#D6D3C9] text-[#181816] border border-[#D6D3C9] flex items-center justify-center transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -135,11 +132,11 @@ export const QuoteCartDrawer: React.FC = () => {
           <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-5">
             {cart.length === 0 ? (
               <div className="text-center py-12 space-y-3">
-                <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-slate-500 mx-auto">
+                <div className="w-12 h-12 rounded-lg bg-[#E8E5DC] flex items-center justify-center text-[#78766F] mx-auto border border-[#D6D3C9]">
                   <SlidersHorizontal className="w-6 h-6" />
                 </div>
-                <div className="text-white font-semibold text-sm">Tu cotización está vacía</div>
-                <p className="text-xs text-slate-400 max-w-xs mx-auto">
+                <div className="text-[#181816] font-semibold text-sm">Tu cotización está vacía</div>
+                <p className="text-xs text-[#78766F] max-w-xs mx-auto">
                   Explora el catálogo y añade la maquinaria requerida para tu cuadrilla o frente de trabajo.
                 </p>
               </div>
@@ -155,30 +152,30 @@ export const QuoteCartDrawer: React.FC = () => {
                     return (
                       <div
                         key={item.tool.id}
-                        className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3"
+                        className="p-3.5 rounded-xl bg-[#FAF9F5] border border-[#D6D3C9] space-y-3 shadow-xs"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-lg bg-slate-800 border border-slate-700 overflow-hidden shrink-0 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-lg bg-[#E8E5DC] border border-[#D6D3C9] overflow-hidden shrink-0 flex items-center justify-center">
                               {item.tool.mainImageUrl ? (
                                 <img src={item.tool.mainImageUrl} alt={item.tool.name} className="w-full h-full object-cover" />
                               ) : (
-                                <Wrench className="w-5 h-5 text-slate-500" />
+                                <Wrench className="w-5 h-5 text-[#78766F]" />
                               )}
                             </div>
                             <div>
-                              <h4 className="text-xs font-bold text-white line-clamp-1">{item.tool.name}</h4>
-                              <div className="text-[11px] text-slate-400 font-mono">
+                              <h4 className="text-xs font-bold text-[#181816] line-clamp-1">{item.tool.name}</h4>
+                              <div className="text-[11px] text-[#78766F] font-mono">
                                 {item.tool.brand} · SKU: {item.tool.codeSku}
                               </div>
-                              <div className="text-[11px] text-indigo-400 font-mono font-semibold">
+                              <div className="text-[11px] text-[#D94E1F] font-mono font-bold">
                                 ${item.tool.baseDailyPrice.toLocaleString('es-CO')} /día
                               </div>
                             </div>
                           </div>
                           <button
                             onClick={() => removeFromCart(item.tool.id)}
-                            className="text-slate-400 hover:text-rose-400 p-1"
+                            className="text-[#78766F] hover:text-[#B91C1C] p-1"
                             title="Eliminar de cotización"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -186,21 +183,21 @@ export const QuoteCartDrawer: React.FC = () => {
                         </div>
 
                         {/* Rental Days Interactive Stepper */}
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs">
-                          <span className="text-slate-400">Días de Alquiler:</span>
+                        <div className="flex items-center justify-between pt-2 border-t border-[#D6D3C9] text-xs">
+                          <span className="text-[#78766F]">Días de Alquiler:</span>
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => updateCartDays(item.tool.id, Math.max(1, item.days - 1))}
-                              className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center"
+                              className="w-6 h-6 rounded bg-[#E8E5DC] hover:bg-[#D6D3C9] text-[#181816] flex items-center justify-center border border-[#D6D3C9]"
                             >
                               <Minus className="w-3 h-3" />
                             </button>
-                            <span className="font-mono font-bold text-white px-2">
+                            <span className="font-mono font-bold text-[#181816] px-2">
                               {item.days} {item.days === 1 ? 'día' : 'días'}
                             </span>
                             <button
                               onClick={() => updateCartDays(item.tool.id, item.days + 1)}
-                              className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center"
+                              className="w-6 h-6 rounded bg-[#E8E5DC] hover:bg-[#D6D3C9] text-[#181816] flex items-center justify-center border border-[#D6D3C9]"
                             >
                               <Plus className="w-3 h-3" />
                             </button>
@@ -209,14 +206,14 @@ export const QuoteCartDrawer: React.FC = () => {
 
                         {/* Weekly Discount Pill */}
                         {hasDiscount ? (
-                          <div className="flex items-center justify-between text-[11px] text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
+                          <div className="flex items-center justify-between text-[11px] text-[#1E6F43] bg-[#E3F1E8] px-2.5 py-1 rounded-lg border border-[#A7D7B8]">
                             <span className="flex items-center gap-1 font-semibold">
                               <Percent className="w-3 h-3" /> Descuento Semanal (-15%)
                             </span>
-                            <span className="font-mono">-${itemDiscount.toLocaleString('es-CO')}</span>
+                            <span className="font-mono font-bold">-${itemDiscount.toLocaleString('es-CO')}</span>
                           </div>
                         ) : (
-                          <div className="text-[10px] text-slate-500 text-right">
+                          <div className="text-[10px] text-[#78766F] text-right font-mono">
                             * Añade {7 - item.days} días más para obtener 15% OFF
                           </div>
                         )}
@@ -226,27 +223,27 @@ export const QuoteCartDrawer: React.FC = () => {
                 </div>
 
                 {/* Logistics & Delivery Date */}
-                <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3">
-                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-300">
-                    <Calendar className="w-3.5 h-3.5 text-indigo-400" />
+                <div className="p-4 rounded-xl bg-[#FAF9F5] border border-[#D6D3C9] space-y-3 shadow-xs">
+                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#181816] font-mono">
+                    <Calendar className="w-3.5 h-3.5 text-[#D94E1F]" />
                     Fecha de Entrega en Obra
                   </div>
                   <input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono"
+                    className="w-full bg-[#E8E5DC]/50 border border-[#D6D3C9] rounded-lg px-3 py-2 text-xs text-[#181816] focus:outline-none focus:border-[#D94E1F] font-mono"
                   />
-                  <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
-                    <Building className="w-3 h-3 text-sky-400 shrink-0" />
+                  <div className="text-[11px] text-[#78766F] flex items-center gap-1.5">
+                    <Building className="w-3 h-3 text-[#D94E1F] shrink-0" />
                     <span>Despacho en cama baja desde patio Suba Bogotá</span>
                   </div>
                 </div>
 
                 {/* Payment Method Selector */}
-                <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3">
-                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-300">
-                    <CreditCard className="w-3.5 h-3.5 text-indigo-400" />
+                <div className="p-4 rounded-xl bg-[#FAF9F5] border border-[#D6D3C9] space-y-3 shadow-xs">
+                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#181816] font-mono">
+                    <CreditCard className="w-3.5 h-3.5 text-[#D94E1F]" />
                     Método de Pago
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs">
@@ -255,8 +252,8 @@ export const QuoteCartDrawer: React.FC = () => {
                       onClick={() => setPaymentMethod('TARJETA_CREDITO')}
                       className={`p-2 rounded-lg border text-left transition-all ${
                         paymentMethod === 'TARJETA_CREDITO'
-                          ? 'border-indigo-500 bg-indigo-500/10 text-white'
-                          : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                          ? 'border-[#D94E1F] bg-[#D94E1F]/10 text-[#D94E1F] font-bold'
+                          : 'border-[#D6D3C9] text-[#57564F] hover:bg-[#E8E5DC]'
                       }`}
                     >
                       Tarjeta de Crédito
@@ -266,8 +263,8 @@ export const QuoteCartDrawer: React.FC = () => {
                       onClick={() => setPaymentMethod('PSE')}
                       className={`p-2 rounded-lg border text-left transition-all ${
                         paymentMethod === 'PSE'
-                          ? 'border-indigo-500 bg-indigo-500/10 text-white'
-                          : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                          ? 'border-[#D94E1F] bg-[#D94E1F]/10 text-[#D94E1F] font-bold'
+                          : 'border-[#D6D3C9] text-[#57564F] hover:bg-[#E8E5DC]'
                       }`}
                     >
                       PSE Débito Bancario
@@ -277,8 +274,8 @@ export const QuoteCartDrawer: React.FC = () => {
                       onClick={() => setPaymentMethod('TRANSFERENCIA')}
                       className={`p-2 rounded-lg border text-left transition-all ${
                         paymentMethod === 'TRANSFERENCIA'
-                          ? 'border-indigo-500 bg-indigo-500/10 text-white'
-                          : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                          ? 'border-[#D94E1F] bg-[#D94E1F]/10 text-[#D94E1F] font-bold'
+                          : 'border-[#D6D3C9] text-[#57564F] hover:bg-[#E8E5DC]'
                       }`}
                     >
                       Transferencia Bancaria
@@ -288,8 +285,8 @@ export const QuoteCartDrawer: React.FC = () => {
                       onClick={() => setPaymentMethod('EN_CUOTAS')}
                       className={`p-2 rounded-lg border text-left transition-all ${
                         paymentMethod === 'EN_CUOTAS'
-                          ? 'border-indigo-500 bg-indigo-500/10 text-white'
-                          : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                          ? 'border-[#D94E1F] bg-[#D94E1F]/10 text-[#D94E1F] font-bold'
+                          : 'border-[#D6D3C9] text-[#57564F] hover:bg-[#E8E5DC]'
                       }`}
                     >
                       Plan en Cuotas
@@ -297,12 +294,12 @@ export const QuoteCartDrawer: React.FC = () => {
                   </div>
 
                   {paymentMethod === 'EN_CUOTAS' && (
-                    <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
-                      <span className="text-slate-400">Número de cuotas:</span>
+                    <div className="pt-2 border-t border-[#D6D3C9] flex items-center justify-between text-xs">
+                      <span className="text-[#78766F]">Número de cuotas:</span>
                       <select
                         value={installmentCount}
                         onChange={(e) => setInstallmentCount(Number(e.target.value))}
-                        className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white"
+                        className="bg-[#E8E5DC] border border-[#D6D3C9] rounded-lg px-2 py-1 text-xs text-[#181816]"
                       >
                         <option value={3}>3 Cuotas Mensuales</option>
                         <option value={6}>6 Cuotas Mensuales</option>
@@ -312,12 +309,12 @@ export const QuoteCartDrawer: React.FC = () => {
                 </div>
 
                 {/* Escrow Custody Assurance */}
-                <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/20 text-xs text-emerald-300 space-y-1">
+                <div className="p-3 rounded-xl bg-[#E3F1E8] border border-[#A7D7B8] text-xs text-[#1E6F43] space-y-1">
                   <div className="font-semibold flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    <ShieldCheck className="w-4 h-4 text-[#1E6F43]" />
                     Custodia Escrow Protegida
                   </div>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                  <p className="text-[11px] text-[#1E6F43]/80 leading-relaxed">
                     Los depósitos en garantía quedan protegidos en cuenta fiduciaria y son reembolsados tras la firma del acta de devolución.
                   </p>
                 </div>
@@ -327,29 +324,29 @@ export const QuoteCartDrawer: React.FC = () => {
 
           {/* Summary & Checkout Footer */}
           {cart.length > 0 && (
-            <div className="p-4 sm:p-5 border-t border-slate-800 bg-[#090d16] space-y-3">
+            <div className="p-4 sm:p-5 border-t border-[#D6D3C9] bg-[#E8E5DC] space-y-3">
               <div className="space-y-1.5 text-xs">
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-[#78766F]">
                   <span>Subtotal Alquiler:</span>
-                  <span className="font-mono text-slate-200">${subtotalSinDescuento.toLocaleString('es-CO')}</span>
+                  <span className="font-mono text-[#181816] font-bold">${subtotalSinDescuento.toLocaleString('es-CO')}</span>
                 </div>
                 {totalDescuento > 0 && (
-                  <div className="flex justify-between text-amber-400">
+                  <div className="flex justify-between text-[#1E6F43] font-semibold">
                     <span>Ahorro Semanal (-15%):</span>
                     <span className="font-mono">-${totalDescuento.toLocaleString('es-CO')}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-[#78766F]">
                   <span>IVA Legal (19%):</span>
-                  <span className="font-mono text-slate-200">${iva.toLocaleString('es-CO')}</span>
+                  <span className="font-mono text-[#181816]">${iva.toLocaleString('es-CO')}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-[#78766F]">
                   <span>Depósitos en Custodia (Escrow):</span>
-                  <span className="font-mono text-slate-200">${totalDepositos.toLocaleString('es-CO')}</span>
+                  <span className="font-mono text-[#181816]">${totalDepositos.toLocaleString('es-CO')}</span>
                 </div>
-                <div className="flex justify-between text-sm font-bold text-white pt-2 border-t border-slate-800">
+                <div className="flex justify-between text-sm font-bold text-[#181816] pt-2 border-t border-[#D6D3C9]">
                   <span>Gran Total Liquidado:</span>
-                  <span className="font-mono text-indigo-400 text-base">
+                  <span className="font-mono text-[#D94E1F] text-base font-black">
                     ${granTotal.toLocaleString('es-CO')}
                   </span>
                 </div>
@@ -358,13 +355,13 @@ export const QuoteCartDrawer: React.FC = () => {
               <button
                 onClick={handleCheckout}
                 disabled={submitting}
-                className="w-full py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all shadow-xl shadow-indigo-600/30"
+                className="w-full py-3.5 px-4 rounded-lg bg-[#D94E1F] hover:bg-[#B83D14] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md"
               >
                 {submitting ? (
                   <span>Generando Contratos...</span>
                 ) : (
                   <>
-                    <Lock className="w-3.5 h-3.5 text-indigo-200" />
+                    <Lock className="w-3.5 h-3.5 text-white" />
                     <span>Confirmar y Emitir Contrato</span>
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </>

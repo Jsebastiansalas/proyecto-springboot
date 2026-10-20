@@ -33,10 +33,10 @@ export const CategoryFilterPills: React.FC<CategoryFilterPillsProps> = ({
     <div className="flex items-center gap-2 overflow-x-auto pb-3 pt-1 scrollbar-none">
       <button
         onClick={() => onSelectCategory(null)}
-        className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap flex items-center gap-2 transition-all shrink-0 ${
+        className={`px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap flex items-center gap-2 transition-all shrink-0 ${
           selectedCategoryId === null
-            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 border border-indigo-500'
-            : 'bg-slate-900/80 text-slate-300 hover:bg-slate-800 border border-slate-800'
+            ? 'bg-[#D94E1F] text-white shadow-xs border border-[#B83D14]'
+            : 'bg-[#FAF9F5] text-[#57564F] hover:bg-[#E8E5DC] border border-[#D6D3C9]'
         }`}
       >
         <Layers className="w-3.5 h-3.5" />
@@ -51,17 +51,17 @@ export const CategoryFilterPills: React.FC<CategoryFilterPillsProps> = ({
           <button
             key={cat.id}
             onClick={() => onSelectCategory(cat.id)}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap flex items-center gap-2 transition-all shrink-0 ${
+            className={`px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap flex items-center gap-2 transition-all shrink-0 ${
               isSelected
-                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 border border-indigo-500'
-                : 'bg-slate-900/80 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                ? 'bg-[#D94E1F] text-white shadow-xs border border-[#B83D14]'
+                : 'bg-[#FAF9F5] text-[#57564F] hover:bg-[#E8E5DC] border border-[#D6D3C9]'
             }`}
           >
-            <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-indigo-400'}`} />
+            <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-[#D94E1F]'}`} />
             <span>{cat.name}</span>
             {cat.toolCount !== undefined && (
-              <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
-                isSelected ? 'bg-indigo-700 text-indigo-100' : 'bg-slate-800 text-slate-400'
+              <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-md ${
+                isSelected ? 'bg-[#B83D14] text-white' : 'bg-[#E8E5DC] text-[#181816]'
               }`}>
                 {cat.toolCount}
               </span>

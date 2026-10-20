@@ -89,7 +89,7 @@ export const CommandPalette: React.FC = () => {
       >
         {/* Search Input Bar */}
         <div className="flex items-center px-4 py-3.5 border-b border-slate-800 bg-[#0a0f1d]/80">
-          <Search className="w-5 h-5 text-indigo-400 shrink-0 mr-3" />
+          <Search className="w-5 h-5 text-[#D94E1F] shrink-0 mr-3" />
           <input
             ref={inputRef}
             type="text"
@@ -118,7 +118,7 @@ export const CommandPalette: React.FC = () => {
           {filteredTools.length > 0 && (
             <div>
               <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 px-3 py-1 flex items-center gap-1.5">
-                <Wrench className="w-3.5 h-3.5 text-indigo-400" />
+                <Wrench className="w-3.5 h-3.5 text-[#D94E1F]" />
                 Maquinaria Encontrada
               </div>
               <div className="mt-1 space-y-1">
@@ -126,7 +126,7 @@ export const CommandPalette: React.FC = () => {
                   <button
                     key={tool.id}
                     onClick={() => handleToolSelect(tool)}
-                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left text-slate-200 hover:bg-indigo-600/15 hover:text-white transition-colors group"
+                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left text-slate-200 hover:bg-[#D94E1F]/15 hover:text-white transition-colors group"
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-700">
@@ -137,7 +137,7 @@ export const CommandPalette: React.FC = () => {
                         )}
                       </div>
                       <div>
-                        <div className="font-semibold text-sm text-slate-100 group-hover:text-indigo-300">
+                        <div className="font-semibold text-sm text-slate-100 group-hover:text-[#D94E1F]">
                           {tool.name}
                         </div>
                         <div className="text-slate-400 font-mono text-[11px]">
@@ -146,7 +146,7 @@ export const CommandPalette: React.FC = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-indigo-400 font-semibold font-mono text-xs">
+                      <div className="text-[#D94E1F] font-semibold font-mono text-xs">
                         ${tool.baseDailyPrice.toLocaleString('es-CO')} /día
                       </div>
                       <span className="text-[10px] text-slate-400 flex items-center gap-1 justify-end">
@@ -162,7 +162,7 @@ export const CommandPalette: React.FC = () => {
           {/* Navegación Principal */}
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 px-3 py-1 flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-indigo-400" />
+              <Layers className="w-3.5 h-3.5 text-[#D94E1F]" />
               Navegación de Módulos
             </div>
             <div className="grid grid-cols-2 gap-1.5 mt-1">
@@ -170,7 +170,7 @@ export const CommandPalette: React.FC = () => {
                 onClick={() => handleSelectView('home')}
                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-slate-200 hover:bg-slate-800/80 hover:text-white transition-colors text-left"
               >
-                <Home className="w-4 h-4 text-indigo-400" />
+                <Home className="w-4 h-4 text-[#D94E1F]" />
                 <div>
                   <div className="font-medium text-xs text-slate-200">Inicio</div>
                   <div className="text-[10px] text-slate-400">Portal y simulador interactivo</div>
@@ -273,7 +273,7 @@ export const CommandPalette: React.FC = () => {
                   setIsQuoteDrawerOpen(true);
                   setIsCommandPaletteOpen(false);
                 }}
-                className="hover:text-indigo-400 flex items-center gap-1 text-[11px]"
+                className="hover:text-[#D94E1F] flex items-center gap-1 text-[11px]"
               >
                 <SlidersHorizontal className="w-3.5 h-3.5" />
                 Cotización Activa

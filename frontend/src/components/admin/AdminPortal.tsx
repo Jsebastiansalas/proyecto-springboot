@@ -309,7 +309,7 @@ export const AdminPortal: React.FC = () => {
             <div className="p-4 rounded-xl bg-[#0c1220] border border-slate-800 glass-panel">
               <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
                 <span className="font-semibold uppercase tracking-wider">Alquileres en Obra</span>
-                <Activity className="w-4 h-4 text-indigo-400" />
+                <Activity className="w-4 h-4 text-[#D94E1F]" />
               </div>
               <div className="text-2xl font-black font-mono text-white">
                 {data?.activeRentals ?? 12}
@@ -334,9 +334,9 @@ export const AdminPortal: React.FC = () => {
           </div>
 
           {/* Security Architecture & Backend Hardening Card */}
-          <div className="p-5 rounded-2xl bg-[#090e1c] border border-indigo-500/30 space-y-4">
+          <div className="p-5 rounded-2xl bg-[#090e1c] border border-[#D94E1F] space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5 text-indigo-400 font-bold text-sm">
+              <div className="flex items-center gap-2.5 text-[#D94E1F] font-bold text-sm">
                 <Lock className="w-4 h-4" />
                 <span>Hardening de Seguridad & Cumplimiento OWASP 2026</span>
               </div>
@@ -373,7 +373,7 @@ export const AdminPortal: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="p-5 rounded-2xl bg-[#0c1220] border border-slate-800 glass-panel space-y-4">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Wrench className="w-4 h-4 text-indigo-400" />
+                <Wrench className="w-4 h-4 text-[#D94E1F]" />
                 <span>Maquinaria de Mayor Demanda Operativa</span>
               </h3>
               <div className="space-y-2 text-xs">
@@ -424,7 +424,7 @@ export const AdminPortal: React.FC = () => {
                     <div className="text-[11px] text-slate-400 font-mono">NIT: 900.548.120-1 · Bogotá D.C.</div>
                   </div>
                   <div className="text-right font-mono">
-                    <div className="text-indigo-400 font-bold">$12.450.000 COP</div>
+                    <div className="text-[#D94E1F] font-bold">$12.450.000 COP</div>
                     <div className="text-[11px] text-slate-500">14 frentes de obra</div>
                   </div>
                 </div>
@@ -435,7 +435,7 @@ export const AdminPortal: React.FC = () => {
                     <div className="text-[11px] text-slate-400 font-mono">NIT: 901.882.341-9 · Villavicencio</div>
                   </div>
                   <div className="text-right font-mono">
-                    <div className="text-indigo-400 font-bold">$6.920.000 COP</div>
+                    <div className="text-[#D94E1F] font-bold">$6.920.000 COP</div>
                     <div className="text-[11px] text-slate-500">8 frentes de obra</div>
                   </div>
                 </div>
@@ -446,7 +446,7 @@ export const AdminPortal: React.FC = () => {
                     <div className="text-[11px] text-slate-400 font-mono">NIT: 900.119.458-3 · Tunja</div>
                   </div>
                   <div className="text-right font-mono">
-                    <div className="text-indigo-400 font-bold">$4.800.000 COP</div>
+                    <div className="text-[#D94E1F] font-bold">$4.800.000 COP</div>
                     <div className="text-[11px] text-slate-500">5 frentes de obra</div>
                   </div>
                 </div>
@@ -506,7 +506,7 @@ export const AdminPortal: React.FC = () => {
                               ? 'bg-rose-500/10 text-rose-300 border-rose-500/30'
                               : u.role === 'ROLE_PROVEEDOR'
                               ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                              : 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30'
+                              : 'bg-[#E05A2B]/10 text-[#D94E1F] border-[#D94E1F]'
                           }`}>
                             {u.role.replace('ROLE_', '')}
                           </span>
@@ -684,7 +684,7 @@ export const AdminPortal: React.FC = () => {
                         </td>
                         <td className="py-3.5 px-4 font-mono">
                           <div className="text-white font-bold">${res.totalPrice.toLocaleString('es-CO')}</div>
-                          <div className="text-[11px] text-indigo-400">Escrow: ${res.depositAmount.toLocaleString('es-CO')}</div>
+                          <div className="text-[11px] text-[#D94E1F]">Escrow: ${res.depositAmount.toLocaleString('es-CO')}</div>
                         </td>
                         <td className="py-3.5 px-4">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${
@@ -700,7 +700,7 @@ export const AdminPortal: React.FC = () => {
                             res.status === 'EN_CURSO'
                               ? 'bg-sky-500/10 text-sky-400 border-sky-500/30'
                               : res.status === 'APROBADA'
-                              ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+                              ? 'bg-[#E05A2B]/10 text-[#D94E1F] border-[#D94E1F]'
                               : res.status === 'FINALIZADA'
                               ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                               : res.status === 'CANCELADA'
@@ -766,7 +766,7 @@ export const AdminPortal: React.FC = () => {
               {reservations.filter(r => r.status === 'FINALIZADA' || r.status === 'EN_CURSO').slice(0, 5).map(r => (
                 <div key={r.id} className="p-4 flex items-center justify-between">
                   <div>
-                    <div className="font-mono font-bold text-indigo-400">{r.reservationCode}</div>
+                    <div className="font-mono font-bold text-[#D94E1F]">{r.reservationCode}</div>
                     <div className="text-white font-medium mt-0.5">{r.toolName}</div>
                     <div className="text-[11px] text-slate-400 font-mono mt-0.5">Cliente: {r.clientName}</div>
                   </div>

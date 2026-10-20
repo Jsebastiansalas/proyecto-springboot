@@ -93,7 +93,7 @@ export const DispatchModal: React.FC<DispatchModalProps> = ({
               onChange={(e) => setInitialHours(Number(e.target.value))}
               min="0"
               required
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-[#D94E1F]"
             />
             <span className="text-[11px] text-slate-500">
               Horas acumuladas certificadas por telemetría IoT
@@ -102,14 +102,14 @@ export const DispatchModal: React.FC<DispatchModalProps> = ({
 
           <div className="space-y-1.5">
             <label className="text-slate-300 font-semibold flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5 text-indigo-400" />
+              <FileText className="w-3.5 h-3.5 text-[#D94E1F]" />
               Observaciones de Entrega 4FN
             </label>
             <textarea
               value={observations}
               onChange={(e) => setObservations(e.target.value)}
               rows={3}
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white text-xs focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white text-xs focus:outline-none focus:border-[#D94E1F]"
             />
           </div>
 

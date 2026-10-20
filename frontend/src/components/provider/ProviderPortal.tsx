@@ -320,7 +320,7 @@ export const ProviderPortal: React.FC = () => {
 
                         <td className="py-3.5 px-4 font-mono">
                           <div className="text-white font-bold">${res.totalPrice.toLocaleString('es-CO')}</div>
-                          <div className="text-[11px] text-indigo-400">Fianza: ${res.depositAmount.toLocaleString('es-CO')}</div>
+                          <div className="text-[11px] text-[#D94E1F]">Fianza: ${res.depositAmount.toLocaleString('es-CO')}</div>
                         </td>
 
                         <td className="py-3.5 px-4">
@@ -328,7 +328,7 @@ export const ProviderPortal: React.FC = () => {
                             res.status === 'EN_CURSO'
                               ? 'bg-sky-500/10 text-sky-400 border-sky-500/30'
                               : res.status === 'APROBADA'
-                              ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+                              ? 'bg-[#E05A2B]/10 text-[#D94E1F] border-[#D94E1F]'
                               : res.status === 'FINALIZADA'
                               ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                               : res.status === 'CANCELADA'
@@ -360,7 +360,7 @@ export const ProviderPortal: React.FC = () => {
                           {res.status === 'APROBADA' && (
                             <button
                               onClick={() => setSelectedForDispatch(res)}
-                              className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold flex items-center gap-1.5 ml-auto transition-colors shadow-md shadow-indigo-600/20"
+                              className="px-3.5 py-1.5 rounded-lg bg-[#D94E1F] hover:bg-[#E05A2B] text-white font-semibold flex items-center gap-1.5 ml-auto transition-colors shadow-md shadow-sm"
                             >
                               <Truck className="w-3.5 h-3.5" />
                               <span>Despachar Equipo</span>

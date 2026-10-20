@@ -156,7 +156,7 @@ const App = (() => {
         list.innerHTML = '<div class="text-slate-400 text-center py-4">No hay notificaciones pendientes.</div>';
       } else {
         list.innerHTML = state.notifications.map(n => `
-          <div class="p-2.5 rounded-xl border ${n.read ? 'bg-slate-50 border-slate-200 text-slate-500' : 'bg-blue-50/80 border-blue-200 text-slate-900'} text-xs space-y-1 cursor-pointer transition-colors" onclick="App.markNotificationRead(${n.id})">
+          <div class="p-2.5 rounded-xl border ${n.read ? 'bg-slate-50 border-[#D6D3C9] text-slate-500' : 'bg-[#FFF5F0]/80 border-[#D6D3C9] text-slate-900'} text-xs space-y-1 cursor-pointer transition-colors" onclick="App.markNotificationRead(${n.id})">
             <div class="flex justify-between items-center font-bold">
               <span>${n.title || 'Aviso de Obra'}</span>
               <span class="text-[10px] text-slate-400 font-mono">${formatDate(n.createdAt)}</span>
@@ -296,12 +296,12 @@ const App = (() => {
     if (state.quoteCart.length === 0) {
       container.innerHTML = `
         <div class="py-16 text-center text-slate-400 space-y-3">
-          <span class="text-4xl block font-sans text-blue-600 font-black">#</span>
+          <span class="text-4xl block font-sans text-[#D94E1F] font-black">#</span>
           <p class="font-extrabold text-slate-800 text-sm">Tu cotización de obra está vacía</p>
           <p class="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
             Explora el catálogo y añade los equipos requeridos para tu frente de obra con un 15% de ahorro semanal.
           </p>
-          <button type="button" onclick="App.toggleQuoteDrawer(false); App.navigateView('catalog');" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20 rounded-xl text-xs font-black shadow-sm transition-all">
+          <button type="button" onclick="App.toggleQuoteDrawer(false); App.navigateView('catalog');" class="px-5 py-2.5 bg-[#181816] hover:bg-[#D94E1F] text-white shadow-md shadow-sm rounded-xl text-xs font-black shadow-sm transition-all">
             Explorar Catálogo &rarr;
           </button>
         </div>
@@ -329,12 +329,12 @@ const App = (() => {
       deposits += item.deposit;
 
       return `
-        <div class="p-3 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
+        <div class="p-3 bg-white rounded-2xl border border-[#D6D3C9] shadow-sm space-y-2.5">
           <div class="flex items-start gap-3">
-            <img src="${item.image}" alt="${item.name}" class="w-14 h-14 rounded-xl object-cover bg-slate-100 border border-slate-200 shrink-0" onerror="this.src='images/tools/HERR-0001.jpg'">
+            <img src="${item.image}" alt="${item.name}" class="w-14 h-14 rounded-xl object-cover bg-slate-100 border border-[#D6D3C9] shrink-0" onerror="this.src='images/tools/HERR-0001.jpg'">
             <div class="flex-1 min-w-0">
               <div class="flex items-center justify-between">
-                <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">${item.brand} • ${item.sku}</span>
+                <span class="text-[10px] font-bold text-[#D94E1F] uppercase tracking-wider">${item.brand} • ${item.sku}</span>
                 <button type="button" onclick="App.removeFromQuoteCart(${item.toolId})" class="text-slate-400 hover:text-rose-600 text-xs transition-colors" title="Quitar equipo">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
@@ -344,11 +344,11 @@ const App = (() => {
             </div>
           </div>
 
-          <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+          <div class="flex items-center justify-between pt-2 border-t border-[#D6D3C9] text-xs">
             <!-- Stepper de Días -->
             <div class="flex items-center gap-1.5">
               <span class="text-[10px] font-bold text-slate-400 uppercase">Faena:</span>
-              <div class="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+              <div class="flex items-center border border-[#D6D3C9] rounded-lg overflow-hidden bg-slate-50">
                 <button type="button" onclick="App.updateQuoteCartDays(${item.toolId}, ${item.days - 1})" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 font-bold text-xs">-</button>
                 <input type="number" min="1" max="90" value="${item.days}" onchange="App.updateQuoteCartDays(${item.toolId}, this.value)" class="w-10 text-center text-xs font-mono font-bold bg-transparent focus:outline-none">
                 <button type="button" onclick="App.updateQuoteCartDays(${item.toolId}, ${item.days + 1})" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 font-bold text-xs">+</button>
@@ -653,9 +653,9 @@ const App = (() => {
       const role = state.profile.role;
       if (roleBadge) {
         roleBadge.textContent = role.replace('ROLE_', '');
-        roleBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded-full ' +
+        roleBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded-lg ' +
           (role === 'ROLE_ADMIN' ? 'bg-purple-100 text-purple-800' :
-           role === 'ROLE_PROVEEDOR' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800');
+           role === 'ROLE_PROVEEDOR' ? 'bg-[#FFE8DE] text-blue-800' : 'bg-emerald-100 text-emerald-800');
       }
 
       // Mostrar pestañas correspondientes
@@ -731,7 +731,7 @@ const App = (() => {
   async function loadTools() {
     const grid = document.getElementById('tools-grid');
     const listEl = document.getElementById('tools-list-view');
-    const spinner = '<div class="col-span-full py-16 text-center text-slate-400"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-3"></div><p class="font-medium text-xs">Cargando catálogo de maquinaria y equipos...</p></div>';
+    const spinner = '<div class="col-span-full py-16 text-center text-slate-400"><div class="inline-block animate-spin rounded-lg h-8 w-8 border-b-2 border-[#D94E1F] mb-3"></div><p class="font-medium text-xs">Cargando catálogo de maquinaria y equipos...</p></div>';
     if (grid) grid.innerHTML = spinner;
     if (listEl) listEl.innerHTML = spinner;
 
@@ -808,7 +808,7 @@ const App = (() => {
       if (label) label.textContent = `${state.compareList.length}/3`;
       if (thumbsContainer) {
         thumbsContainer.innerHTML = state.compareList.map(item => `
-          <img src="${item.image || 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=80&q=80'}" class="w-8 h-8 rounded-full border-2 border-slate-900 object-cover shadow" title="${item.name}">
+          <img src="${item.image || 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=80&q=80'}" class="w-8 h-8 rounded-lg border-2 border-slate-900 object-cover shadow" title="${item.name}">
         `).join('');
       }
     } else {
@@ -834,7 +834,7 @@ const App = (() => {
     if (!modal || !container) return;
 
     modal.classList.remove('hidden');
-    container.innerHTML = '<div class="py-16 text-center text-slate-400"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div><p>Cargando especificaciones 4FN cruzadas...</p></div>';
+    container.innerHTML = '<div class="py-16 text-center text-slate-400"><div class="inline-block animate-spin rounded-lg h-8 w-8 border-b-2 border-[#D94E1F] mb-2"></div><p>Cargando especificaciones 4FN cruzadas...</p></div>';
 
     try {
       // Cargar detalles completos 4FN de cada equipo
@@ -855,12 +855,12 @@ const App = (() => {
       const allSpecNames = Array.from(specNamesSet);
 
       container.innerHTML = `
-        <table class="w-full text-xs text-left border-collapse border border-slate-200">
+        <table class="w-full text-xs text-left border-collapse border border-[#D6D3C9]">
           <thead>
             <tr class="bg-slate-100 text-slate-700">
-              <th class="p-4 border border-slate-200 w-44 font-bold uppercase text-[10px] text-slate-400">Atributo / Parámetro</th>
+              <th class="p-4 border border-[#D6D3C9] w-44 font-bold uppercase text-[10px] text-slate-400">Atributo / Parámetro</th>
               ${toolDetails.map(t => `
-                <th class="p-4 border border-slate-200 text-center w-64 bg-white">
+                <th class="p-4 border border-[#D6D3C9] text-center w-64 bg-white">
                   <div class="relative h-28 rounded-xl overflow-hidden mb-2 bg-slate-50">
                     <img src="${t.mainImageUrl || 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=400&q=80'}" class="w-full h-full object-cover">
                     ${Number(t.baseDailyPrice) === minDailyPrice ? `
@@ -876,9 +876,9 @@ const App = (() => {
           <tbody class="divide-y divide-slate-200">
             <!-- Tarifa Diaria -->
             <tr class="bg-amber-50/40 font-bold">
-              <td class="p-3 border border-slate-200 text-slate-700 uppercase text-[10px]">Tarifa Diaria (Base)</td>
+              <td class="p-3 border border-[#D6D3C9] text-slate-700 uppercase text-[10px]">Tarifa Diaria (Base)</td>
               ${toolDetails.map(t => `
-                <td class="p-3 border border-slate-200 text-center font-mono text-sm text-slate-900 ${Number(t.baseDailyPrice) === minDailyPrice ? 'text-emerald-700 font-black' : ''}">
+                <td class="p-3 border border-[#D6D3C9] text-center font-mono text-sm text-slate-900 ${Number(t.baseDailyPrice) === minDailyPrice ? 'text-emerald-700 font-black' : ''}">
                   ${formatCOP(t.baseDailyPrice)} / día
                 </td>
               `).join('')}
@@ -886,11 +886,11 @@ const App = (() => {
 
             <!-- Tarifa Semanal (con descuento 15%) -->
             <tr>
-              <td class="p-3 border border-slate-200 text-slate-600 uppercase text-[10px]">Tarifa Semanal (-15%)</td>
+              <td class="p-3 border border-[#D6D3C9] text-slate-600 uppercase text-[10px]">Tarifa Semanal (-15%)</td>
               ${toolDetails.map(t => {
                 const weekly = Number(t.baseDailyPrice) * 7 * 0.85;
                 return `
-                  <td class="p-3 border border-slate-200 text-center font-mono text-emerald-600 font-bold">
+                  <td class="p-3 border border-[#D6D3C9] text-center font-mono text-emerald-600 font-bold">
                     ${formatCOP(weekly)} (7 días)
                   </td>
                 `;
@@ -899,9 +899,9 @@ const App = (() => {
 
             <!-- Depósito en Garantía -->
             <tr>
-              <td class="p-3 border border-slate-200 text-slate-600 uppercase text-[10px]">Depósito Reembolsable</td>
+              <td class="p-3 border border-[#D6D3C9] text-slate-600 uppercase text-[10px]">Depósito Reembolsable</td>
               ${toolDetails.map(t => `
-                <td class="p-3 border border-slate-200 text-center font-mono text-slate-600">
+                <td class="p-3 border border-[#D6D3C9] text-center font-mono text-slate-600">
                   ${formatCOP(t.depositAmount)}
                 </td>
               `).join('')}
@@ -909,9 +909,9 @@ const App = (() => {
 
             <!-- Calificación Promedio -->
             <tr>
-              <td class="p-3 border border-slate-200 text-slate-600 uppercase text-[10px]">Calificación Contratistas</td>
+              <td class="p-3 border border-[#D6D3C9] text-slate-600 uppercase text-[10px]">Calificación Contratistas</td>
               ${toolDetails.map(t => `
-                <td class="p-3 border border-slate-200 text-center font-bold text-amber-600">
+                <td class="p-3 border border-[#D6D3C9] text-center font-bold text-amber-600">
                   <svg class="w-3.5 h-3.5 text-amber-500 fill-amber-500 inline mr-0.5" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>${(t.averageRating || 5.0).toFixed(1)} <span class="text-slate-400 font-normal">(${t.totalReviews || 0} reseñas)</span>
                 </td>
               `).join('')}
@@ -919,9 +919,9 @@ const App = (() => {
 
             <!-- Categoría y SKU -->
             <tr>
-              <td class="p-3 border border-slate-200 text-slate-600 uppercase text-[10px]">Categoría & SKU</td>
+              <td class="p-3 border border-[#D6D3C9] text-slate-600 uppercase text-[10px]">Categoría & SKU</td>
               ${toolDetails.map(t => `
-                <td class="p-3 border border-slate-200 text-center">
+                <td class="p-3 border border-[#D6D3C9] text-center">
                   <span class="px-2 py-0.5 rounded text-[10px] bg-slate-100 font-bold">${t.categoryName}</span>
                   <div class="text-[10px] font-mono text-slate-400 mt-1">${t.codeSku}</div>
                 </td>
@@ -937,11 +937,11 @@ const App = (() => {
               </tr>
               ${allSpecNames.map(specName => `
                 <tr>
-                  <td class="p-2.5 border border-slate-200 font-semibold text-slate-600">${specName}</td>
+                  <td class="p-2.5 border border-[#D6D3C9] font-semibold text-slate-600">${specName}</td>
                   ${toolDetails.map(t => {
                     const match = (t.specifications || []).find(s => s.specName.toLowerCase() === specName.toLowerCase());
                     return `
-                      <td class="p-2.5 border border-slate-200 text-center font-medium ${match ? 'text-slate-900 font-semibold' : 'text-slate-300 italic'}">
+                      <td class="p-2.5 border border-[#D6D3C9] text-center font-medium ${match ? 'text-slate-900 font-semibold' : 'text-slate-300 italic'}">
                         ${match ? match.specValue : '—'}
                       </td>
                     `;
@@ -957,9 +957,9 @@ const App = (() => {
               </td>
             </tr>
             <tr>
-              <td class="p-3 border border-slate-200 font-semibold text-slate-600">EPP Obligatorio</td>
+              <td class="p-3 border border-[#D6D3C9] font-semibold text-slate-600">EPP Obligatorio</td>
               ${toolDetails.map(t => `
-                <td class="p-3 border border-slate-200">
+                <td class="p-3 border border-[#D6D3C9]">
                   <div class="flex flex-wrap gap-1 justify-center">
                     ${t.safetyRequirements && t.safetyRequirements.length > 0 ?
                       t.safetyRequirements.map(sr => `
@@ -974,10 +974,10 @@ const App = (() => {
 
             <!-- Botón de Acción -->
             <tr class="bg-slate-50">
-              <td class="p-4 border border-slate-200 font-bold uppercase text-[10px] text-slate-500">Decisión</td>
+              <td class="p-4 border border-[#D6D3C9] font-bold uppercase text-[10px] text-slate-500">Decisión</td>
               ${toolDetails.map(t => `
-                <td class="p-4 border border-slate-200 text-center">
-                  <button type="button" onclick="App.selectAndRentFromComparator(${t.id})" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-white font-extrabold text-xs rounded-xl transition-all shadow-sm">
+                <td class="p-4 border border-[#D6D3C9] text-center">
+                  <button type="button" onclick="App.selectAndRentFromComparator(${t.id})" class="w-full py-2 bg-[#181816] hover:bg-[#D94E1F] text-white text-white font-extrabold text-xs rounded-xl transition-all shadow-sm">
                     Alquilar este Equipo
                   </button>
                 </td>
@@ -1006,7 +1006,7 @@ const App = (() => {
 
     if (processed.length === 0) {
       grid.innerHTML = `
-        <div class="col-span-full py-16 text-center text-slate-500 bg-white rounded-2xl border border-slate-200">
+        <div class="col-span-full py-16 text-center text-slate-500 bg-white rounded-2xl border border-[#D6D3C9]">
           <svg class="w-16 h-16 mx-auto mb-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
           <p class="text-base font-extrabold text-slate-800">No se encontraron equipos con esos criterios</p>
           <p class="text-xs text-slate-400 mt-1">Intenta ajustando el término de búsqueda o cambiando los filtros seleccionados.</p>
@@ -1032,7 +1032,7 @@ const App = (() => {
         : `<svg class="w-3.5 h-3.5 text-amber-500 fill-amber-500 inline mr-0.5" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>Nuevo`;
 
       return `
-        <div class="tool-card rounded-2xl overflow-hidden flex flex-col justify-between shadow-sm bg-white border border-slate-200 transition-all">
+        <div class="tool-card rounded-2xl overflow-hidden flex flex-col justify-between shadow-sm bg-[#FAF9F5] border border-[#D6D3C9] transition-all">
           <div>
             <div class="relative h-52 bg-slate-100 overflow-hidden group">
               <img src="${imgSrc}" alt="${tool.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='${fallbackImg}'">
@@ -1041,14 +1041,14 @@ const App = (() => {
                 ${isChoice ? '<span class="badge-choice">OPCIÓN RENTAMAQ</span>' : ''}
                 <div class="flex gap-1.5 mt-0.5">
                   <span class="px-2 py-0.5 text-[10px] font-bold rounded-md ${statusClass}">${tool.status}</span>
-                  <span class="px-2 py-0.5 text-[10px] font-semibold bg-slate-900/80 text-white rounded-md backdrop-blur-sm">${tool.categoryName || 'General'}</span>
+                  <span class="px-2 py-0.5 text-[10px] font-semibold bg-[#232320]/80 text-white rounded-md backdrop-blur-sm">${tool.categoryName || 'General'}</span>
                 </div>
               </div>
               <div class="absolute top-3 right-3 flex items-center gap-1.5">
-                <button type="button" onclick="App.toggleFavorite(${tool.id}, event)" class="w-7 h-7 rounded-full bg-white/95 backdrop-blur-sm border border-slate-200 flex items-center justify-center text-xs shadow-sm hover:scale-110 transition-transform ${isFav ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}" title="${isFav ? 'Quitar de favoritos' : 'Añadir a favoritos'}">
+                <button type="button" onclick="App.toggleFavorite(${tool.id}, event)" class="w-7 h-7 rounded-lg bg-white/95 backdrop-blur-sm border border-[#D6D3C9] flex items-center justify-center text-xs shadow-sm hover:scale-110 transition-transform ${isFav ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}" title="${isFav ? 'Quitar de favoritos' : 'Añadir a favoritos'}">
                   ${isFav ? '<svg class="w-4 h-4 fill-rose-500 text-rose-500 inline" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>' : '<svg class="w-4 h-4 text-slate-400 hover:text-rose-500 inline" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>'}
                 </button>
-                <div class="flex items-center gap-1 px-2 py-0.5 text-[11px] font-black bg-slate-950 text-blue-400 rounded-md shadow-sm border border-slate-800">
+                <div class="flex items-center gap-1 px-2 py-0.5 text-[11px] font-black bg-[#181816] text-[#D94E1F] rounded-md shadow-sm border border-[#363632]">
                   <span>${ratingText}</span>
                 </div>
               </div>
@@ -1058,8 +1058,8 @@ const App = (() => {
             </div>
 
             <div class="p-5">
-              <div class="text-[10px] font-bold uppercase tracking-wider text-blue-600 mb-1">${tool.brand} • ${tool.model}</div>
-              <h3 class="text-base font-black text-slate-900 mb-1.5 line-clamp-1 leading-snug hover:text-blue-600 cursor-pointer transition-colors" onclick="App.openToolDetail(${tool.id})">${tool.name}</h3>
+              <div class="text-[10px] font-bold uppercase tracking-wider text-[#D94E1F] mb-1">${tool.brand} • ${tool.model}</div>
+              <h3 class="text-base font-black text-slate-900 mb-1.5 line-clamp-1 leading-snug hover:text-[#D94E1F] cursor-pointer transition-colors" onclick="App.openToolDetail(${tool.id})">${tool.name}</h3>
               <p class="text-xs text-slate-500 mb-3 line-clamp-2 leading-relaxed">${tool.description}</p>
               
               <div class="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
@@ -1069,12 +1069,12 @@ const App = (() => {
             </div>
           </div>
 
-          <div class="p-5 pt-0 border-t border-slate-100 bg-slate-50/60 mt-auto">
+          <div class="p-5 pt-0 border-t border-[#D6D3C9] bg-[#E8E5DC]/50 mt-auto">
             <div class="flex items-baseline justify-between py-3">
               <div>
                 <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Tarifa Diaria:</span>
                 <div class="text-xl font-black text-slate-900 font-mono">${formatCOP(tool.baseDailyPrice)}</div>
-                <span class="inline-block text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md mt-0.5">15% desc. semana</span>
+                <span class="inline-block text-[10px] font-bold text-[#B83D14] bg-[#FFF5F0] border border-[#D6D3C9] px-2 py-0.5 rounded-md mt-0.5">15% desc. semana</span>
               </div>
               <div class="text-right">
                 <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Garantía:</span>
@@ -1084,14 +1084,14 @@ const App = (() => {
             </div>
 
             <div class="flex items-center gap-1.5">
-              <button onclick="App.openToolDetail(${tool.id})" class="flex-1 py-2.5 px-3 bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20 font-extrabold text-xs rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm">
+              <button onclick="App.openToolDetail(${tool.id})" class="flex-1 py-2.5 px-3 bg-[#181816] hover:bg-[#D94E1F] text-white shadow-md shadow-sm font-extrabold text-xs rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm">
                 <span>Cotizar / Alquilar</span>
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
               </button>
-              <button type="button" onclick="App.addToQuoteCart(${tool.id}); event.stopPropagation();" class="p-2.5 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-orange-50 text-slate-700 text-xs font-bold transition-all" title="Añadir a Cotización Activa">
+              <button type="button" onclick="App.addToQuoteCart(${tool.id}); event.stopPropagation();" class="p-2.5 rounded-xl border border-[#D6D3C9] hover:border-[#D94E1F] hover:bg-orange-50 text-slate-700 text-xs font-bold transition-all" title="Añadir a Cotización Activa">
                 
               </button>
-              <button type="button" onclick="App.toggleCompare(${tool.id}, event)" class="px-2.5 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1 ${isComparing ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-700 border-slate-200 hover:border-blue-400'}" title="Comparar equipo lado a lado">
+              <button type="button" onclick="App.toggleCompare(${tool.id}, event)" class="px-2.5 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1 ${isComparing ? 'bg-[#D94E1F] text-white border-[#D94E1F]' : 'bg-white text-slate-700 border-[#D6D3C9] hover:border-[#D94E1F]'}" title="Comparar equipo lado a lado">
                 
                 <span class="hidden sm:inline">${isComparing ? 'En Lista' : 'Comparar'}</span>
               </button>
@@ -1112,7 +1112,7 @@ const App = (() => {
 
     if (processed.length === 0) {
       listContainer.innerHTML = `
-        <div class="py-16 text-center text-slate-500 bg-white rounded-2xl border border-slate-200">
+        <div class="py-16 text-center text-slate-500 bg-white rounded-2xl border border-[#D6D3C9]">
           <p class="text-base font-extrabold text-slate-800">No se encontraron equipos con esos criterios en lista</p>
           <p class="text-xs text-slate-400 mt-1">Intenta ajustando los filtros facetados.</p>
         </div>
@@ -1134,7 +1134,7 @@ const App = (() => {
       return `
         <div class="tool-list-row bg-white">
           <!-- Columna 1: Imagen y SKU -->
-          <div class="relative h-28 w-full sm:w-36 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+          <div class="relative h-28 w-full sm:w-36 rounded-xl overflow-hidden bg-slate-100 border border-[#D6D3C9] shrink-0">
             <img src="${imgSrc}" alt="${tool.name}" class="w-full h-full object-cover" onerror="this.src='${fallbackImg}'">
             <span class="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-mono bg-black/70 text-white font-bold">${tool.codeSku}</span>
           </div>
@@ -1148,7 +1148,7 @@ const App = (() => {
               ${isChoice ? '<span class="badge-choice">OPCIÓN RENTAMAQ</span>' : ''}
               <span class="text-[10px] font-mono text-slate-400 font-bold uppercase">${tool.brand} • ${tool.model}</span>
             </div>
-            <h3 class="text-base font-extrabold text-slate-900 leading-tight hover:text-blue-600 cursor-pointer transition-colors" onclick="App.openToolDetail(${tool.id})">${tool.name}</h3>
+            <h3 class="text-base font-extrabold text-slate-900 leading-tight hover:text-[#D94E1F] cursor-pointer transition-colors" onclick="App.openToolDetail(${tool.id})">${tool.name}</h3>
             <p class="text-xs text-slate-500 line-clamp-1 leading-relaxed">${tool.description}</p>
             <div class="flex items-center gap-3 text-[11px] text-slate-500 pt-1">
               <span>Proveedor: <strong class="text-slate-800">${tool.providerName}</strong></span>
@@ -1158,7 +1158,7 @@ const App = (() => {
           </div>
 
           <!-- Columna 3: Tarifas & Acciones -->
-          <div class="flex flex-col justify-between items-end gap-2 border-t md:border-t-0 md:border-l border-slate-100 pt-3 md:pt-0 md:pl-4">
+          <div class="flex flex-col justify-between items-end gap-2 border-t md:border-t-0 md:border-l border-[#D6D3C9] pt-3 md:pt-0 md:pl-4">
             <div class="text-right">
               <div class="text-[10px] text-slate-400 uppercase font-bold">Tarifa Diaria:</div>
               <div class="text-lg font-black text-slate-900 font-mono">${formatCOP(tool.baseDailyPrice)}</div>
@@ -1166,13 +1166,13 @@ const App = (() => {
             </div>
 
             <div class="flex items-center gap-1.5 w-full justify-end">
-              <button type="button" onclick="App.addToQuoteCart(${tool.id})" class="p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-orange-50 text-slate-700 text-xs font-bold transition-all" title="Añadir a Cotización">
+              <button type="button" onclick="App.addToQuoteCart(${tool.id})" class="p-2 rounded-xl border border-[#D6D3C9] hover:border-[#D94E1F] hover:bg-orange-50 text-slate-700 text-xs font-bold transition-all" title="Añadir a Cotización">
                 <svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
               </button>
-              <button type="button" onclick="App.toggleCompare(${tool.id}, event)" class="p-2 rounded-xl border border-slate-200 hover:border-slate-400 text-slate-700 text-xs font-bold transition-all ${isComparing ? 'bg-blue-600 text-white border-blue-600' : ''}" title="Comparar">
+              <button type="button" onclick="App.toggleCompare(${tool.id}, event)" class="p-2 rounded-xl border border-[#D6D3C9] hover:border-slate-400 text-slate-700 text-xs font-bold transition-all ${isComparing ? 'bg-[#D94E1F] text-white border-[#D94E1F]' : ''}" title="Comparar">
                 <svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
               </button>
-              <button type="button" onclick="App.openToolDetail(${tool.id})" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20 font-extrabold text-xs rounded-xl transition-all shadow-sm">
+              <button type="button" onclick="App.openToolDetail(${tool.id})" class="px-3.5 py-2 bg-[#181816] hover:bg-[#D94E1F] text-white shadow-md shadow-sm font-extrabold text-xs rounded-xl transition-all shadow-sm">
                 Cotizar / Alquilar
               </button>
             </div>
@@ -1187,7 +1187,7 @@ const App = (() => {
     const modal = document.getElementById('modal-tool-detail');
     const content = document.getElementById('tool-detail-content');
     modal.classList.remove('hidden');
-    content.innerHTML = '<div class="py-24 text-center"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div><p class="mt-2 text-sm text-slate-500">Cargando relaciones 4FN...</p></div>';
+    content.innerHTML = '<div class="py-24 text-center"><div class="inline-block animate-spin rounded-lg h-8 w-8 border-b-2 border-[#D94E1F]"></div><p class="mt-2 text-sm text-slate-500">Cargando relaciones 4FN...</p></div>';
 
     try {
       const [tool, occupied, reviewData, commentsData] = await Promise.all([
@@ -1222,7 +1222,7 @@ const App = (() => {
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <!-- Columna Izquierda: Galería e Información Base -->
           <div class="lg:col-span-7 space-y-6">
-            <div class="relative h-80 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+            <div class="relative h-80 rounded-2xl overflow-hidden bg-slate-100 border border-[#D6D3C9]">
               <img id="detail-main-img" src="${tool.mainImageUrl || 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=800&q=80'}" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=800&q=80'">
               <div class="absolute top-4 left-4 flex gap-2">
                 <span class="px-3 py-1 text-xs font-bold rounded-lg bg-white/90 backdrop-blur text-slate-800 shadow-sm">${tool.categoryName}</span>
@@ -1236,7 +1236,7 @@ const App = (() => {
                 <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Galería de Inspección Visual (4FN)</h4>
                 <div class="flex gap-2 overflow-x-auto pb-2">
                   ${tool.images.map(img => `
-                    <img src="${img.imageUrl}" onclick="document.getElementById('detail-main-img').src='${img.imageUrl}'" class="w-20 h-20 rounded-lg object-cover cursor-pointer border-2 hover:border-blue-600 transition-colors border-transparent" title="${img.caption || ''}">
+                    <img src="${img.imageUrl}" onclick="document.getElementById('detail-main-img').src='${img.imageUrl}'" class="w-20 h-20 rounded-lg object-cover cursor-pointer border-2 hover:border-[#D94E1F] transition-colors border-transparent" title="${img.caption || ''}">
                   `).join('')}
                 </div>
               </div>
@@ -1249,7 +1249,7 @@ const App = (() => {
             </div>
 
             <!-- Especificaciones Técnicas (4FN Relación 2) -->
-            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+            <div class="bg-slate-50 p-5 rounded-2xl border border-[#D6D3C9]">
               <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 mb-3">
                 <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
                 Especificaciones Técnicas Normalizadas
@@ -1257,7 +1257,7 @@ const App = (() => {
               <div class="grid grid-cols-2 gap-3 text-xs">
                 ${tool.specifications && tool.specifications.length > 0 ?
                   tool.specifications.map(s => `
-                    <div class="p-2.5 bg-white rounded-lg border border-slate-200 flex justify-between">
+                    <div class="p-2.5 bg-white rounded-lg border border-[#D6D3C9] flex justify-between">
                       <span class="text-slate-500">${s.specName}:</span>
                       <strong class="text-slate-800">${s.specValue}</strong>
                     </div>
@@ -1284,8 +1284,8 @@ const App = (() => {
             </div>
 
             <!-- Calificaciones y Reseñas de Clientes (Pilar 2) -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
-              <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="bg-white p-5 rounded-2xl border border-[#D6D3C9] space-y-4">
+              <div class="flex items-center justify-between border-b border-[#D6D3C9] pb-3">
                 <div class="flex items-center gap-2">
                   <svg class="w-5 h-5 text-amber-500 fill-amber-500 inline" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                   <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Opiniones de Contratistas</h3>
@@ -1299,7 +1299,7 @@ const App = (() => {
               ${reviewData && reviewData.reviews && reviewData.reviews.length > 0 ? `
                 <div class="space-y-3">
                   ${reviewData.reviews.map(rev => `
-                    <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1">
+                    <div class="p-3.5 bg-slate-50 rounded-xl border border-[#D6D3C9] text-xs space-y-1">
                       <div class="flex items-center justify-between">
                         <span class="font-extrabold text-slate-800">${rev.clientName || 'Contratista'}</span>
                         <span class="text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">${rev.rating} / 5</span>
@@ -1310,17 +1310,17 @@ const App = (() => {
                   `).join('')}
                 </div>
               ` : `
-                <div class="p-4 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-slate-200">
+                <div class="p-4 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-[#D6D3C9]">
                   Esta herramienta aún no registra opiniones. ¡Alquílala y comparte tu experiencia en obra!
                 </div>
               `}
             </div>
 
             <!-- Muro Interactivo de Comentarios y Preguntas (Q&A) -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
-              <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="bg-white p-5 rounded-2xl border border-[#D6D3C9] space-y-4">
+              <div class="flex items-center justify-between border-b border-[#D6D3C9] pb-3">
                 <div class="flex items-center gap-2">
-                  <svg class="w-5 h-5 text-blue-600 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                  <svg class="w-5 h-5 text-[#D94E1F] inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                   <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Preguntas y Comentarios sobre este Equipo</h3>
                 </div>
                 <span id="comment-count-badge" class="text-xs text-slate-400 font-medium">${state.selectedToolComments.length} mensaje(s)</span>
@@ -1333,11 +1333,11 @@ const App = (() => {
 
               <!-- Formulario para Publicar Pregunta / Comentario -->
               ${state.user ? `
-                <div class="pt-2 border-t border-slate-100">
+                <div class="pt-2 border-t border-[#D6D3C9]">
                   <label class="block text-xs font-bold text-slate-700 mb-1.5">Escribe tu pregunta para el proveedor o equipo técnico:</label>
                   <div class="flex gap-2">
                     <input type="text" id="new-comment-input" placeholder="Ej: ¿El equipo incluye brocas SDS Max o cable de extensión de 20m?" class="flex-1 px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
-                    <button type="button" onclick="App.submitComment(${tool.id})" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-white font-extrabold text-xs rounded-xl transition-all shadow-sm shrink-0">
+                    <button type="button" onclick="App.submitComment(${tool.id})" class="px-4 py-2 bg-[#181816] hover:bg-[#D94E1F] text-white text-white font-extrabold text-xs rounded-xl transition-all shadow-sm shrink-0">
                       Publicar
                     </button>
                   </div>
@@ -1355,16 +1355,16 @@ const App = (() => {
               <div class="combo-bundle-box space-y-3.5">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-2">
-                    <span class="text-xs font-mono font-black text-blue-600 uppercase tracking-wider bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold">COMBO SINÉRGICO DE OBRA</span>
+                    <span class="text-xs font-mono font-black text-[#D94E1F] uppercase tracking-wider bg-[#FFE8DE] text-[#B83D14] px-2 py-0.5 rounded font-bold">COMBO SINÉRGICO DE OBRA</span>
                     <span class="text-xs text-slate-800 font-extrabold">Frecuentemente Alquilados Juntos</span>
                   </div>
                   <span class="text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">10% OFF BUNDLE</span>
                 </div>
                 <div class="flex flex-col sm:flex-row items-center gap-4">
                   <div class="flex items-center gap-2 shrink-0">
-                    <img src="${tool.mainImageUrl || 'images/tools/HERR-0001.jpg'}" class="w-16 h-16 rounded-xl object-cover border border-slate-200 bg-slate-100" onerror="this.src='images/tools/HERR-0001.jpg'">
+                    <img src="${tool.mainImageUrl || 'images/tools/HERR-0001.jpg'}" class="w-16 h-16 rounded-xl object-cover border border-[#D6D3C9] bg-slate-100" onerror="this.src='images/tools/HERR-0001.jpg'">
                     <span class="text-slate-400 font-black text-lg">+</span>
-                    <img src="${compTool.mainImageUrl || 'images/tools/HERR-0001.jpg'}" class="w-16 h-16 rounded-xl object-cover border border-slate-200 bg-slate-100" onerror="this.src='images/tools/HERR-0001.jpg'">
+                    <img src="${compTool.mainImageUrl || 'images/tools/HERR-0001.jpg'}" class="w-16 h-16 rounded-xl object-cover border border-[#D6D3C9] bg-slate-100" onerror="this.src='images/tools/HERR-0001.jpg'">
                   </div>
                   <div class="flex-1 min-w-0 text-xs space-y-1">
                     <h5 class="font-bold text-slate-900 leading-snug">${tool.name} <span class="text-slate-400">+</span> ${compTool.name}</h5>
@@ -1374,7 +1374,7 @@ const App = (() => {
                       <span class="text-xs line-through text-slate-400 font-mono">${formatCOP(comboDailyPrice)}</span>
                     </div>
                   </div>
-                  <button type="button" onclick="App.addComboToQuoteCart(${tool.id}, ${compTool.id}); App.closeModal('modal-tool-detail');" class="px-4 py-2.5 bg-slate-950 hover:bg-orange-600 text-white font-extrabold text-xs rounded-xl transition-all shadow-sm shrink-0 whitespace-nowrap">
+                  <button type="button" onclick="App.addComboToQuoteCart(${tool.id}, ${compTool.id}); App.closeModal('modal-tool-detail');" class="px-4 py-2.5 bg-[#181816] hover:bg-orange-600 text-white font-extrabold text-xs rounded-xl transition-all shadow-sm shrink-0 whitespace-nowrap">
                     Alquilar Ambos en Combo &rarr;
                   </button>
                 </div>
@@ -1385,7 +1385,7 @@ const App = (() => {
 
           <!-- Columna Derecha: Tarifas 4FN y Cotizador en Vivo -->
           <div class="lg:col-span-5 flex flex-col justify-between">
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+            <div class="bg-white p-6 rounded-2xl border border-[#D6D3C9] shadow-sm space-y-5">
               <div>
                 <h3 class="text-base font-extrabold text-slate-900 mb-1">Cotizador Dinámico de Alquiler</h3>
                 <p class="text-xs text-slate-500">Calculado en tiempo real según días de arrendamiento e impuestos fiscales (IVA 19%).</p>
@@ -1393,7 +1393,7 @@ const App = (() => {
 
               <!-- Tarifas Normalizadas (4FN Relación 3) -->
               ${tool.pricingTiers && tool.pricingTiers.length > 0 ? `
-                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div class="p-3 bg-slate-50 rounded-xl border border-[#D6D3C9]">
                   <div class="text-xs font-bold text-slate-700 uppercase mb-2">Escalas de Tarifa por Volumen:</div>
                   <div class="space-y-1.5 text-xs">
                     ${tool.pricingTiers.map(t => `
@@ -1421,12 +1421,12 @@ const App = (() => {
               </div>
 
               <!-- Calendario Visual de Disponibilidad (28 Días) -->
-              <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+              <div class="p-3.5 bg-slate-50 rounded-xl border border-[#D6D3C9] space-y-2.5">
                 <div class="flex justify-between items-center">
                   <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                     Disponibilidad Próximos 28 Días:
                   </span>
-                  <span class="text-[10px] font-bold text-blue-800 bg-blue-100/80 px-2 py-0.5 rounded">En vivo</span>
+                  <span class="text-[10px] font-bold text-blue-800 bg-[#FFE8DE]/80 px-2 py-0.5 rounded">En vivo</span>
                 </div>
                 
                 <div id="availability-calendar-grid" class="grid grid-cols-7 gap-1 text-center text-[10px]">
@@ -1434,13 +1434,13 @@ const App = (() => {
                 </div>
 
                 <!-- Leyenda del calendario -->
-                <div class="flex items-center justify-between pt-1.5 text-[10px] text-slate-500 border-t border-slate-200">
+                <div class="flex items-center justify-between pt-1.5 text-[10px] text-slate-500 border-t border-[#D6D3C9]">
                   <div class="flex items-center gap-1">
                     <span class="w-2.5 h-2.5 rounded bg-white border border-slate-300"></span>
                     <span>Libre</span>
                   </div>
                   <div class="flex items-center gap-1">
-                    <span class="w-2.5 h-2.5 rounded bg-blue-600"></span>
+                    <span class="w-2.5 h-2.5 rounded bg-[#D94E1F]"></span>
                     <span>Tu Selección</span>
                   </div>
                   <div class="flex items-center gap-1">
@@ -1454,7 +1454,7 @@ const App = (() => {
               <div id="date-validation-banner"></div>
 
               <!-- Desglose de Liquidación -->
-              <div id="calc-breakdown-box" class="p-4 bg-slate-900 text-white rounded-xl space-y-2.5 font-mono text-xs">
+              <div id="calc-breakdown-box" class="p-4 bg-[#232320] text-white rounded-xl space-y-2.5 font-mono text-xs">
                 <div class="flex justify-between text-slate-400">
                   <span>Días de Alquiler:</span>
                   <span id="calc-days" class="text-white font-bold">7 días</span>
@@ -1467,7 +1467,7 @@ const App = (() => {
                   <span>Descuento Semanal (85%):</span>
                   <span>APLICADO</span>
                 </div>
-                <div class="border-t border-slate-800 pt-2 flex justify-between text-slate-300">
+                <div class="border-t border-[#363632] pt-2 flex justify-between text-slate-300">
                   <span>Subtotal Neto:</span>
                   <span id="calc-subtotal" class="font-bold text-white">$ 0 COP</span>
                 </div>
@@ -1494,7 +1494,7 @@ const App = (() => {
               <!-- Botones de Acción: Reserva, Carrito de Obra y Cotización Formal -->
               <div class="space-y-2">
                 ${tool.status === 'DISPONIBLE' ? `
-                  <button type="button" id="btn-submit-reservation" onclick="App.submitReservation()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-sm rounded-xl shadow-lg shadow-orange-600/30 transition-all flex items-center justify-center gap-2">
+                  <button type="button" id="btn-submit-reservation" onclick="App.submitReservation()" class="w-full py-3.5 bg-[#181816] hover:bg-[#D94E1F] text-white font-black text-sm rounded-xl shadow-lg shadow-orange-600/30 transition-all flex items-center justify-center gap-2">
                     <span>Confirmar Solicitud de Reserva</span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                   </button>
@@ -1504,7 +1504,7 @@ const App = (() => {
                   </button>
                 `}
 
-                <button type="button" onclick="App.addToQuoteCart(${tool.id}); App.closeModal('modal-tool-detail');" class="w-full py-2.5 bg-slate-950 hover:bg-slate-900 text-white font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
+                <button type="button" onclick="App.addToQuoteCart(${tool.id}); App.closeModal('modal-tool-detail');" class="w-full py-2.5 bg-[#181816] hover:bg-[#232320] text-white font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
                   <span>Añadir a Cotización Activa (Carrito de Obra)</span>
                 </button>
                 
@@ -1529,7 +1529,7 @@ const App = (() => {
   function renderCommentsHtml(comments, toolId) {
     if (!comments || comments.length === 0) {
       return `
-        <div class="p-4 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-slate-200">
+        <div class="p-4 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-[#D6D3C9]">
           No hay preguntas aún. ¡Sé el primero en consultar sobre disponibilidad técnica, transporte o accesorios!
         </div>
       `;
@@ -1538,10 +1538,10 @@ const App = (() => {
     const canReply = state.profile && (state.profile.role === 'ROLE_PROVEEDOR' || state.profile.role === 'ROLE_ADMIN');
 
     return comments.map(c => `
-      <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-2">
+      <div class="p-3.5 bg-slate-50 rounded-xl border border-[#D6D3C9] text-xs space-y-2">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-slate-900 text-amber-400 font-bold flex items-center justify-center text-[10px]">
+            <span class="w-6 h-6 rounded-lg bg-[#232320] text-amber-400 font-bold flex items-center justify-center text-[10px]">
               ${(c.userName || 'U')[0].toUpperCase()}
             </span>
             <span class="font-extrabold text-slate-800">${c.userName || 'Usuario'}</span>
@@ -1552,7 +1552,7 @@ const App = (() => {
 
         <!-- Respuesta oficial del proveedor -->
         ${c.providerReply ? `
-          <div class="ml-8 p-3 bg-amber-50/70 rounded-lg border-l-2 border-blue-600 text-slate-800 space-y-1">
+          <div class="ml-8 p-3 bg-amber-50/70 rounded-lg border-l-2 border-[#D94E1F] text-slate-800 space-y-1">
             <div class="flex items-center justify-between text-[11px] font-bold text-amber-900">
               <span>Respuesta Oficial del Proveedor</span>
               <span class="text-[10px] text-slate-400 font-mono font-normal">${formatDate(c.repliedAt)}</span>
@@ -1648,25 +1648,25 @@ const App = (() => {
       <div class="flex justify-between items-start border-b-2 border-slate-900 pb-5">
         <div>
           <div class="flex items-center gap-2">
-            <span class="text-2xl font-black text-slate-950">RENTA<span class="text-blue-600">MAQ</span></span>
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-600 text-white">HEAVY EQUIPMENT</span>
+            <span class="text-2xl font-black text-slate-950">RENTA<span class="text-[#D94E1F]">MAQ</span></span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#D94E1F] text-white">HEAVY EQUIPMENT</span>
           </div>
           <div class="text-xs text-slate-500 mt-1">RentaMaq Colombia S.A.S. • NIT 901.884.231-9</div>
           <div class="text-xs text-slate-500">Parque Industrial El Dorado, Módulo 14 • Bogotá D.C.</div>
           <div class="text-xs text-slate-500">PBX: (601) 745-8800 • cotizaciones@rentamaq.com</div>
         </div>
         <div class="text-right">
-          <div class="inline-block px-3 py-1 bg-slate-900 text-white font-mono font-bold text-xs rounded-lg uppercase tracking-wider mb-1">
+          <div class="inline-block px-3 py-1 bg-[#232320] text-white font-mono font-bold text-xs rounded-lg uppercase tracking-wider mb-1">
             Cotización Comercial
           </div>
           <div class="text-base font-black text-slate-900 font-mono">${quoteNum}</div>
           <div class="text-xs text-slate-500 mt-0.5">Fecha: <strong>${todayStr}</strong></div>
-          <div class="text-[10px] text-blue-700 font-bold mt-0.5">Validez: 15 días calendario</div>
+          <div class="text-[10px] text-[#B83D14] font-bold mt-0.5">Validez: 15 días calendario</div>
         </div>
       </div>
 
       <!-- Datos del Cliente y Obra -->
-      <div class="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
+      <div class="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-2xl border border-[#D6D3C9] text-xs">
         <div>
           <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Datos del Solicitante / Contratista</span>
           <div class="font-black text-sm text-slate-900">${clientName}</div>
@@ -1682,7 +1682,7 @@ const App = (() => {
       </div>
 
       <!-- Tabla de Liquidación del Equipo Cotizado -->
-      <div class="border border-slate-200 rounded-2xl overflow-hidden">
+      <div class="border border-[#D6D3C9] rounded-2xl overflow-hidden">
         <table class="w-full text-xs text-left">
           <thead class="bg-slate-100 text-slate-600 font-bold uppercase text-[10px]">
             <tr>
@@ -1721,27 +1721,27 @@ const App = (() => {
         </div>
 
         <div class="w-72 space-y-1.5 text-xs">
-          <div class="flex justify-between py-1 border-b border-slate-100">
+          <div class="flex justify-between py-1 border-b border-[#D6D3C9]">
             <span class="text-slate-500">Subtotal Arriendo:</span>
             <span class="font-mono font-bold text-slate-900">${formatCOP(subtotal)}</span>
           </div>
-          <div class="flex justify-between py-1 border-b border-slate-100">
+          <div class="flex justify-between py-1 border-b border-[#D6D3C9]">
             <span class="text-slate-500">IVA (19% Ley):</span>
             <span class="font-mono font-bold text-amber-700">${formatCOP(tax)}</span>
           </div>
-          <div class="flex justify-between py-1 border-b border-slate-100">
+          <div class="flex justify-between py-1 border-b border-[#D6D3C9]">
             <span class="text-slate-500">Garantía en Custodia (Fianza):</span>
             <span class="font-mono font-bold text-slate-700">${formatCOP(deposit)}</span>
           </div>
-          <div class="flex justify-between py-2 bg-slate-900 text-white px-3.5 rounded-xl font-bold mt-2">
+          <div class="flex justify-between py-2 bg-[#232320] text-white px-3.5 rounded-xl font-bold mt-2">
             <span>TOTAL ESTIMADO:</span>
-            <span class="font-mono text-blue-600 font-black text-sm">${formatCOP(total)}</span>
+            <span class="font-mono text-[#D94E1F] font-black text-sm">${formatCOP(total)}</span>
           </div>
         </div>
       </div>
 
       <!-- Firmas Autorizadas -->
-      <div class="grid grid-cols-2 gap-8 pt-8 border-t border-slate-200 text-xs">
+      <div class="grid grid-cols-2 gap-8 pt-8 border-t border-[#D6D3C9] text-xs">
         <div class="text-center space-y-1">
           <div class="h-12 border-b border-slate-300 mx-8 flex items-end justify-center pb-1 font-mono text-[11px] text-slate-400">
             [Firma Digital Verificada - RentaMaq]
@@ -1820,11 +1820,11 @@ const App = (() => {
         cellClass = 'bg-rose-100 text-rose-800 border border-rose-300 font-bold line-through cursor-not-allowed opacity-80';
         cellTitle = `Reservado (${occupiedCode}) - No disponible`;
       } else if (isSelected) {
-        cellClass = 'bg-blue-600 text-white font-black shadow-sm ring-2 ring-blue-400 cursor-pointer';
+        cellClass = 'bg-[#D94E1F] text-white font-black shadow-sm ring-2 ring-blue-400 cursor-pointer';
         cellTitle = `Tu selección (${isoStr})`;
         clickAttr = `onclick="App.selectDateFromCalendar('${isoStr}')"`;
       } else {
-        cellClass = 'bg-white hover:bg-emerald-50 text-slate-700 border border-slate-200 hover:border-emerald-300 cursor-pointer font-semibold';
+        cellClass = 'bg-white hover:bg-emerald-50 text-slate-700 border border-[#D6D3C9] hover:border-emerald-300 cursor-pointer font-semibold';
         cellTitle = `Disponible (${isoStr}) - Clic para fijar fecha`;
         clickAttr = `onclick="App.selectDateFromCalendar('${isoStr}')"`;
       }
@@ -2166,8 +2166,8 @@ const App = (() => {
       if (statsTiles) statsTiles.classList.add('hidden');
       if (listEl) {
         listEl.innerHTML = `
-          <div class="p-8 sm:p-12 text-center bg-white rounded-3xl border border-slate-200 shadow-sm space-y-6">
-            <div class="w-16 h-16 mx-auto rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+          <div class="p-8 sm:p-12 text-center bg-white rounded-3xl border border-[#D6D3C9] shadow-sm space-y-6">
+            <div class="w-16 h-16 mx-auto rounded-2xl bg-[#FFF5F0] text-[#D94E1F] flex items-center justify-center">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
             </div>
             <div class="max-w-md mx-auto space-y-2">
@@ -2177,7 +2177,7 @@ const App = (() => {
               </p>
             </div>
             <div class="flex flex-wrap justify-center gap-3 pt-2">
-              <button type="button" onclick="App.quickClientDemoLogin()" class="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20 font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-2">
+              <button type="button" onclick="App.quickClientDemoLogin()" class="px-5 py-3 bg-[#181816] hover:bg-[#D94E1F] text-white shadow-md shadow-sm font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-2">
                 Ingresar como Contratista Demo (Constructora Andina)
               </button>
               <button type="button" onclick="App.openAuthModal('login')" class="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs rounded-xl transition-all">
@@ -2198,7 +2198,7 @@ const App = (() => {
     if (subtitleEl) subtitleEl.textContent = `NIT: ${state.profile.documentNumber || '901.482.119-3'} • Frentes de Obra Activos & Supervisión de Cuadrilla`;
 
     if (!listEl) return;
-    listEl.innerHTML = '<div class="py-12 text-center text-slate-400"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div><p>Cargando tus alquileres y estados de obra...</p></div>';
+    listEl.innerHTML = '<div class="py-12 text-center text-slate-400"><div class="inline-block animate-spin rounded-lg h-8 w-8 border-b-2 border-[#D94E1F] mb-2"></div><p>Cargando tus alquileres y estados de obra...</p></div>';
 
     try {
       const reservations = await API.reservations.getByClient(state.profile.clientId);
@@ -2238,7 +2238,7 @@ const App = (() => {
     btns.forEach(b => {
       const match = b.getAttribute('onclick')?.includes(`'${status}'`);
       b.className = match
-        ? 'client-status-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white'
+        ? 'client-status-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#232320] text-white'
         : 'client-status-btn px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100';
     });
     renderClientReservationsList();
@@ -2274,7 +2274,7 @@ const App = (() => {
     }
 
     if (list.length === 0) {
-      listEl.innerHTML = '<div class="p-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">No se encontraron reservas con esos filtros.</div>';
+      listEl.innerHTML = '<div class="p-8 text-center text-slate-400 bg-white rounded-2xl border border-[#D6D3C9]">No se encontraron reservas con esos filtros.</div>';
       return;
     }
 
@@ -2322,15 +2322,15 @@ const App = (() => {
       const isEnCuotas = r.hasPayment && (r.paymentMethod === 'EN_CUOTAS' || (r.installmentCount && r.installmentCount > 1));
 
       return `
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="bg-white p-5 rounded-2xl border border-[#D6D3C9] shadow-sm space-y-4">
           <!-- Encabezado de la Reserva -->
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="flex items-center gap-4">
-              <img src="${r.toolImageUrl || 'images/tools/HERR-0001.jpg'}" class="w-16 h-16 rounded-xl object-cover bg-slate-100 border border-slate-200 shrink-0" onerror="this.src='images/tools/HERR-0001.jpg'">
+              <img src="${r.toolImageUrl || 'images/tools/HERR-0001.jpg'}" class="w-16 h-16 rounded-xl object-cover bg-slate-100 border border-[#D6D3C9] shrink-0" onerror="this.src='images/tools/HERR-0001.jpg'">
               <div>
                 <div class="flex items-center gap-2 mb-1">
                   <span class="text-xs font-mono font-bold text-slate-700">${r.reservationCode}</span>
-                  <span class="text-xs px-2.5 py-0.5 rounded-full font-bold badge-res-${r.status.toLowerCase()}">${r.status}</span>
+                  <span class="text-xs px-2.5 py-0.5 rounded-lg font-bold badge-res-${r.status.toLowerCase()}">${r.status}</span>
                   ${isEnCuotas ? '<span class="text-[10px] px-2 py-0.5 rounded font-extrabold bg-orange-100 text-orange-900 border border-orange-200">EN CUOTAS</span>' : ''}
                 </div>
                 <h4 class="font-extrabold text-slate-900 text-base leading-snug">${r.toolName}</h4>
@@ -2358,7 +2358,7 @@ const App = (() => {
                 ` : ''}
 
                 ${(r.hasPayment || r.status === 'APROBADA' || r.status === 'EN_CURSO' || r.status === 'FINALIZADA') ? `
-                  <button type="button" onclick="App.openInvoiceModal(${r.id})" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
+                  <button type="button" onclick="App.openInvoiceModal(${r.id})" class="px-3 py-1.5 bg-[#181816] hover:bg-[#D94E1F] text-white shadow-md shadow-sm font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
                     Factura DIAN
                   </button>
                 ` : ''}
@@ -2367,7 +2367,7 @@ const App = (() => {
                   <button type="button" onclick="App.openSettlementModal(${r.id})" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-sm">
                     Liquidación
                   </button>
-                  <button type="button" onclick="App.openReviewModal(${r.id}, ${r.toolId}, '${(r.toolName || 'Herramienta').replace(/'/g, "\\'")}', '${r.reservationCode}')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl transition-all flex items-center gap-1 shadow-sm">
+                  <button type="button" onclick="App.openReviewModal(${r.id}, ${r.toolId}, '${(r.toolName || 'Herramienta').replace(/'/g, "\\'")}', '${r.reservationCode}')" class="px-3 py-1.5 bg-[#181816] hover:bg-[#D94E1F] text-white font-black text-xs rounded-xl transition-all flex items-center gap-1 shadow-sm">
                     Calificar
                   </button>
                 ` : ''}
@@ -2377,7 +2377,7 @@ const App = (() => {
 
           <!-- Stepper de 5 Pasos del Ciclo de Vida -->
           ${!isCancelled ? `
-            <div class="pt-3 border-t border-slate-100">
+            <div class="pt-3 border-t border-[#D6D3C9]">
               <div class="stepper-container">
                 <div class="stepper-progress-bg">
                   <div class="stepper-progress-fill" style="width: ${progressPct}%;"></div>
@@ -2422,15 +2422,15 @@ const App = (() => {
 
           <!-- Barra de Cuotas y Botón para Modal de Cuotas (Si aplica EN_CUOTAS) -->
           ${isEnCuotas ? `
-            <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="p-3 bg-[#FFF5F0]/60 border border-[#D6D3C9] rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
               <div class="flex items-center gap-2">
-                <span><svg class="w-4 h-4 text-blue-600 inline shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg></span>
+                <span><svg class="w-4 h-4 text-[#D94E1F] inline shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg></span>
                 <div>
                   <span class="font-extrabold text-blue-900 block">Plan de Financiamiento en Cuotas Activo</span>
                   <span class="text-slate-600">Financiado a ${r.installmentCount || 3} cuotas mensuales / quincenales</span>
                 </div>
               </div>
-              <button type="button" onclick="App.openInstallmentsModal(${r.id}, '${r.reservationCode}')" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-white font-black text-xs rounded-xl transition-all shadow-sm flex items-center gap-1.5">
+              <button type="button" onclick="App.openInstallmentsModal(${r.id}, '${r.reservationCode}')" class="px-3.5 py-1.5 bg-[#181816] hover:bg-[#D94E1F] text-white text-white font-black text-xs rounded-xl transition-all shadow-sm flex items-center gap-1.5">
                 Ver / Pagar Cuotas
               </button>
             </div>
@@ -2470,7 +2470,7 @@ const App = (() => {
           <td class="py-3 px-3 text-right font-mono font-bold text-slate-900">${formatCOP(inst.amount)}</td>
           <td class="py-3 px-3 text-right font-mono text-slate-600">${formatCOP(inst.interestAmount)}</td>
           <td class="py-3 px-3 text-center">
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${inst.status === 'PAGADA' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+            <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold ${inst.status === 'PAGADA' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
               ${inst.status}
             </span>
           </td>
@@ -2527,7 +2527,7 @@ const App = (() => {
       const toolsContainer = document.getElementById('provider-tools-list');
       if (toolsContainer) {
         toolsContainer.innerHTML = tools.map(t => `
-          <div class="p-3 bg-white rounded-xl border border-slate-200 flex justify-between items-center text-xs">
+          <div class="p-3 bg-white rounded-xl border border-[#D6D3C9] flex justify-between items-center text-xs">
             <div class="flex items-center gap-3">
               <img src="${t.mainImageUrl || 'images/tools/HERR-0001.jpg'}" class="w-10 h-10 rounded-lg object-cover" onerror="this.src='images/tools/HERR-0001.jpg'">
               <div>
@@ -2558,7 +2558,7 @@ const App = (() => {
     btns.forEach(b => {
       const match = b.getAttribute('onclick')?.includes(`'${status}'`);
       b.className = match
-        ? 'prov-status-btn px-2.5 py-1 rounded-lg bg-slate-900 text-white'
+        ? 'prov-status-btn px-2.5 py-1 rounded-lg bg-[#232320] text-white'
         : 'prov-status-btn px-2.5 py-1 rounded-lg text-slate-600 hover:bg-white';
     });
     renderProviderReservationsList();
@@ -2579,18 +2579,18 @@ const App = (() => {
     }
 
     resContainer.innerHTML = list.map(r => `
-      <div class="p-4 bg-white rounded-xl border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-3">
+      <div class="p-4 bg-white rounded-xl border border-[#D6D3C9] flex flex-col md:flex-row justify-between items-center gap-3">
         <div>
           <div class="flex items-center gap-2 mb-1">
             <span class="font-mono font-bold text-xs text-slate-700">${r.reservationCode}</span>
-            <span class="text-xs px-2 py-0.5 rounded-full font-bold badge-res-${r.status.toLowerCase()}">${r.status}</span>
+            <span class="text-xs px-2 py-0.5 rounded-lg font-bold badge-res-${r.status.toLowerCase()}">${r.status}</span>
           </div>
           <div class="font-bold text-slate-900">${r.toolName}</div>
           <div class="text-xs text-slate-500">Cliente: <strong>${r.clientName}</strong> • ${formatDate(r.startDate)} a ${formatDate(r.endDate)}</div>
         </div>
         <div class="flex items-center gap-2">
           ${r.status === 'PENDIENTE' ? `
-            <button onclick="App.approveReservationAction(${r.id})" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg">Aprobar</button>
+            <button onclick="App.approveReservationAction(${r.id})" class="px-3 py-1.5 bg-[#181816] hover:bg-[#D94E1F] text-white font-bold text-xs rounded-lg">Aprobar</button>
             <button onclick="App.rejectReservationAction(${r.id})" class="px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold text-xs rounded-lg">Rechazar</button>
           ` : ''}
           ${r.status === 'APROBADA' ? `
@@ -2700,12 +2700,12 @@ const App = (() => {
       const topList = document.getElementById('adm-top-tools-list');
       if (topList && dash.topRentedTools) {
         topList.innerHTML = dash.topRentedTools.map(t => `
-          <div class="flex justify-between items-center p-3 bg-white rounded-lg border border-slate-200 text-xs">
+          <div class="flex justify-between items-center p-3 bg-white rounded-lg border border-[#D6D3C9] text-xs">
             <div>
               <strong class="text-slate-900">${t.toolName}</strong> (${t.brand})
               <div class="text-slate-500">${t.rentalCount} alquileres completados</div>
             </div>
-            <div class="font-extrabold text-blue-600">${formatCOP(t.revenueGenerated)}</div>
+            <div class="font-extrabold text-[#D94E1F]">${formatCOP(t.revenueGenerated)}</div>
           </div>
         `).join('');
       }
@@ -2717,7 +2717,7 @@ const App = (() => {
           topClientsEl.innerHTML = dash.topClients.map((c, idx) => `
             <div class="py-3 flex items-center justify-between text-xs">
               <div class="flex items-center gap-3">
-                <span class="w-6 h-6 rounded-full ${idx === 0 ? 'bg-blue-600 text-white font-black' : 'bg-slate-100 text-slate-700 font-bold'} flex items-center justify-center text-[11px]">
+                <span class="w-6 h-6 rounded-lg ${idx === 0 ? 'bg-[#D94E1F] text-white font-black' : 'bg-slate-100 text-slate-700 font-bold'} flex items-center justify-center text-[11px]">
                   #${idx + 1}
                 </span>
                 <div>
@@ -2740,13 +2740,13 @@ const App = (() => {
       const admResList = document.getElementById('adm-all-reservations-list');
       if (admResList) {
         admResList.innerHTML = allRes.map(r => `
-          <tr class="border-b border-slate-100 text-xs">
+          <tr class="border-b border-[#D6D3C9] text-xs">
             <td class="py-2.5 font-mono font-bold text-slate-800">${r.reservationCode}</td>
             <td class="py-2.5">${r.toolName}</td>
             <td class="py-2.5 text-slate-600">${r.clientName}</td>
             <td class="py-2.5">${formatDate(r.startDate)} a ${formatDate(r.endDate)}</td>
             <td class="py-2.5 font-bold text-slate-900">${formatCOP(r.totalAmount)}</td>
-            <td class="py-2.5"><span class="px-2 py-0.5 rounded-full font-bold badge-res-${r.status.toLowerCase()}">${r.status}</span></td>
+            <td class="py-2.5"><span class="px-2 py-0.5 rounded-lg font-bold badge-res-${r.status.toLowerCase()}">${r.status}</span></td>
           </tr>
         `).join('');
       }
@@ -3108,7 +3108,7 @@ const App = (() => {
         dueDate.setMonth(dueDate.getMonth() + i);
       }
       html += `
-        <div class="flex justify-between items-center py-1 border-b border-slate-100 last:border-0 text-[10px]">
+        <div class="flex justify-between items-center py-1 border-b border-[#D6D3C9] last:border-0 text-[10px]">
           <span class="font-bold text-slate-700">Cuota ${i}/${count}:</span>
           <span class="text-slate-500">${formatDate(dueDate.toISOString().split('T')[0])}</span>
           <span class="font-mono font-bold text-slate-900">${formatCOP(quotaAmount)}</span>
@@ -3186,7 +3186,7 @@ const App = (() => {
         if (reqs.length === 0) {
           checklist.innerHTML = `
             <div class="flex items-center gap-2">
-              <input type="checkbox" id="epp-std" checked required class="w-4 h-4 text-blue-600 accent-blue-600 epp-checkbox">
+              <input type="checkbox" id="epp-std" checked required class="w-4 h-4 text-[#D94E1F] accent-blue-600 epp-checkbox">
               <label for="epp-std" class="text-slate-700">EPP Estándar de Obra (Casco, Guantes, Botas con puntera de acero)</label>
             </div>
           `;
@@ -3206,7 +3206,7 @@ const App = (() => {
       if (checklist) {
         checklist.innerHTML = `
           <div class="flex items-center gap-2">
-            <input type="checkbox" id="epp-std" checked required class="w-4 h-4 text-blue-600 accent-blue-600 epp-checkbox">
+            <input type="checkbox" id="epp-std" checked required class="w-4 h-4 text-[#D94E1F] accent-blue-600 epp-checkbox">
             <label for="epp-std" class="text-slate-700">EPP General de Seguridad Verificado</label>
           </div>
         `;
@@ -3292,7 +3292,7 @@ const App = (() => {
       if (data.toolConditionStatus === 'EXCELENTE') {
         badge.className = 'px-2 py-0.5 rounded text-[11px] font-extrabold bg-emerald-100 text-emerald-800';
       } else if (data.toolConditionStatus === 'BUENO') {
-        badge.className = 'px-2 py-0.5 rounded text-[11px] font-extrabold bg-blue-100 text-blue-800';
+        badge.className = 'px-2 py-0.5 rounded text-[11px] font-extrabold bg-[#FFE8DE] text-blue-800';
       } else {
         badge.className = 'px-2 py-0.5 rounded text-[11px] font-extrabold bg-rose-100 text-rose-800';
       }
@@ -3406,9 +3406,9 @@ const App = (() => {
       document.getElementById(`tab-content-${t}`).classList.toggle('hidden', t !== tab);
       const btn = document.getElementById(`tab-btn-${t}`);
       if (btn) {
-        btn.classList.toggle('text-blue-600', t === tab);
+        btn.classList.toggle('text-[#D94E1F]', t === tab);
         btn.classList.toggle('border-b-2', t === tab);
-        btn.classList.toggle('border-blue-600', t === tab);
+        btn.classList.toggle('border-[#D94E1F]', t === tab);
       }
     });
   }

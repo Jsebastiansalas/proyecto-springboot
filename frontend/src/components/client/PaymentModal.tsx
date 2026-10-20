@@ -75,7 +75,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-slate-800 bg-[#0a0f1d] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+            <div className="w-9 h-9 rounded-xl bg-[#E05A2B]/10 border border-[#D94E1F] flex items-center justify-center text-[#D94E1F]">
               <CreditCard className="w-4 h-4" />
             </div>
             <div>
@@ -121,7 +121,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             </div>
             <div className="flex justify-between pt-2 border-t border-slate-800 text-sm font-bold">
               <span className="text-white">Total a Liquidar:</span>
-              <span className="text-indigo-400 font-mono">${reservation.totalPrice.toLocaleString('es-CO')}</span>
+              <span className="text-[#D94E1F] font-mono">${reservation.totalPrice.toLocaleString('es-CO')}</span>
             </div>
           </div>
 
@@ -159,7 +159,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                         <button
                           onClick={() => handlePayInstallment(inst.id)}
                           disabled={processingId === inst.id}
-                          className="px-3 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-[11px] transition-colors"
+                          className="px-3 py-1 rounded bg-[#D94E1F] hover:bg-[#E05A2B] text-white font-semibold text-[11px] transition-colors"
                         >
                           {processingId === inst.id ? 'Pagando...' : 'Pagar'}
                         </button>
@@ -170,8 +170,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               </div>
             </div>
           ) : (
-            <div className="p-3.5 rounded-xl bg-indigo-950/20 border border-indigo-500/20 flex items-center gap-3">
-              <ShieldCheck className="w-5 h-5 text-indigo-400 shrink-0" />
+            <div className="p-3.5 rounded-xl bg-indigo-950/20 border border-[#D94E1F] flex items-center gap-3">
+              <ShieldCheck className="w-5 h-5 text-[#D94E1F] shrink-0" />
               <p className="text-[11px] text-slate-300 leading-relaxed">
                 Transacción cifrada TLS 1.3 con validación biométrica bancaria y timbrado automático de factura DIAN.
               </p>
@@ -192,7 +192,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             <button
               onClick={handlePayFull}
               disabled={loading}
-              className="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-lg shadow-indigo-600/30"
+              className="px-5 py-2 rounded-lg bg-[#D94E1F] hover:bg-[#E05A2B] text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-lg shadow-sm"
             >
               <Lock className="w-3.5 h-3.5" />
               <span>{loading ? 'Procesando...' : 'Pagar Totalidad'}</span>

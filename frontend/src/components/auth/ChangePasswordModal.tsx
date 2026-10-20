@@ -86,13 +86,13 @@ export const ChangePasswordModal: React.FC = () => {
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               required
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs font-mono focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs font-mono focus:outline-none focus:border-[#D94E1F]"
             />
           </div>
 
           <div className="space-y-1.5">
             <label className="text-slate-300 font-semibold flex items-center gap-1.5">
-              <KeyRound className="w-3.5 h-3.5 text-indigo-400" />
+              <KeyRound className="w-3.5 h-3.5 text-[#D94E1F]" />
               Nueva Contraseña Robusta
             </label>
             <input
@@ -100,7 +100,7 @@ export const ChangePasswordModal: React.FC = () => {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs font-mono focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs font-mono focus:outline-none focus:border-[#D94E1F]"
             />
           </div>
 
@@ -114,7 +114,7 @@ export const ChangePasswordModal: React.FC = () => {
               value={confirmNewPassword}
               onChange={(e) => setConfirmNewPassword(e.target.value)}
               required
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs font-mono focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs font-mono focus:outline-none focus:border-[#D94E1F]"
             />
           </div>
 
@@ -149,7 +149,7 @@ export const ChangePasswordModal: React.FC = () => {
             <button
               type="submit"
               disabled={!isFormValid || loading}
-              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md shadow-indigo-600/30"
+              className="px-5 py-2 bg-[#D94E1F] hover:bg-[#E05A2B] disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md shadow-sm"
             >
               <span>{loading ? 'Actualizando...' : 'Actualizar Contraseña'}</span>
             </button>

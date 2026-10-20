@@ -24,16 +24,16 @@ export const ComparatorDock: React.FC = () => {
     <>
       {/* Floating Bottom Dock */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-2xl w-[92%] sm:w-auto">
-        <div className="bg-[#0f172a]/95 border border-indigo-500/40 rounded-2xl shadow-2xl backdrop-blur-xl p-3 flex items-center justify-between gap-4 glow-border">
+        <div className="bg-[#0f172a]/95 border border-[#D94E1F] rounded-2xl shadow-2xl backdrop-blur-xl p-3 flex items-center justify-between gap-4 glow-border">
           
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+            <div className="w-10 h-10 rounded-xl bg-[#D94E1F]/20 border border-[#D94E1F] flex items-center justify-center text-[#D94E1F]">
               <Scale className="w-5 h-5" />
             </div>
             <div>
               <div className="text-sm font-semibold text-white flex items-center gap-2">
                 Comparador Técnico
-                <span className="text-[11px] font-mono bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full">
+                <span className="text-[11px] font-mono bg-[#E05A2B]/20 text-[#D94E1F] border border-[#D94E1F] px-2 py-0.5 rounded-full">
                   {compareList.length}/3
                 </span>
               </div>
@@ -69,7 +69,7 @@ export const ComparatorDock: React.FC = () => {
           <div className="flex items-center gap-2 border-l border-slate-700 pl-3">
             <button
               onClick={() => setIsExpanded(prev => !prev)}
-              className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-lg shadow-indigo-600/20"
+              className="px-3 py-1.5 rounded-lg bg-[#D94E1F] hover:bg-[#E05A2B] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-lg shadow-sm"
             >
               <span>{isExpanded ? 'Ocultar' : 'Comparar'}</span>
               {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
@@ -94,7 +94,7 @@ export const ComparatorDock: React.FC = () => {
             {/* Header */}
             <div className="p-4 sm:p-6 border-b border-slate-800 flex items-center justify-between bg-[#0a0f1d]">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                <div className="w-10 h-10 rounded-xl bg-[#E05A2B]/10 border border-[#D94E1F] flex items-center justify-center text-[#D94E1F]">
                   <Scale className="w-5 h-5" />
                 </div>
                 <div>
@@ -129,7 +129,7 @@ export const ComparatorDock: React.FC = () => {
                         </div>
                         <div className="font-bold text-sm text-slate-100">{t.name}</div>
                         <div className="text-xs text-slate-400 font-mono">{t.brand} {t.model}</div>
-                        <div className="mt-2 text-indigo-400 font-bold font-mono text-sm">
+                        <div className="mt-2 text-[#D94E1F] font-bold font-mono text-sm">
                           ${t.baseDailyPrice.toLocaleString('es-CO')} <span className="text-[11px] font-normal text-slate-400">/día</span>
                         </div>
                       </th>
@@ -232,7 +232,7 @@ export const ComparatorDock: React.FC = () => {
                             addToCart(t, 3);
                             setIsExpanded(false);
                           }}
-                          className="w-full py-2 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-md shadow-indigo-600/30"
+                          className="w-full py-2 px-3 bg-[#D94E1F] hover:bg-[#E05A2B] text-white rounded-lg font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-md shadow-sm"
                         >
                           <SlidersHorizontal className="w-3.5 h-3.5" />
                           Cotizar Equipo

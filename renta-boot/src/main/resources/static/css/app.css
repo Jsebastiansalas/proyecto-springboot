@@ -6,42 +6,60 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root {
-  /* Paleta Corporativa Industrial Ejecutiva (Erradicación del amarillo chillón) */
-  --slate-950: #0b1329;
-  --slate-900: #0f172a;
-  --slate-850: #131d36;
-  --slate-800: #1e293b;
-  --slate-700: #334155;
-  --slate-600: #475569;
-  --slate-500: #64748b;
-  --slate-400: #94a3b8;
-  --slate-200: #e2e8f0;
-  --slate-100: #f1f5f9;
-  /* Acento Corporativo de Confianza (Azul Cobalto & Real - Estilo Stripe / Amazon) */
-  --brand-blue: #2563eb;          /* Blue 600 - Acción principal */
-  --brand-blue-hover: #1d4ed8;    /* Blue 700 - Hover */
-  --brand-blue-dark: #1e40af;     /* Blue 800 - Profundidad */
-  --brand-blue-light: #eff6ff;    /* Blue 50 - Fondos suaves */
-  --brand-blue-subtle: rgba(37, 99, 235, 0.08);
-  --brand-blue-border: rgba(37, 99, 235, 0.25);
+  /* ==========================================================================
+     Paleta Industrial: Hormigón Arquitectónico, Hierro Fundido y Naranja Terracota
+     (Inspirada en Hilti, Hitachi Construction y estudios de ingeniería civil)
+     ========================================================================== */
+  --concrete-bg: #F2F0EA;         /* Piedra / Concreto Claro */
+  --limestone-surface: #FAF9F5;   /* Blanco Caliza */
+  --mortar-surface: #E8E5DC;      /* Gris Mortero */
+  --border-architectural: #D6D3C9;/* Borde arquitectónico 1px */
+  
+  --asphalt-coal: #181816;        /* Carbón Asfalto Puro (Hero) */
+  --graphite-matte: #232320;      /* Grafito Mate (Tarjetas Hero) */
+  --border-dark: #363632;         /* Borde oscuro 1px */
+  --border-technical: #3F3E3A;    /* Borde badge técnico */
+  
+  --terracotta-primary: #D94E1F;  /* Naranja Terracota / Óxido Maquinaria */
+  --terracotta-hover: #B83D14;
+  --terracotta-accent: #E05A2B;
+  
+  /* Alias de compatibilidad sin azul espacial ni morados */
+  --slate-950: #181816;
+  --slate-900: #232320;
+  --slate-850: #2C2C28;
+  --slate-800: #363632;
+  --slate-700: #4A4944;
+  --slate-600: #706E66;
+  --slate-500: #78766F;
+  --slate-400: #A8A69E;
+  --slate-200: #D6D3C9;
+  --slate-100: #E8E5DC;
+  --slate-50: #F2F0EA;
 
-  /* Alias de compatibilidad */
-  --brand-orange: var(--brand-blue);
-  --brand-orange-hover: var(--brand-blue-hover);
-  --brand-orange-light: var(--brand-blue-light);
-  --brand-orange-subtle: var(--brand-blue-subtle);
-  --brand-orange-border: var(--brand-blue-border);
+  --brand-blue: #D94E1F;
+  --brand-blue-hover: #B83D14;
+  --brand-blue-dark: #943010;
+  --brand-blue-light: #FFF5F0;
+  --brand-blue-subtle: rgba(217, 78, 31, 0.08);
+  --brand-blue-border: rgba(217, 78, 31, 0.3);
 
-  /* Estados Operativos de Alta Confianza */
-  --status-available: #059669;    /* Emerald 600 */
-  --status-available-bg: #ecfdf5;
-  --status-available-border: #a7f3d0;
-  --status-rented: #2563eb;       /* Blue 600 */
-  --status-rented-bg: #eff6ff;
-  --status-rented-border: #bfdbfe;
-  --status-maintenance: #d97706;  /* Ochre 600 */
-  --status-maintenance-bg: #fffbeb;
-  --status-maintenance-border: #fde68a;
+  --brand-orange: #D94E1F;
+  --brand-orange-hover: #B83D14;
+  --brand-orange-light: #FFF5F0;
+  --brand-orange-subtle: rgba(217, 78, 31, 0.08);
+  --brand-orange-border: rgba(217, 78, 31, 0.3);
+
+  /* Colores Semánticos de Ingeniería Civil */
+  --status-available: #1E6F43;
+  --status-available-bg: #E3F1E8;
+  --status-available-border: #A7D7B8;
+  --status-rented: #B45309;
+  --status-rented-bg: #FEF3C7;
+  --status-rented-border: #FCD34D;
+  --status-maintenance: #B91C1C;
+  --status-maintenance-bg: #FEE2E2;
+  --status-maintenance-border: #FCA5A5;
 
   /* Curvas de Movimiento Naturales (Emil Kowalski Framework) */
   --ease-snappy: cubic-bezier(0.16, 1, 0.3, 1);

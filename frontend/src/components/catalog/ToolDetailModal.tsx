@@ -86,12 +86,12 @@ export const ToolDetailModal: React.FC = () => {
         {/* Header */}
         <div className="p-4 sm:p-6 border-b border-slate-800 bg-[#0a0f1d] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+            <div className="w-10 h-10 rounded-xl bg-[#E05A2B]/10 border border-[#D94E1F] flex items-center justify-center text-[#D94E1F]">
               <Wrench className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono text-indigo-400 font-semibold uppercase tracking-wider">
+                <span className="text-xs font-mono text-[#D94E1F] font-semibold uppercase tracking-wider">
                   SKU: {selectedToolDetail.codeSku}
                 </span>
                 <span className="text-slate-600">·</span>
@@ -118,7 +118,7 @@ export const ToolDetailModal: React.FC = () => {
             onClick={() => setActiveTab('specs')}
             className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${
               activeTab === 'specs'
-                ? 'border-indigo-500 text-indigo-400'
+                ? 'border-[#D94E1F] text-[#D94E1F]'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -130,7 +130,7 @@ export const ToolDetailModal: React.FC = () => {
             onClick={() => setActiveTab('telemetry')}
             className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${
               activeTab === 'telemetry'
-                ? 'border-indigo-500 text-indigo-400'
+                ? 'border-[#D94E1F] text-[#D94E1F]'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -142,7 +142,7 @@ export const ToolDetailModal: React.FC = () => {
             onClick={() => setActiveTab('calendar')}
             className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${
               activeTab === 'calendar'
-                ? 'border-indigo-500 text-indigo-400'
+                ? 'border-[#D94E1F] text-[#D94E1F]'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -154,7 +154,7 @@ export const ToolDetailModal: React.FC = () => {
             onClick={() => setActiveTab('qa')}
             className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${
               activeTab === 'qa'
-                ? 'border-indigo-500 text-indigo-400'
+                ? 'border-[#D94E1F] text-[#D94E1F]'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -224,7 +224,7 @@ export const ToolDetailModal: React.FC = () => {
                   </div>
                   <div className="flex justify-between p-3 bg-slate-900/20">
                     <span className="text-slate-400">Tiempo de Entrega</span>
-                    <span className="text-indigo-300 font-semibold">24 horas hábiles a obra</span>
+                    <span className="text-[#D94E1F] font-semibold">24 horas hábiles a obra</span>
                   </div>
                   <div className="flex justify-between p-3 bg-slate-900/40">
                     <span className="text-slate-400">Facturación Legal</span>
@@ -232,9 +232,9 @@ export const ToolDetailModal: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-indigo-950/20 border border-indigo-500/20 text-xs text-indigo-300 space-y-1">
+                <div className="p-4 rounded-xl bg-indigo-950/20 border border-[#D94E1F] text-xs text-[#D94E1F] space-y-1">
                   <div className="font-semibold flex items-center gap-1.5">
-                    <Shield className="w-4 h-4 text-indigo-400" />
+                    <Shield className="w-4 h-4 text-[#D94E1F]" />
                     Custodia Escrow de Depósito
                   </div>
                   <p className="text-slate-400 text-[11px] leading-relaxed">
@@ -313,7 +313,7 @@ export const ToolDetailModal: React.FC = () => {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-400 flex items-center gap-1">
-                        <Activity className="w-3.5 h-3.5 text-indigo-400" /> Vibración:
+                        <Activity className="w-3.5 h-3.5 text-[#D94E1F]" /> Vibración:
                       </span>
                       <span className="font-mono text-emerald-400 font-semibold">{telemetry.vibrationLevel}</span>
                     </div>
@@ -390,12 +390,12 @@ export const ToolDetailModal: React.FC = () => {
                     value={newQuestion}
                     onChange={(e) => setNewQuestion(e.target.value)}
                     placeholder="Ej. ¿Qué tipo de combustible requiere? ¿Incluye operario certificado?"
-                    className="flex-1 bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    className="flex-1 bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#D94E1F]"
                   />
                   <button
                     type="submit"
                     disabled={submittingQuestion || !newQuestion.trim()}
-                    className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-md shadow-indigo-600/25"
+                    className="px-4 py-2.5 rounded-xl bg-[#D94E1F] hover:bg-[#E05A2B] disabled:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-md shadow-sm"
                   >
                     <Send className="w-3.5 h-3.5" />
                     <span>Preguntar</span>
@@ -423,8 +423,8 @@ export const ToolDetailModal: React.FC = () => {
                       <p className="text-slate-300">{c.content}</p>
 
                       {c.officialReply && (
-                        <div className="ml-4 p-2.5 rounded-lg bg-indigo-950/30 border border-indigo-500/20 text-[11px] space-y-1">
-                          <div className="flex items-center gap-1 text-indigo-400 font-semibold">
+                        <div className="ml-4 p-2.5 rounded-lg bg-indigo-950/30 border border-[#D94E1F] text-[11px] space-y-1">
+                          <div className="flex items-center gap-1 text-[#D94E1F] font-semibold">
                             <CornerDownRight className="w-3 h-3" />
                             <span>Respuesta oficial de {c.officialReply.providerName}</span>
                           </div>
@@ -496,7 +496,7 @@ export const ToolDetailModal: React.FC = () => {
                 addToCart(selectedToolDetail, 3);
                 setSelectedToolDetail(null);
               }}
-              className="w-1/2 sm:w-auto px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-600/30"
+              className="w-1/2 sm:w-auto px-6 py-2.5 rounded-xl bg-[#D94E1F] hover:bg-[#E05A2B] text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-lg shadow-sm"
             >
               <SlidersHorizontal className="w-4 h-4" />
               <span>Añadir a Cotización</span>
