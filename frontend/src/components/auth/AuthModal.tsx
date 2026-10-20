@@ -21,8 +21,7 @@ import {
   KeyRound,
   UserPlus,
   Eye,
-  EyeOff,
-  Wand2
+  EyeOff
 } from 'lucide-react';
 
 type AuthMode = 'login' | 'register_client' | 'register_provider';
@@ -97,40 +96,6 @@ export const AuthModal: React.FC = () => {
 
   const sanitizeOnlyLetters = (val: string, maxLen: number = 50) => {
     return val.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]/g, '').slice(0, maxLen);
-  };
-
-  // Autocompletar datos de prueba válidos para agilizar pruebas del profesor
-  const fillSampleClientData = () => {
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    setClientForm({
-      firstName: 'Carlos Andrés',
-      lastName: 'Montoya Gómez',
-      documentType: 'CC',
-      documentNumber: `10${randomSuffix}789`,
-      email: `contratista.${randomSuffix}@constructora.com`,
-      phone: '3157894561',
-      address: 'Calle 100 # 19A-40 Of. 602',
-      city: 'Bogotá D.C.',
-      password: 'Cliente#Renta2026!Sec',
-      confirmPassword: 'Cliente#Renta2026!Sec'
-    });
-    showToast('Datos de cliente de prueba cargados con formato válido', 'info');
-  };
-
-  const fillSampleProviderData = () => {
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    setProviderForm({
-      companyName: `Maquinaria & Equipos ${randomSuffix} SAS`,
-      legalRepresentative: 'Álvaro Hernán Ruiz',
-      nitRut: `901${randomSuffix}321-4`,
-      email: `contacto.${randomSuffix}@equiposandinos.com`,
-      phone: '3206549871',
-      address: 'Autopista Sur Km 7 Parque Industrial',
-      city: 'Bogotá D.C.',
-      password: 'Proveedor#Renta2026!Sec',
-      confirmPassword: 'Proveedor#Renta2026!Sec'
-    });
-    showToast('Datos de proveedor de prueba cargados con formato válido', 'info');
   };
 
   // Login submit handler
@@ -460,23 +425,6 @@ export const AuthModal: React.FC = () => {
         {/* TAB 2: REGISTRO DE CLIENTE */}
         {mode === 'register_client' && (
           <form onSubmit={handleClientRegisterSubmit} className="p-5 space-y-4 text-xs max-h-[70vh] overflow-y-auto">
-            <div className="p-3 bg-[#1E1E1C] rounded-xl border border-[#363632] flex items-center justify-between gap-2.5">
-              <div className="flex items-start gap-2.5">
-                <HardHat className="w-4 h-4 text-[#D94E1F] shrink-0 mt-0.5" />
-                <div className="text-[11px] text-[#A8A69E]">
-                  <strong className="text-[#F5F4F0]">Cuenta de Cliente / Contratista:</strong> Alquila maquinaria con cotización y facturación electrónica.
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={fillSampleClientData}
-                className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#282824] hover:bg-[#32322E] text-[#D94E1F] border border-[#363632] text-[10px] font-bold transition-colors"
-                title="Rellena el formulario con datos válidos de prueba para probar de inmediato"
-              >
-                <Wand2 className="w-3 h-3" />
-                <span>Ejemplo</span>
-              </button>
-            </div>
 
             {/* Nombre y Apellido (Solo Letras) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -689,23 +637,6 @@ export const AuthModal: React.FC = () => {
         {/* TAB 3: REGISTRO DE PROVEEDOR */}
         {mode === 'register_provider' && (
           <form onSubmit={handleProviderRegisterSubmit} className="p-5 space-y-4 text-xs max-h-[70vh] overflow-y-auto">
-            <div className="p-3 bg-[#1E1E1C] rounded-xl border border-[#363632] flex items-center justify-between gap-2.5">
-              <div className="flex items-start gap-2.5">
-                <Truck className="w-4 h-4 text-[#D94E1F] shrink-0 mt-0.5" />
-                <div className="text-[11px] text-[#A8A69E]">
-                  <strong className="text-[#F5F4F0]">Cuenta de Proveedor / Ferretería:</strong> Publica herramientas y gestiona entregas con reporte de daños.
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={fillSampleProviderData}
-                className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#282824] hover:bg-[#32322E] text-[#D94E1F] border border-[#363632] text-[10px] font-bold transition-colors"
-                title="Rellena el formulario con datos válidos de prueba para probar de inmediato"
-              >
-                <Wand2 className="w-3 h-3" />
-                <span>Ejemplo</span>
-              </button>
-            </div>
 
             {/* Razón Social y Representante Legal */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
