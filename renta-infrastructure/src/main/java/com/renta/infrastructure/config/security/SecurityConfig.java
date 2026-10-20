@@ -139,12 +139,34 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/notifications/simulate").hasRole("ADMIN")
                         .requestMatchers("/api/v1/notifications/**").authenticated()
 
-                        // --- RUTAS PROTEGIDAS POR ROL ---
-                        .requestMatchers(HttpMethod.GET, "/api/v1/logistics/settlement/**").hasAnyRole("ADMIN", "CLIENTE", "PROVEEDOR")
-                        .requestMatchers(HttpMethod.PATCH, "/api/v1/tools/comments/*/reply").hasAnyRole("ADMIN", "PROVEEDOR")
+                        // --- RUTAS PROTEGIDAS POR ROL: ADMINISTRADOR ---
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/provider/**").hasAnyRole("ADMIN", "PROVEEDOR")
-                        .requestMatchers("/api/v1/client/**").hasAnyRole("ADMIN", "CLIENTE")
+                        .requestMatchers("/api/v1/reports/admin").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/reservations").hasRole("ADMIN")
+
+                        // --- RUTAS PROTEGIDAS POR ROL: PROVEEDOR & ADMIN ---
+                        .requestMatchers(HttpMethod.POST, "/api/v1/tools").hasAnyRole("ADMIN", "PROVEEDOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/tools/**").hasAnyRole("ADMIN", "PROVEEDOR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/tools/**").hasAnyRole("ADMIN", "PROVEEDOR")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/tools/*/status").hasAnyRole("ADMIN", "PROVEEDOR")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/tools/comments/*/reply").hasAnyRole("ADMIN", "PROVEEDOR")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/reservations/*/approve").hasAnyRole("ADMIN", "PROVEEDOR")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/reservations/*/reject").hasAnyRole("ADMIN", "PROVEEDOR")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/deliveries").hasAnyRole("ADMIN", "PROVEEDOR")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/returns").hasAnyRole("ADMIN", "PROVEEDOR")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/damages").hasAnyRole("ADMIN", "PROVEEDOR")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/reports/provider/**").hasAnyRole("ADMIN", "PROVEEDOR")
+
+                        // --- RUTAS PROTEGIDAS POR ROL: CLIENTE & ADMIN ---
+                        .requestMatchers(HttpMethod.POST, "/api/v1/reservations").hasAnyRole("ADMIN", "CLIENTE")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/payments/**").hasAnyRole("ADMIN", "CLIENTE")
+
+                        // --- RUTAS GENERALES AUTENTICADAS ---
+                        .requestMatchers(HttpMethod.GET, "/api/v1/logistics/settlement/**").hasAnyRole("ADMIN", "CLIENTE", "PROVEEDOR")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/invoices/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/reservations/**").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/reservations/*/cancel").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/damages/**").authenticated()
 
                         // --- CUALQUIER OTRA RUTA REQUIERE LOGIN ---
                         .anyRequest().authenticated()

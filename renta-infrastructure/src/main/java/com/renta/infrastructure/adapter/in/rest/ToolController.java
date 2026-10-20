@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -89,6 +90,15 @@ public class ToolController {
     @Operation(summary = "Cambiar estado de herramienta", description = "Cambia el estado de una herramienta (DISPONIBLE, ALQUILADA, MANTENIMIENTO, RETIRADA). Requiere rol PROVEEDOR titular o ADMIN.")
     public ResponseEntity<Void> updateToolStatus(@PathVariable Long id, @RequestParam ToolStatus status) {
         toolService.updateToolStatus(id, status);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROVEEDOR') and @authz.canModifyTool(principal, #id)")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Eliminar / retirar herramienta del inventario", description = "Cambia el estado a RETIRADA para dar de baja la herramienta del inventario. Requiere rol PROVEEDOR titular o ADMIN.")
+    public ResponseEntity<Void> deleteTool(@PathVariable Long id) {
+        toolService.updateToolStatus(id, ToolStatus.RETIRADA);
         return ResponseEntity.noContent().build();
     }
 }
