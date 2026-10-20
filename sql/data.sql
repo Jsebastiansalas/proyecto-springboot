@@ -2,8 +2,10 @@
 -- DATOS DE PRUEBA - Plataforma de Renta de Herramientas (PostgreSQL)
 -- Ejecutar DESPUES de schema.sql.
 -- 20 registros por tabla (roles: 3 catalogo fijo; users: 42; reservations: 25).
--- Contraseñas (BCrypt via pgcrypto, compatible con Spring Security):
---   admin@renta.com / Admin123*      clientes y proveedores / Password123*
+-- Contraseñas reforzadas (BCrypt costo 12 via pgcrypto):
+--   Admin (admin@renta.com): Admin#Renta2026!SecOps
+--   Proveedores (proveedor1..20@correo.com): Proveedor#Renta2026!Sec
+--   Clientes (cliente1..20@correo.com): Cliente#Renta2026!Sec
 -- ============================================================================
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
