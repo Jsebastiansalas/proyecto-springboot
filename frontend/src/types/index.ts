@@ -183,3 +183,28 @@ export interface AdminDashboardData {
     totalSpent: number;
   }>;
 }
+
+export type DocumentType = 'CC' | 'CE' | 'PASAPORTE' | 'NIT';
+
+export interface RegisterClientData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  documentType: DocumentType;
+  documentNumber: string;
+  phone: string;
+  address: string;
+  city: string;
+}
+
+export interface RegisterProviderData {
+  email: string;
+  password: string;
+  companyName: string;
+  legalRepresentative: string;
+  nitRut: string;
+  phone: string;
+  address: string;
+  city: string;
+}

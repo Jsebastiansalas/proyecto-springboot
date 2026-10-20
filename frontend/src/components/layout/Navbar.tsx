@@ -7,7 +7,8 @@ import {
   LogOut, 
   Building2, 
   ShieldAlert, 
-  ChevronDown
+  ChevronDown,
+  UserPlus
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
@@ -193,14 +194,24 @@ export const Navbar: React.FC = () => {
               )}
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={() => setIsAuthModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#232320] hover:bg-[#2C2C28] text-white border border-[#363632] text-xs font-bold transition-colors"
-            >
-              <User className="w-3.5 h-3.5 text-[#D94E1F]" />
-              <span>Iniciar Sesión</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsAuthModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#232320] hover:bg-[#2C2C28] text-white border border-[#363632] text-xs font-bold transition-colors"
+              >
+                <User className="w-3.5 h-3.5 text-[#D94E1F]" />
+                <span>Ingresar</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsAuthModalOpen(true)}
+                className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#D94E1F] hover:bg-[#B83D14] text-white text-xs font-bold transition-colors shadow-sm"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>Registrarse</span>
+              </button>
+            </div>
           )}
 
         </div>

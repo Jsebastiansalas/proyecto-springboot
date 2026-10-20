@@ -8,7 +8,9 @@ import {
   ToolComment, 
   OccupiedDateRange, 
   PaymentInstallment,
-  AdminDashboardData 
+  AdminDashboardData,
+  RegisterClientData,
+  RegisterProviderData
 } from '../types';
 
 export const rentaService = {
@@ -45,6 +47,78 @@ export const rentaService = {
         role: data.role,
         fullName: displayName,
         companyName: displayName,
+        token: data.token,
+      };
+
+      localStorage.setItem('rentamaq_user', JSON.stringify(user));
+      return user;
+    },
+    registerClient: async (payload: RegisterClientData): Promise<AuthUser> => {
+      const data = await apiClient.post<any>('/auth/register-client', payload);
+      apiClient.setToken(data.token);
+
+      let clientId: number | undefined;
+      let providerId: number | undefined;
+      let displayName: string = data.name || `${payload.firstName} ${payload.lastName}`;
+
+      try {
+        const me = await apiClient.get<any>('/auth/me');
+        if (me) {
+          clientId = me.clientId;
+          providerId = me.providerId;
+          displayName = me.displayName || displayName;
+        }
+      } catch (e) {
+        console.warn('No se pudo obtener información adicional de /auth/me:', e);
+      }
+
+      const activeId = clientId ?? data.userId ?? data.id;
+
+      const user: AuthUser = {
+        id: activeId,
+        userId: data.userId ?? data.id,
+        clientId,
+        providerId,
+        email: data.email,
+        role: data.role,
+        fullName: displayName,
+        companyName: displayName,
+        token: data.token,
+      };
+
+      localStorage.setItem('rentamaq_user', JSON.stringify(user));
+      return user;
+    },
+    registerProvider: async (payload: RegisterProviderData): Promise<AuthUser> => {
+      const data = await apiClient.post<any>('/auth/register-provider', payload);
+      apiClient.setToken(data.token);
+
+      let clientId: number | undefined;
+      let providerId: number | undefined;
+      let displayName: string = data.name || payload.companyName;
+
+      try {
+        const me = await apiClient.get<any>('/auth/me');
+        if (me) {
+          clientId = me.clientId;
+          providerId = me.providerId;
+          displayName = me.displayName || displayName;
+        }
+      } catch (e) {
+        console.warn('No se pudo obtener información adicional de /auth/me:', e);
+      }
+
+      const activeId = providerId ?? data.userId ?? data.id;
+
+      const user: AuthUser = {
+        id: activeId,
+        userId: data.userId ?? data.id,
+        clientId,
+        providerId,
+        email: data.email,
+        role: data.role,
+        fullName: displayName,
+        companyName: payload.companyName,
         token: data.token,
       };
 
