@@ -1,6 +1,6 @@
 # RentaMaq — Plataforma de Renta de Herramientas y Equipos de Construcción
 
-> Sistema empresarial de grado de producción para el arrendamiento, control logístico y liquidación tributaria de maquinaria y herramientas para obra civil en Colombia. Desarrollado con **Java 21 LTS**, **Spring Boot 3.4.2**, **Arquitectura Hexagonal (DDD)** y base de datos relacional compatible con **PostgreSQL 16+** y **MySQL 8.0+** normalizada en **Cuarta Forma Normal (4FN)**.
+> Sistema empresarial de grado de producción para el arrendamiento, control logístico y liquidación tributaria de maquinaria y herramientas para obra civil en Colombia. Desarrollado con **Java 21 LTS**, **Spring Boot 3.4.2**, **Arquitectura Hexagonal (DDD)** y base de datos relacional **PostgreSQL 16+** normalizada en **Cuarta Forma Normal (4FN)**.
 
 ---
 
@@ -9,9 +9,7 @@
 - **Lenguaje de Programación:** Java 21 LTS (cumple ampliamente con el requisito de Java 17+).
 - **Framework Backend:** Spring Boot 3.4.2 (Spring Data JPA, Spring Security 6, Spring Web, Spring Boot Actuator).
 - **Arquitectura de Software:** Arquitectura Hexagonal (Puertos y Adaptadores) orientada por el Dominio (DDD) en 4 módulos Maven independientes.
-- **Bases de Datos Compatibles:**
-  - **PostgreSQL 16 / 18:** Motor principal de producción con tipos avanzados y validación estricta.
-  - **MySQL 8.0+:** Soporte dual con scripts DDL/DML dedicados ([sql/schema-mysql.sql](sql/schema-mysql.sql) y [sql/data-mysql.sql](sql/data-mysql.sql)).
+- **Base de Datos:** **PostgreSQL 16 / 18** con diseño relacional estricto en Cuarta Forma Normal (4FN), tipos monetarios exactos (`NUMERIC`), checks de integridad y claves foráneas en cascada controlada ([sql/schema.sql](sql/schema.sql) y [sql/data.sql](sql/data.sql)).
 - **Seguridad & Autenticación:** JSON Web Tokens (JWT) Stateless firmados con algoritmo HMAC-SHA256 y hashing de contraseñas con **BCrypt (costo 12)**.
 - **Frontend SPA:** React 18, TypeScript, Tailwind CSS, Lucide Icons y Vite con diseño industrial sobrio de alta gama y consumo REST con Axios/Fetch interceptor.
 - **Documentación de API:** Swagger UI / OpenAPI 3.0 (`springdoc-openapi`).
@@ -92,11 +90,8 @@ Para evitar anomalías de actualización y redundancia multivaluada, las propied
 
 ### Scripts SQL Incluidos en el Repositorio
 - **PostgreSQL 16+:**
-  - DDL: [sql/schema.sql](sql/schema.sql)
-  - DML (20+ registros semilla): [sql/data.sql](sql/data.sql)
-- **MySQL 8.0+:**
-  - DDL: [sql/schema-mysql.sql](sql/schema-mysql.sql)
-  - DML (20+ registros semilla): [sql/data-mysql.sql](sql/data-mysql.sql)
+  - DDL (Estructura de tablas, índices y restricciones 4FN): [sql/schema.sql](sql/schema.sql)
+  - DML (Datos semilla con 20+ registros por entidad y hashes BCrypt): [sql/data.sql](sql/data.sql)
 
 ---
 
@@ -116,7 +111,7 @@ La base de datos incluye datos semilla pre-cargados con hashes BCrypt reforzados
 
 ## ⚙️ Ejemplo de Configuración `application.properties`
 
-El archivo de configuración principal se encuentra en [renta-boot/src/main/resources/application.properties.example](renta-boot/src/main/resources/application.properties.example). Puedes configurarlo para PostgreSQL o MySQL según tu entorno local:
+El archivo de configuración principal se encuentra en [renta-boot/src/main/resources/application.properties.example](renta-boot/src/main/resources/application.properties.example):
 
 ```properties
 # ==============================================================================
@@ -127,23 +122,13 @@ server.servlet.context-path=/
 spring.application.name=renta-herramientas-api
 
 # ==============================================================================
-# OPCIÓN 1: CONEXIÓN A POSTGRESQL (Entorno Principal de Producción)
+# CONEXIÓN A POSTGRESQL (Entorno de Producción)
 # ==============================================================================
 spring.datasource.url=jdbc:postgresql://localhost:1129/renta_db
 spring.datasource.username=postgres
 spring.datasource.password=Renta2026
 spring.datasource.driver-class-name=org.postgresql.Driver
 spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
-
-# ==============================================================================
-# OPCIÓN 2: CONEXIÓN A MYSQL 8.0+ (Soporte Alternativo)
-# Descomentar las siguientes líneas si deseas ejecutar sobre MySQL:
-# ==============================================================================
-# spring.datasource.url=jdbc:mysql://localhost:3306/renta_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-# spring.datasource.username=root
-# spring.datasource.password=Root2026!
-# spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-# spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
 
 # ==============================================================================
 # POOL DE CONEXIONES HIKARI-CP
@@ -186,19 +171,12 @@ git clone https://github.com/TuUsuario/Proyecto_RentaHerramientas_SalasSebastian
 cd Proyecto_RentaHerramientas_SalasSebastian
 ```
 
-### 2. Inicializar la Base de Datos
-* **Si usas PostgreSQL (Recomendado):**
-  ```bash
-  psql -U postgres -p 1129 -c "CREATE DATABASE renta_db;"
-  psql -U postgres -p 1129 -d renta_db -f sql/schema.sql
-  psql -U postgres -p 1129 -d renta_db -f sql/data.sql
-  ```
-* **Si usas MySQL:**
-  ```bash
-  mysql -u root -p -e "CREATE DATABASE renta_db;"
-  mysql -u root -p renta_db < sql/schema-mysql.sql
-  mysql -u root -p renta_db < sql/data-mysql.sql
-  ```
+### 2. Inicializar la Base de Datos (PostgreSQL)
+```bash
+psql -U postgres -p 1129 -c "CREATE DATABASE renta_db;"
+psql -U postgres -p 1129 -d renta_db -f sql/schema.sql
+psql -U postgres -p 1129 -d renta_db -f sql/data.sql
+```
 
 ### 3. Compilación y Empaquetado
 ```bash
