@@ -248,6 +248,27 @@
             "header": [{ "key": "Authorization", "value": "Bearer {{token_provider}}" }],
             "url": { "raw": "{{baseUrl}}/tools/1/retire", "host": ["{{baseUrl}}"], "path": ["tools", "1", "retire"] }
           }
+        },
+        {
+          "name": "Eliminar / Dar de Baja Herramienta (DELETE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 204 No Content', function () { pm.response.to.have.status(204); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/tools/{{test_tool_id}}", "host": ["{{baseUrl}}"], "path": ["tools", "{{test_tool_id}}"] }
+          }
         }
       ]
     },

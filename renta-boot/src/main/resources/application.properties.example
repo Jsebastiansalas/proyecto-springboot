@@ -1,0 +1,66 @@
+# ==============================================================================
+# EJEMPLO DE CONFIGURACIÓN: application.properties
+# Plataforma RentaMaq - Renta de Herramientas y Equipos de Construcción
+# ==============================================================================
+
+# 1. PUERTO Y CONTEXTO DEL SERVIDOR
+server.port=8080
+server.servlet.context-path=/
+
+# 2. NOMBRE DE LA APLICACIÓN
+spring.application.name=renta-herramientas-api
+
+# ------------------------------------------------------------------------------
+# OPCIÓN A: BASE DE DATOS POSTGRESQL (Entorno Principal de Producción)
+# ------------------------------------------------------------------------------
+spring.datasource.url=jdbc:postgresql://localhost:1129/renta_db
+spring.datasource.username=postgres
+spring.datasource.password=Renta2026
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+
+# ------------------------------------------------------------------------------
+# OPCIÓN B: BASE DE DATOS MYSQL 8.0+ (Soporte Dual Académico / Rúbrica)
+# Descomentar las siguientes 5 líneas para conectar a MySQL:
+# ------------------------------------------------------------------------------
+# spring.datasource.url=jdbc:mysql://localhost:3306/renta_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+# spring.datasource.username=root
+# spring.datasource.password=Root2026!
+# spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+# spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
+
+# 3. CONFIGURACIÓN DEL POOL DE CONEXIONES HIKARI-CP
+spring.datasource.hikari.maximum-pool-size=15
+spring.datasource.hikari.minimum-idle=3
+spring.datasource.hikari.idle-timeout=30000
+spring.datasource.hikari.pool-name=RentaHikariPool
+spring.datasource.hikari.connection-timeout=30000
+
+# 4. HIBERNATE Y JPA
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=false
+spring.jpa.open-in-view=false
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.jdbc.batch_size=25
+
+# 5. SEGURIDAD Y TOKEN JWT (HMAC-SHA256)
+jwt.secret=RentaHerramientasClaveSuperSeguraJWT2026ConMasDe256BitsParaHS256Firmado!
+jwt.expiration-millis=43200000
+
+# 6. CONFIGURACIÓN DE CORS
+app.cors.allowed-origins=http://localhost:5173,http://localhost:8080,http://127.0.0.1:5173,http://127.0.0.1:8080
+
+# 7. DOCUMENTACIÓN SWAGGER / OPENAPI 3
+springdoc.api-docs.path=/v3/api-docs
+springdoc.api-docs.enabled=true
+springdoc.swagger-ui.path=/swagger-ui.html
+springdoc.swagger-ui.enabled=true
+springdoc.swagger-ui.operationsSorter=alpha
+springdoc.swagger-ui.tagsSorter=alpha
+springdoc.swagger-ui.tryItOutEnabled=true
+
+# 8. SPRING BOOT ACTUATOR (Monitoreo de Salud y Métricas)
+management.endpoints.web.exposure.include=health,info,metrics
+management.endpoints.web.base-path=/actuator
+management.endpoint.health.show-details=always
+management.info.env.enabled=true
