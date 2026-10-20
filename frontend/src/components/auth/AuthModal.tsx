@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 export const AuthModal: React.FC = () => {
-  const { isAuthModalOpen, setIsAuthModalOpen, quickDemoLogin, showToast } = useApp();
+  const { isAuthModalOpen, setIsAuthModalOpen, setUser, setActiveView, quickDemoLogin, showToast } = useApp();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,10 +25,17 @@ export const AuthModal: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await rentaService.auth.login(email, password);
+      const loggedUser = await rentaService.auth.login(email, password);
+      setUser(loggedUser);
       showToast('Sesión iniciada con éxito', 'success');
       setIsAuthModalOpen(false);
-      window.location.reload();
+      if (loggedUser.role === 'ROLE_ADMIN') {
+        setActiveView('admin');
+      } else if (loggedUser.role === 'ROLE_PROVEEDOR') {
+        setActiveView('provider');
+      } else {
+        setActiveView('client');
+      }
     } catch (err: any) {
       showToast(`Error al iniciar sesión: ${err.message}`, 'error');
     } finally {

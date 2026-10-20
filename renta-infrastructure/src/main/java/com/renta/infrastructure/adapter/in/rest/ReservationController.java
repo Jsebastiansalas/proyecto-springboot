@@ -6,6 +6,8 @@ import com.renta.application.dto.reservation.PriceCalculationResponse;
 import com.renta.application.dto.reservation.ReservationResponse;
 import com.renta.application.service.ReservationApplicationService;
 import com.renta.domain.model.entity.Reservation;
+import com.renta.domain.port.out.ClientRepositoryPort;
+import com.renta.domain.port.out.ProviderRepositoryPort;
 import com.renta.infrastructure.adapter.out.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -32,9 +34,16 @@ import java.util.List;
 public class ReservationController {
 
     private final ReservationApplicationService reservationService;
+    private final ClientRepositoryPort clientRepository;
+    private final ProviderRepositoryPort providerRepository;
 
-    public ReservationController(ReservationApplicationService reservationService) {
+    public ReservationController(
+            ReservationApplicationService reservationService,
+            ClientRepositoryPort clientRepository,
+            ProviderRepositoryPort providerRepository) {
         this.reservationService = reservationService;
+        this.clientRepository = clientRepository;
+        this.providerRepository = providerRepository;
     }
 
     @PostMapping("/calculate-price")
@@ -57,7 +66,33 @@ public class ReservationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/my")
+    @PreAuthorize("hasAnyRole('CLIENTE', 'ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Reservas del cliente autenticado", description = "Lista el historial de reservas de la cuenta del cliente actualmente autenticado.")
+    public ResponseEntity<List<ReservationResponse>> getMyReservations(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return clientRepository.findByUserId(userDetails.getId())
+                .map(client -> ResponseEntity.ok(reservationService.listReservationsByClient(client.getId())))
+                .orElse(ResponseEntity.ok(List.of()));
+    }
+
+    @GetMapping("/provider")
+    @PreAuthorize("hasAnyRole('PROVEEDOR', 'ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Reservas del proveedor autenticado", description = "Lista las reservas de las herramientas asociadas a la empresa proveedora actualmente autenticada.")
+    public ResponseEntity<List<ReservationResponse>> getMyProviderReservations(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return providerRepository.findByUserId(userDetails.getId())
+                .map(provider -> ResponseEntity.ok(reservationService.listReservationsByProvider(provider.getId())))
+                .orElse(ResponseEntity.ok(List.of()));
+    }
+
+    @GetMapping("/{id:[0-9]+}")
     @PreAuthorize("@authz.canAccessReservation(principal, #id)")
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "Consultar reserva por ID", description = "Obtiene los detalles completos de una reserva específica. Solo el cliente, el proveedor dueño o ADMIN pueden acceder.")
@@ -73,7 +108,7 @@ public class ReservationController {
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/client/{clientId}")
+    @GetMapping("/client/{clientId:[0-9]+}")
     @PreAuthorize("@authz.isClientOwner(principal, #clientId)")
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "Reservas de un cliente", description = "Lista el historial de reservas de un cliente. Restringido al titular de la cuenta o ADMIN.")
@@ -81,7 +116,7 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.listReservationsByClient(clientId));
     }
 
-    @GetMapping("/provider/{providerId}")
+    @GetMapping("/provider/{providerId:[0-9]+}")
     @PreAuthorize("@authz.isProviderOwner(principal, #providerId)")
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "Reservas de un proveedor", description = "Lista las reservas asociadas a las herramientas del proveedor especificado. Restringido a la empresa titular o ADMIN.")
@@ -89,7 +124,7 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.listReservationsByProvider(providerId));
     }
 
-    @GetMapping("/tool/{toolId}/occupied-dates")
+    @GetMapping("/tool/{toolId:[0-9]+}/occupied-dates")
     @Operation(summary = "Fechas ocupadas de una herramienta", description = "Lista las reservas activas (APROBADA, EN_CURSO) de una herramienta para bloquearlas en el calendario visual.")
     public ResponseEntity<List<ReservationResponse>> getOccupiedDatesByTool(@PathVariable Long toolId) {
         return ResponseEntity.ok(reservationService.listReservationsByTool(toolId));
@@ -103,7 +138,7 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.listAllReservations());
     }
 
-    @PatchMapping("/{id}/approve")
+    @PatchMapping("/{id:[0-9]+}/approve")
     @PreAuthorize("hasAnyRole('PROVEEDOR', 'ADMIN') and @authz.canAccessReservation(principal, #id)")
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "Aprobar reserva", description = "Aprueba una reserva en estado PENDIENTE. Restringido al proveedor del equipo o ADMIN.")
@@ -112,7 +147,7 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.getReservationById(res.getId()));
     }
 
-    @PatchMapping("/{id}/cancel")
+    @PatchMapping("/{id:[0-9]+}/cancel")
     @PreAuthorize("@authz.canAccessReservation(principal, #id)")
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "Cancelar reserva", description = "Cancela una reserva registrando el motivo. Restringido al cliente titular o ADMIN.")
@@ -123,7 +158,7 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.getReservationById(res.getId()));
     }
 
-    @PatchMapping("/{id}/reject")
+    @PatchMapping("/{id:[0-9]+}/reject")
     @PreAuthorize("hasAnyRole('PROVEEDOR', 'ADMIN') and @authz.canAccessReservation(principal, #id)")
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "Rechazar reserva", description = "Rechaza una reserva registrando el motivo.")

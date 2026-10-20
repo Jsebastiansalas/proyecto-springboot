@@ -12,6 +12,7 @@ export type ActiveView = 'home' | 'catalog' | 'client' | 'provider' | 'admin';
 
 interface AppContextType {
   user: AuthUser | null;
+  setUser: (user: AuthUser | null) => void;
   activeView: ActiveView;
   setActiveView: (view: ActiveView) => void;
   cart: CartItem[];
@@ -199,6 +200,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     <AppContext.Provider
       value={{
         user,
+        setUser,
         activeView,
         setActiveView,
         cart,
