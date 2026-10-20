@@ -66,7 +66,7 @@ export function initNavbar() {
               <select id="navbar-obra-select" class="obra-selector-pill pr-7 font-mono text-xs">
                 ${obras.map(o => `
                   <option value="${o.id}" ${o.id === selectedObraId ? 'selected' : ''}>
-                    🏗️ Obra: ${o.name}
+                     Obra: ${o.name}
                   </option>
                 `).join('')}
               </select>

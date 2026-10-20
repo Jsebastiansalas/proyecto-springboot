@@ -68,7 +68,7 @@ const App = (() => {
     if (!container) return;
     const t = document.createElement('div');
     t.className = `toast toast-${type} animate-fade-in`;
-    const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+    const icon = type === 'success' ? '•' : type === 'error' ? '!' : 'i';
     t.innerHTML = `<span class="font-bold text-lg">${icon}</span><span class="flex-1 whitespace-pre-line">${message}</span>`;
     container.appendChild(t);
     setTimeout(() => {
@@ -111,7 +111,7 @@ const App = (() => {
       toast('Equipo removido de tus Favoritos', 'info');
     } else {
       state.favorites.push(id);
-      toast('❤️ Equipo añadido a tus Favoritos', 'success');
+      toast('Equipo añadido a tus Favoritos', 'success');
     }
     localStorage.setItem('rentamaq_favs', JSON.stringify(state.favorites));
     updateFavoritesCounter();
@@ -237,7 +237,7 @@ const App = (() => {
     const existing = state.quoteCart.find(item => item.toolId === id);
     if (existing) {
       existing.days = Math.min(60, (existing.days || 7) + 1);
-      toast(`📋 Se actualizó a ${existing.days} días para "${tool.name}"`, 'info');
+      toast(`Se actualizó a ${existing.days} días para "${tool.name}"`, 'info');
     } else {
       state.quoteCart.push({
         toolId: id,
@@ -250,7 +250,7 @@ const App = (() => {
         days: Number(days) || 7,
         image: tool.mainImageUrl || 'images/tools/HERR-0001.jpg'
       });
-      toast(`📋 "${tool.name}" añadido a tu cotización activa`, 'success');
+      toast(`"${tool.name}" añadido a tu cotización activa`, 'success');
     }
 
     localStorage.setItem('rentamaq_quote_cart', JSON.stringify(state.quoteCart));
@@ -261,7 +261,7 @@ const App = (() => {
   function addComboToQuoteCart(id1, id2) {
     addToQuoteCart(id1, 7);
     addToQuoteCart(id2, 7);
-    toast('🔥 Combo de obra añadido exitosamente a tu cotización activa', 'success');
+    toast('Combo de obra añadido a tu cotización activa', 'success');
   }
 
   function removeFromQuoteCart(toolId) {
@@ -296,7 +296,7 @@ const App = (() => {
     if (state.quoteCart.length === 0) {
       container.innerHTML = `
         <div class="py-16 text-center text-slate-400 space-y-3">
-          <span class="text-4xl block">📋</span>
+          <span class="text-4xl block font-sans text-blue-600 font-black">#</span>
           <p class="font-extrabold text-slate-800 text-sm">Tu cotización de obra está vacía</p>
           <p class="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
             Explora el catálogo y añade los equipos requeridos para tu frente de obra con un 15% de ahorro semanal.
@@ -335,7 +335,9 @@ const App = (() => {
             <div class="flex-1 min-w-0">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">${item.brand} • ${item.sku}</span>
-                <button type="button" onclick="App.removeFromQuoteCart(${item.toolId})" class="text-slate-400 hover:text-rose-600 text-xs transition-colors" title="Quitar equipo">✕</button>
+                <button type="button" onclick="App.removeFromQuoteCart(${item.toolId})" class="text-slate-400 hover:text-rose-600 text-xs transition-colors" title="Quitar equipo">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
               </div>
               <h4 class="font-extrabold text-xs text-slate-900 line-clamp-1 leading-snug">${item.name}</h4>
               <div class="text-[11px] font-mono text-slate-700 font-bold mt-0.5">${formatCOP(item.dailyPrice)} / día</div>
@@ -405,7 +407,7 @@ const App = (() => {
     const badge = document.getElementById('current-delivery-location');
     if (badge) badge.textContent = locName;
     closeModal('modal-location');
-    toast(`📍 Patio de despacho actualizado: ${locName}`, 'success');
+    toast(`Patio de despacho actualizado: ${locName}`, 'success');
   }
 
   // ==================== BÚSQUEDA OMNICANAL ESTILO AMAZON ====================
@@ -670,20 +672,8 @@ const App = (() => {
   }
 
   // Ayudante de iconos por categoría
-  function getCategoryEmoji(name = '') {
-    const n = (name || '').toLowerCase();
-    if (n.includes('taladro') || n.includes('rotomartillo')) return '🔨';
-    if (n.includes('mezcladora') || n.includes('concreto')) return '🏗️';
-    if (n.includes('andamio')) return '🪜';
-    if (n.includes('compresor') || n.includes('aire')) return '💨';
-    if (n.includes('generador') || n.includes('eléctrico') || n.includes('electrico')) return '⚡';
-    if (n.includes('sierra') || n.includes('cortadora')) return '⚙️';
-    if (n.includes('soldadura')) return '🔥';
-    if (n.includes('vibrador')) return '📳';
-    if (n.includes('compactador')) return '🚜';
-    if (n.includes('montacarga') || n.includes('elevador')) return '📦';
-    if (n.includes('bomba')) return '💧';
-    return '🛠️';
+  function getCategoryEmoji(name = "") {
+    return "";
   }
 
   // Renderizado dinámico de chips de categorías con pills estilizados
@@ -696,7 +686,7 @@ const App = (() => {
 
     let html = `
       <button type="button" onclick="App.filterByCategoryChip('')" id="chip-cat-all" class="category-chip ${isAllActive ? 'category-chip-active' : ''}">
-        <span class="category-chip-icon">⚡</span>
+        
         <span>Todas</span>
         <span class="category-chip-badge font-mono">${totalCount}</span>
       </button>
@@ -799,7 +789,7 @@ const App = (() => {
           price: tool.baseDailyPrice,
           brand: tool.brand
         });
-        toast(`⚖️ "${tool.name}" añadido al comparador (${state.compareList.length}/3)`, 'success');
+        toast(`"${tool.name}" añadido al comparador (${state.compareList.length}/3)`, 'success');
       }
     }
 
@@ -874,7 +864,7 @@ const App = (() => {
                   <div class="relative h-28 rounded-xl overflow-hidden mb-2 bg-slate-50">
                     <img src="${t.mainImageUrl || 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=400&q=80'}" class="w-full h-full object-cover">
                     ${Number(t.baseDailyPrice) === minDailyPrice ? `
-                      <span class="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-black bg-emerald-500 text-slate-950 uppercase shadow">🏆 Mejor Precio</span>
+                      <span class="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-black bg-emerald-500 text-slate-950 uppercase shadow">Mejor Precio</span>
                     ` : ''}
                   </div>
                   <h4 class="font-extrabold text-sm text-slate-900 leading-snug line-clamp-1">${t.name}</h4>
@@ -922,7 +912,7 @@ const App = (() => {
               <td class="p-3 border border-slate-200 text-slate-600 uppercase text-[10px]">Calificación Contratistas</td>
               ${toolDetails.map(t => `
                 <td class="p-3 border border-slate-200 text-center font-bold text-amber-600">
-                  ★ ${(t.averageRating || 5.0).toFixed(1)} <span class="text-slate-400 font-normal">(${t.totalReviews || 0} reseñas)</span>
+                  <svg class="w-3.5 h-3.5 text-amber-500 fill-amber-500 inline mr-0.5" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>${(t.averageRating || 5.0).toFixed(1)} <span class="text-slate-400 font-normal">(${t.totalReviews || 0} reseñas)</span>
                 </td>
               `).join('')}
             </tr>
@@ -1038,8 +1028,8 @@ const App = (() => {
       const isChoice = tool.id === 16 || tool.id === 7;
 
       const ratingText = (tool.totalReviews && Number(tool.totalReviews) > 0)
-        ? `★ ${(tool.averageRating || 5.0).toFixed(1)} (${tool.totalReviews})`
-        : `★ Nuevo`;
+        ? `<svg class="w-3.5 h-3.5 text-amber-500 fill-amber-500 inline mr-0.5" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>${(tool.averageRating || 5.0).toFixed(1)} (${tool.totalReviews})`
+        : `<svg class="w-3.5 h-3.5 text-amber-500 fill-amber-500 inline mr-0.5" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>Nuevo`;
 
       return `
         <div class="tool-card rounded-2xl overflow-hidden flex flex-col justify-between shadow-sm bg-white border border-slate-200 transition-all">
@@ -1056,7 +1046,7 @@ const App = (() => {
               </div>
               <div class="absolute top-3 right-3 flex items-center gap-1.5">
                 <button type="button" onclick="App.toggleFavorite(${tool.id}, event)" class="w-7 h-7 rounded-full bg-white/95 backdrop-blur-sm border border-slate-200 flex items-center justify-center text-xs shadow-sm hover:scale-110 transition-transform ${isFav ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}" title="${isFav ? 'Quitar de favoritos' : 'Añadir a favoritos'}">
-                  ${isFav ? '❤️' : '🤍'}
+                  ${isFav ? '<svg class="w-4 h-4 fill-rose-500 text-rose-500 inline" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>' : '<svg class="w-4 h-4 text-slate-400 hover:text-rose-500 inline" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>'}
                 </button>
                 <div class="flex items-center gap-1 px-2 py-0.5 text-[11px] font-black bg-slate-950 text-blue-400 rounded-md shadow-sm border border-slate-800">
                   <span>${ratingText}</span>
@@ -1073,7 +1063,7 @@ const App = (() => {
               <p class="text-xs text-slate-500 mb-3 line-clamp-2 leading-relaxed">${tool.description}</p>
               
               <div class="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
-                <span class="text-slate-400">🏢 Proveedor:</span>
+                <span class="text-slate-400">Proveedor:</span>
                 <strong class="text-slate-800 font-semibold">${tool.providerName}</strong>
               </div>
             </div>
@@ -1084,7 +1074,7 @@ const App = (() => {
               <div>
                 <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Tarifa Diaria:</span>
                 <div class="text-xl font-black text-slate-900 font-mono">${formatCOP(tool.baseDailyPrice)}</div>
-                <span class="inline-block text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md mt-0.5">⚡ 15% desc. semana</span>
+                <span class="inline-block text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md mt-0.5">15% desc. semana</span>
               </div>
               <div class="text-right">
                 <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Garantía:</span>
@@ -1099,10 +1089,10 @@ const App = (() => {
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
               </button>
               <button type="button" onclick="App.addToQuoteCart(${tool.id}); event.stopPropagation();" class="p-2.5 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-orange-50 text-slate-700 text-xs font-bold transition-all" title="Añadir a Cotización Activa">
-                <span>📋</span>
+                
               </button>
               <button type="button" onclick="App.toggleCompare(${tool.id}, event)" class="px-2.5 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1 ${isComparing ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-700 border-slate-200 hover:border-blue-400'}" title="Comparar equipo lado a lado">
-                <span>⚖️</span>
+                
                 <span class="hidden sm:inline">${isComparing ? 'En Lista' : 'Comparar'}</span>
               </button>
             </div>
@@ -1161,9 +1151,9 @@ const App = (() => {
             <h3 class="text-base font-extrabold text-slate-900 leading-tight hover:text-blue-600 cursor-pointer transition-colors" onclick="App.openToolDetail(${tool.id})">${tool.name}</h3>
             <p class="text-xs text-slate-500 line-clamp-1 leading-relaxed">${tool.description}</p>
             <div class="flex items-center gap-3 text-[11px] text-slate-500 pt-1">
-              <span>🏢 Proveedor: <strong class="text-slate-800">${tool.providerName}</strong></span>
+              <span>Proveedor: <strong class="text-slate-800">${tool.providerName}</strong></span>
               <span>•</span>
-              <span class="text-emerald-700 font-bold">⚡ Póliza Todo Riesgo Sura Incluida</span>
+              <span class="text-emerald-700 font-bold">Póliza Todo Riesgo Sura Incluida</span>
             </div>
           </div>
 
@@ -1177,10 +1167,10 @@ const App = (() => {
 
             <div class="flex items-center gap-1.5 w-full justify-end">
               <button type="button" onclick="App.addToQuoteCart(${tool.id})" class="p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-orange-50 text-slate-700 text-xs font-bold transition-all" title="Añadir a Cotización">
-                📋
+                <svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
               </button>
               <button type="button" onclick="App.toggleCompare(${tool.id}, event)" class="p-2 rounded-xl border border-slate-200 hover:border-slate-400 text-slate-700 text-xs font-bold transition-all ${isComparing ? 'bg-blue-600 text-white border-blue-600' : ''}" title="Comparar">
-                ⚖️
+                <svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
               </button>
               <button type="button" onclick="App.openToolDetail(${tool.id})" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20 font-extrabold text-xs rounded-xl transition-all shadow-sm">
                 Cotizar / Alquilar
@@ -1286,7 +1276,7 @@ const App = (() => {
                 ${tool.safetyRequirements && tool.safetyRequirements.length > 0 ?
                   tool.safetyRequirements.map(sr => `
                     <span class="px-3 py-1.5 bg-white rounded-lg border border-amber-200 text-xs font-semibold text-amber-900 shadow-sm flex items-center gap-1.5" title="${sr.description || ''}">
-                      <span>⚠️</span> ${sr.requirementName}
+                      ${sr.requirementName}
                     </span>
                   `).join('') : '<span class="text-xs text-amber-700">Equipamiento estándar de protección requerido.</span>'
                 }
@@ -1297,11 +1287,11 @@ const App = (() => {
             <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
               <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div class="flex items-center gap-2">
-                  <span class="text-xl">⭐</span>
+                  <svg class="w-5 h-5 text-amber-500 fill-amber-500 inline" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                   <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Opiniones de Contratistas</h3>
                 </div>
                 <div class="flex items-center gap-1.5">
-                  <span class="text-base font-black text-amber-600">★ ${reviewData && reviewData.averageRating > 0 ? reviewData.averageRating.toFixed(1) : '5.0'}</span>
+                  <span class="text-base font-black text-amber-600"><svg class="w-3.5 h-3.5 text-amber-500 fill-amber-500 inline mr-0.5" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>${reviewData && reviewData.averageRating > 0 ? reviewData.averageRating.toFixed(1) : '5.0'}</span>
                   <span class="text-xs text-slate-400 font-medium">(${reviewData ? reviewData.totalReviews : 0} opinión${reviewData && reviewData.totalReviews === 1 ? '' : 'es'})</span>
                 </div>
               </div>
@@ -1312,7 +1302,7 @@ const App = (() => {
                     <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1">
                       <div class="flex items-center justify-between">
                         <span class="font-extrabold text-slate-800">${rev.clientName || 'Contratista'}</span>
-                        <span class="text-amber-500 text-sm font-bold tracking-wider">${'★'.repeat(rev.rating)}${'☆'.repeat(5 - rev.rating)}</span>
+                        <span class="text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">${rev.rating} / 5</span>
                       </div>
                       <p class="text-slate-600 leading-relaxed">${rev.comment}</p>
                       <div class="text-[10px] text-slate-400 font-mono pt-1">${formatDate(rev.createdAt)}</div>
@@ -1330,7 +1320,7 @@ const App = (() => {
             <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
               <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div class="flex items-center gap-2">
-                  <span class="text-xl">💬</span>
+                  <svg class="w-5 h-5 text-blue-600 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                   <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Preguntas y Comentarios sobre este Equipo</h3>
                 </div>
                 <span id="comment-count-badge" class="text-xs text-slate-400 font-medium">${state.selectedToolComments.length} mensaje(s)</span>
@@ -1434,7 +1424,7 @@ const App = (() => {
               <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
                 <div class="flex justify-between items-center">
                   <span class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                    <span>📅</span> Disponibilidad Próximos 28 Días:
+                    Disponibilidad Próximos 28 Días:
                   </span>
                   <span class="text-[10px] font-bold text-blue-800 bg-blue-100/80 px-2 py-0.5 rounded">En vivo</span>
                 </div>
@@ -1474,7 +1464,7 @@ const App = (() => {
                   <span id="calc-base-daily">${formatCOP(tool.baseDailyPrice)}</span>
                 </div>
                 <div id="calc-weekly-badge" class="flex justify-between text-emerald-400 font-semibold bg-emerald-950/60 p-1.5 rounded">
-                  <span>✓ Descuento Semanal (85%):</span>
+                  <span>Descuento Semanal (85%):</span>
                   <span>APLICADO</span>
                 </div>
                 <div class="border-t border-slate-800 pt-2 flex justify-between text-slate-300">
@@ -1515,11 +1505,11 @@ const App = (() => {
                 `}
 
                 <button type="button" onclick="App.addToQuoteCart(${tool.id}); App.closeModal('modal-tool-detail');" class="w-full py-2.5 bg-slate-950 hover:bg-slate-900 text-white font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
-                  <span>📋 Añadir a Cotización Activa (Carrito de Obra)</span>
+                  <span>Añadir a Cotización Activa (Carrito de Obra)</span>
                 </button>
                 
                 <button type="button" onclick="App.openFormalQuoteModal()" class="w-full py-2.5 bg-white hover:bg-slate-100 text-slate-800 font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-300 shadow-sm">
-                  <span>🖨️ Imprimir Cotización Formal Membretada</span>
+                  <span>Imprimir Cotización Formal Membretada</span>
                 </button>
               </div>
             </div>
@@ -1564,7 +1554,7 @@ const App = (() => {
         ${c.providerReply ? `
           <div class="ml-8 p-3 bg-amber-50/70 rounded-lg border-l-2 border-blue-600 text-slate-800 space-y-1">
             <div class="flex items-center justify-between text-[11px] font-bold text-amber-900">
-              <span>🏢 Respuesta Oficial del Proveedor</span>
+              <span>Respuesta Oficial del Proveedor</span>
               <span class="text-[10px] text-slate-400 font-mono font-normal">${formatDate(c.repliedAt)}</span>
             </div>
             <p class="text-[11px] text-slate-700 leading-relaxed">${c.providerReply}</p>
@@ -1572,7 +1562,7 @@ const App = (() => {
         ` : (canReply ? `
           <div class="ml-8 pt-1">
             <button type="button" onclick="App.replyCommentPrompt(${c.id}, ${toolId})" class="text-[11px] font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1 hover:underline">
-              <span>💬</span> Responder oficialmente
+              Responder oficialmente
             </button>
           </div>
         ` : '')}
@@ -1592,7 +1582,7 @@ const App = (() => {
     try {
       await API.tools.addComment(toolId, text);
       input.value = '';
-      toast('✓ Pregunta publicada con éxito.', 'success');
+      toast('Pregunta publicada con éxito.', 'success');
       // Recargar comentarios sin cerrar modal
       await refreshToolComments(toolId);
     } catch (err) {
@@ -1606,7 +1596,7 @@ const App = (() => {
 
     try {
       await API.tools.replyComment(commentId, reply.trim());
-      toast('✓ Respuesta oficial guardada y publicada.', 'success');
+      toast('Respuesta oficial guardada y publicada.', 'success');
       await refreshToolComments(toolId);
     } catch (err) {
       toast('Error al responder comentario: ' + err.message, 'error');
@@ -1888,7 +1878,7 @@ const App = (() => {
       if (banner) {
         banner.innerHTML = `
           <div class="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm">
-            <span class="text-base">🚫</span>
+            <span><svg class="w-4 h-4 text-rose-600 shrink-0 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></span>
             <div>
               <strong>Fechas Ocupadas (${conflict.reservationCode}):</strong>
               <div class="font-normal text-[11px] mt-0.5">El equipo ya está reservado del ${formatDate(conflict.startDate)} al ${formatDate(conflict.endDate)}. Selecciona otro rango libre en el calendario.</div>
@@ -1905,7 +1895,7 @@ const App = (() => {
       if (banner) {
         banner.innerHTML = `
           <div class="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2">
-            <span class="text-emerald-600 font-bold">✓</span>
+            <span><svg class="w-4 h-4 text-emerald-600 shrink-0 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></span>
             <span>Fechas disponibles para entrega y uso en obra.</span>
           </div>
         `;
@@ -2188,7 +2178,7 @@ const App = (() => {
             </div>
             <div class="flex flex-wrap justify-center gap-3 pt-2">
               <button type="button" onclick="App.quickClientDemoLogin()" class="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20 font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-2">
-                <span>👷</span> Ingresar como Contratista Demo (Constructora Andina)
+                Ingresar como Contratista Demo (Constructora Andina)
               </button>
               <button type="button" onclick="App.openAuthModal('login')" class="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs rounded-xl transition-all">
                 Iniciar Sesión con Otra Cuenta
@@ -2326,7 +2316,7 @@ const App = (() => {
       }
 
       const getDotClass = (st) => st === 'completed' ? 'stepper-dot-completed' : (st === 'active' ? 'stepper-dot-active' : 'stepper-dot-pending');
-      const getDotIcon = (st, num) => st === 'completed' ? '✓' : num;
+      const getDotIcon = (st, num) => num;
       const getLabelClass = (st) => st === 'active' ? 'stepper-label-active font-extrabold' : (st === 'completed' ? 'text-slate-900 font-bold' : '');
 
       const isEnCuotas = r.hasPayment && (r.paymentMethod === 'EN_CUOTAS' || (r.installmentCount && r.installmentCount > 1));
@@ -2357,7 +2347,7 @@ const App = (() => {
                 <!-- Botón de Pago Desbloqueado para PENDIENTE y APROBADA -->
                 ${(!r.hasPayment && (r.status === 'PENDIENTE' || r.status === 'APROBADA')) ? `
                   <button type="button" onclick="App.openPaymentModal(${r.id}, '${r.reservationCode}', ${r.totalAmount})" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl transition-all shadow-sm flex items-center gap-1.5 animate-pulse">
-                    <span>💳</span> Pagar Ahora
+                    Pagar Ahora
                   </button>
                 ` : ''}
 
@@ -2369,16 +2359,16 @@ const App = (() => {
 
                 ${(r.hasPayment || r.status === 'APROBADA' || r.status === 'EN_CURSO' || r.status === 'FINALIZADA') ? `
                   <button type="button" onclick="App.openInvoiceModal(${r.id})" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm">
-                    <span>📄</span> Factura DIAN
+                    Factura DIAN
                   </button>
                 ` : ''}
 
                 ${r.status === 'FINALIZADA' ? `
                   <button type="button" onclick="App.openSettlementModal(${r.id})" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-sm">
-                    <span>🛡️</span> Liquidación
+                    Liquidación
                   </button>
                   <button type="button" onclick="App.openReviewModal(${r.id}, ${r.toolId}, '${(r.toolName || 'Herramienta').replace(/'/g, "\\'")}', '${r.reservationCode}')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl transition-all flex items-center gap-1 shadow-sm">
-                    <span>⭐</span> Calificar
+                    Calificar
                   </button>
                 ` : ''}
               </div>
@@ -2426,7 +2416,7 @@ const App = (() => {
             </div>
           ` : `
             <div class="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 font-bold flex items-center gap-2">
-              <span>🚫</span> Esta reserva se encuentra cancelada o rechazada.
+               Esta reserva se encuentra cancelada o rechazada.
             </div>
           `}
 
@@ -2434,14 +2424,14 @@ const App = (() => {
           ${isEnCuotas ? `
             <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
               <div class="flex items-center gap-2">
-                <span class="text-base">💳</span>
+                <span><svg class="w-4 h-4 text-blue-600 inline shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg></span>
                 <div>
                   <span class="font-extrabold text-blue-900 block">Plan de Financiamiento en Cuotas Activo</span>
                   <span class="text-slate-600">Financiado a ${r.installmentCount || 3} cuotas mensuales / quincenales</span>
                 </div>
               </div>
               <button type="button" onclick="App.openInstallmentsModal(${r.id}, '${r.reservationCode}')" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-white font-black text-xs rounded-xl transition-all shadow-sm flex items-center gap-1.5">
-                <span>📅</span> Ver / Pagar Cuotas
+                Ver / Pagar Cuotas
               </button>
             </div>
           ` : ''}
@@ -2487,10 +2477,10 @@ const App = (() => {
           <td class="py-3 px-3 text-right">
             ${inst.status === 'PENDIENTE' ? `
               <button type="button" onclick="App.payInstallmentAction(${inst.id}, ${reservationId}, '${reservationCode}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg transition-colors shadow-sm">
-                💳 Pagar Cuota
+                Pagar Cuota
               </button>
             ` : `
-              <span class="text-emerald-600 font-bold text-xs">✓ Pagada (${formatDate(inst.paidAt)})</span>
+              <span class="text-emerald-600 font-bold text-xs">Pagada (${formatDate(inst.paidAt)})</span>
             `}
           </td>
         </tr>
@@ -2504,7 +2494,7 @@ const App = (() => {
     if (!confirm('¿Deseas procesar el pago de esta cuota ahora?')) return;
     try {
       await API.payments.payInstallment(installmentId);
-      toast('✓ Cuota pagada exitosamente. Saldo actualizado.', 'success');
+      toast('Cuota pagada exitosamente. Saldo actualizado.', 'success');
       await openInstallmentsModal(reservationId, reservationCode);
       loadClientDashboard();
     } catch (err) {
@@ -2604,14 +2594,14 @@ const App = (() => {
             <button onclick="App.rejectReservationAction(${r.id})" class="px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold text-xs rounded-lg">Rechazar</button>
           ` : ''}
           ${r.status === 'APROBADA' ? `
-            <button onclick="App.openDeliveryModal(${r.id}, '${r.reservationCode}')" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-lg">📦 Despachar / Entrega</button>
+            <button onclick="App.openDeliveryModal(${r.id}, '${r.reservationCode}')" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-lg">Despachar / Entrega</button>
           ` : ''}
           ${r.status === 'EN_CURSO' ? `
-            <button onclick="App.openReturnModal(${r.id}, '${r.reservationCode}')" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg">🔍 Recibir & Inspección</button>
+            <button onclick="App.openReturnModal(${r.id}, '${r.reservationCode}')" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg">Recibir & Inspección</button>
           ` : ''}
           ${r.status === 'FINALIZADA' ? `
             <button onclick="App.openSettlementModal(${r.id})" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs rounded-lg flex items-center gap-1 shadow-sm">
-              <span>🛡️ Liquidación</span>
+              <span>Liquidación</span>
             </button>
             <button onclick="App.openInvoiceModal(${r.id})" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg">
               Factura
@@ -2874,7 +2864,7 @@ const App = (() => {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      toast('✓ Reporte CSV de reservas descargado con éxito.', 'success');
+      toast('Reporte CSV de reservas descargado con éxito.', 'success');
     } catch (err) {
       toast('Error al exportar CSV: ' + err.message, 'error');
     }
@@ -2919,7 +2909,7 @@ const App = (() => {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      toast('✓ Auditoría global exportada a CSV con éxito.', 'success');
+      toast('Auditoría global exportada a CSV con éxito.', 'success');
     } catch (err) {
       toast('Error al exportar CSV: ' + err.message, 'error');
     }
@@ -3142,7 +3132,7 @@ const App = (() => {
     const submitBtn = document.getElementById('btn-submit-payment');
     if (submitBtn) {
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span>⏳ Procesando pago seguro...</span>';
+      submitBtn.innerHTML = '<span>Procesando pago seguro...</span>';
     }
 
     try {
@@ -3170,7 +3160,7 @@ const App = (() => {
     } finally {
       if (submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<span>🔒 Confirmar y Procesar Transacción</span>';
+        submitBtn.innerHTML = '<span>Confirmar y Procesar Transacción</span>';
       }
     }
   }
@@ -3242,7 +3232,7 @@ const App = (() => {
         clientSignatureAck: document.getElementById('deliv-ack').checked
       });
       closeModal('modal-delivery');
-      toast('✓ Despacho registrado. Reserva en estado EN_CURSO.', 'success');
+      toast('Despacho registrado. Reserva en estado EN_CURSO.', 'success');
       loadProviderDashboard();
     } catch (err) {
       toast('Error al registrar entrega: ' + err.message, 'error');
@@ -3323,16 +3313,16 @@ const App = (() => {
       const text = document.getElementById('settle-status-text');
       if (data.settlementStatus === 'REEMBOLSO_TOTAL') {
         banner.className = 'text-center p-3 rounded-xl border bg-emerald-50 border-emerald-300 text-emerald-800';
-        text.innerHTML = '<strong>✓ Reembolso Total:</strong> Depósito en garantía reintegrado al 100% al cliente sin deducciones.';
+        text.innerHTML = '<strong>Reembolso Total:</strong> Depósito en garantía reintegrado al 100% al cliente sin deducciones.';
       } else if (data.settlementStatus === 'REEMBOLSO_PARCIAL') {
         banner.className = 'text-center p-3 rounded-xl border bg-amber-50 border-amber-300 text-amber-800';
-        text.innerHTML = '<strong>⚠️ Reembolso Parcial:</strong> Se dedujo el costo de reparación de averías y se reintegró el saldo.';
+        text.innerHTML = '<strong>Reembolso Parcial:</strong> Se dedujo el costo de reparación de averías y se reintegró el saldo.';
       } else if (data.settlementStatus === 'RETENIDO_TOTAL') {
         banner.className = 'text-center p-3 rounded-xl border bg-orange-50 border-orange-300 text-orange-800';
-        text.innerHTML = '<strong>🔒 Fianza Retenida:</strong> El costo de avería cubrió la totalidad de la garantía depositada.';
+        text.innerHTML = '<strong>Fianza Retenida:</strong> El costo de avería cubrió la totalidad de la garantía depositada.';
       } else {
         banner.className = 'text-center p-3 rounded-xl border bg-rose-50 border-rose-300 text-rose-800';
-        text.innerHTML = '<strong>🚨 Saldo a Cobrar:</strong> El costo de averías excede la garantía. Se genera saldo a cobrar al contratista.';
+        text.innerHTML = '<strong>Saldo a Cobrar:</strong> El costo de averías excede la garantía. Se genera saldo a cobrar al contratista.';
       }
     } catch (err) {
       toast('Error al consultar liquidación de garantía: ' + err.message, 'error');

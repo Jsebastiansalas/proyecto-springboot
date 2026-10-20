@@ -139,7 +139,7 @@ const App = (() => {
     if (!container) return;
     const t = document.createElement('div');
     t.className = `toast toast-${type} animate-fade-in`;
-    const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+    const icon = type === 'success' ? '' : type === 'error' ? '' : 'ℹ';
     t.innerHTML = `<span class="font-bold text-lg">${icon}</span><span class="flex-1 whitespace-pre-line">${message}</span>`;
     container.appendChild(t);
     setTimeout(() => {
@@ -532,7 +532,7 @@ const App = (() => {
                   <span class="font-display font-bold text-xs uppercase tracking-wider text-slate-900">Bitácora de Rendimiento en Obra</span>
                 </div>
                 <div class="flex items-center gap-1.5 font-mono">
-                  <span class="text-sm font-bold text-amber-600">★ ${reviewData && reviewData.averageRating > 0 ? reviewData.averageRating.toFixed(1) : '5.0'}</span>
+                  <span class="text-sm font-bold text-amber-600"> ${reviewData && reviewData.averageRating > 0 ? reviewData.averageRating.toFixed(1) : '5.0'}</span>
                   <span class="text-xs text-slate-400">(${reviewData ? reviewData.totalReviews : 0} informe${reviewData && reviewData.totalReviews === 1 ? '' : 's'})</span>
                 </div>
               </div>
@@ -543,7 +543,7 @@ const App = (() => {
                     <div class="p-3 bg-slate-50 rounded border border-slate-200 text-xs space-y-1">
                       <div class="flex items-center justify-between">
                         <span class="font-extrabold text-slate-800 font-display uppercase tracking-wider">${rev.clientName || 'Contratista'}</span>
-                        <span class="text-amber-500 text-xs font-bold tracking-wider">${'★'.repeat(rev.rating)}${'☆'.repeat(5 - rev.rating)}</span>
+                        <span class="text-amber-500 text-xs font-bold tracking-wider">${''.repeat(rev.rating)}${''.repeat(5 - rev.rating)}</span>
                       </div>
                       <p class="text-slate-600 leading-relaxed text-xs">${rev.comment}</p>
                       <div class="text-[10px] text-slate-400 font-mono pt-1">${formatDate(rev.createdAt)}</div>
@@ -916,7 +916,7 @@ const App = (() => {
       if (banner) {
         banner.innerHTML = `
           <div class="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2">
-            <span class="text-emerald-600 font-bold">✓</span>
+            <span class="text-emerald-600 font-bold"></span>
             <span>Fechas disponibles para entrega y uso en obra.</span>
           </div>
         `;
@@ -1891,7 +1891,7 @@ const App = (() => {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      toast('✓ Reporte CSV de reservas descargado con éxito.', 'success');
+      toast(' Reporte CSV de reservas descargado con éxito.', 'success');
     } catch (err) {
       toast('Error al exportar CSV: ' + err.message, 'error');
     }
@@ -1936,7 +1936,7 @@ const App = (() => {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      toast('✓ Auditoría global exportada a CSV con éxito.', 'success');
+      toast(' Auditoría global exportada a CSV con éxito.', 'success');
     } catch (err) {
       toast('Error al exportar CSV: ' + err.message, 'error');
     }
@@ -2608,7 +2608,7 @@ const App = (() => {
       const text = document.getElementById('settle-status-text');
       if (data.settlementStatus === 'REEMBOLSO_TOTAL') {
         banner.className = 'text-center p-3 rounded-xl border bg-emerald-50 border-emerald-300 text-emerald-800';
-        text.innerHTML = '<strong>✓ Reembolso Total:</strong> Depósito en garantía reintegrado al 100% al cliente sin deducciones.';
+        text.innerHTML = '<strong> Reembolso Total:</strong> Depósito en garantía reintegrado al 100% al cliente sin deducciones.';
       } else if (data.settlementStatus === 'REEMBOLSO_PARCIAL') {
         banner.className = 'text-center p-3 rounded-xl border bg-amber-50 border-amber-300 text-amber-800';
         text.innerHTML = '<strong>Reembolso Parcial:</strong> Se dedujo el costo de reparación de averías y se reintegró el saldo.';

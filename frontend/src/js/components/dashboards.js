@@ -50,11 +50,11 @@ export function initDashboards() {
                 </h1>
                 
                 <div class="flex flex-wrap items-center gap-4 mt-2 font-mono text-xs text-slate-300">
-                  <span>📍 ${obra.address}</span>
+                  <span> ${obra.address}</span>
                   <span class="text-slate-600">&bull;</span>
-                  <span>👷 Residente: <strong class="text-white">${obra.resident}</strong></span>
+                  <span> Residente: <strong class="text-white">${obra.resident}</strong></span>
                   <span class="text-slate-600">&bull;</span>
-                  <span class="text-emerald-400 font-bold">✓ PÓLIZA ALL-RISK RETIE VIGENTE</span>
+                  <span class="text-emerald-400 font-bold"> PÓLIZA ALL-RISK RETIE VIGENTE</span>
                 </div>
               </div>
 
@@ -63,7 +63,7 @@ export function initDashboards() {
                 <select id="dash-obra-switch" class="input-industrial mono text-xs bg-slate-900 text-white border-slate-700 w-auto">
                   ${obras.map(o => `
                     <option value="${o.id}" ${o.id === selectedObraId ? 'selected' : ''}>
-                      🏗️ ${o.name}
+                       ${o.name}
                     </option>
                   `).join('')}
                 </select>
@@ -249,7 +249,7 @@ export function initDashboards() {
             operator: 'Oficial Jairo Benítez (C.C. 80.120.400)',
             horometro: '188 / 200 h',
             horometroPct: 94,
-            deadline: 'Mañana (16 Oct) ⚠️',
+            deadline: 'Mañana (16 Oct) ',
             deadlineStatus: 'urgent',
             sst: 'Aprobado RETIE',
             status: 'EN OPERACIÓN'
@@ -326,7 +326,7 @@ export function initDashboards() {
               </td>
               <td>
                 <div class="horometro-box">
-                  <span>⏱️ ${item.horometro}</span>
+                  <span>${item.horometro}</span>
                 </div>
                 <div class="horometro-bar w-24">
                   <div class="horometro-bar-fill" style="width: ${item.horometroPct}%; ${item.horometroPct > 90 ? 'background-color: #ef4444;' : ''}"></div>
@@ -442,7 +442,7 @@ export function initDashboards() {
                 <div class="horometro-bar">
                   <div class="horometro-bar-fill bg-rose-500" style="width: 94%;"></div>
                 </div>
-                <span class="text-[10px] text-rose-400 block mt-1.5">⚠️ ALERTA: Quedan 12 horas antes de mantenimiento preventivo de tambor.</span>
+                <span class="text-[10px] text-rose-400 block mt-1.5"> ALERTA: Quedan 12 horas antes de mantenimiento preventivo de tambor.</span>
               </div>
 
               <div class="p-4 rounded-lg bg-surface-subtle border border-hairline">
@@ -453,7 +453,7 @@ export function initDashboards() {
                 <div class="horometro-bar">
                   <div class="horometro-bar-fill bg-amber-500" style="width: 71%;"></div>
                 </div>
-                <span class="text-[10px] text-muted block mt-1.5">✓ En rango óptimo de operación. Próximo cambio de escobillas en 58h.</span>
+                <span class="text-[10px] text-muted block mt-1.5"> En rango óptimo de operación. Próximo cambio de escobillas en 58h.</span>
               </div>
 
               <div class="p-4 rounded-lg bg-surface-subtle border border-hairline">
@@ -464,7 +464,7 @@ export function initDashboards() {
                 <div class="horometro-bar">
                   <div class="horometro-bar-fill bg-emerald-500" style="width: 56%;"></div>
                 </div>
-                <span class="text-[10px] text-muted block mt-1.5">✓ Nivel de aceite 15W-40 verificado en inspección diaria.</span>
+                <span class="text-[10px] text-muted block mt-1.5"> Nivel de aceite 15W-40 verificado en inspección diaria.</span>
               </div>
             </div>
           </div>
@@ -670,7 +670,7 @@ export function initDashboards() {
               </div>
               <div class="mt-4 pt-3 border-t border-slate-300 flex items-center justify-between">
                 <button type="button" class="btn-industrial btn-outline btn-sm text-slate-900 border-slate-900" onclick="window.print()">
-                  🖨️ Imprimir Copia de Archivo
+                   Imprimir Copia de Archivo
                 </button>
                 <span class="text-[10px] text-slate-500">Firmado digitalmente</span>
               </div>
@@ -690,7 +690,7 @@ export function initDashboards() {
               </div>
               <div class="mt-4 pt-3 border-t border-slate-300 flex items-center justify-between">
                 <button type="button" class="btn-industrial btn-outline btn-sm text-slate-900 border-slate-900" onclick="window.print()">
-                  🖨️ Imprimir Copia de Archivo
+                   Imprimir Copia de Archivo
                 </button>
                 <span class="text-[10px] text-slate-500">Firmado digitalmente</span>
               </div>

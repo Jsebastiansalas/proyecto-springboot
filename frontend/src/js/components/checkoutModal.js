@@ -107,7 +107,7 @@ export function initCheckoutModal() {
             : 'bg-slate-800 text-slate-400 border-slate-700';
         return `
           <div class="flex items-center gap-1.5 font-mono text-[11px]">
-            <span class="w-5 h-5 rounded-full flex items-center justify-center border ${stepClass}">${isPast ? '✓' : s}</span>
+            <span class="w-5 h-5 rounded-full flex items-center justify-center border ${stepClass}">${isPast ? '' : s}</span>
             <span class="${isActive ? 'text-white font-bold' : 'text-slate-400'} hidden sm:inline">
               ${s === 1 ? 'Contrato' : s === 2 ? 'Financiación' : s === 3 ? 'Términos' : 'Pago'}
             </span>
@@ -844,7 +844,7 @@ export function initCheckoutModal() {
                             Abonar Cuota
                           </button>
                         ` : `
-                          <span class="text-emerald-400 text-[11px] font-bold">✓ Pagada</span>
+                          <span class="text-emerald-400 text-[11px] font-bold"> Pagada</span>
                         `}
                       </td>
                     </tr>

@@ -45,7 +45,7 @@ export function initToolModal() {
             <div>
               <div class="flex items-center gap-2">
                 <span class="font-mono text-xs font-bold text-amber-500 uppercase tracking-widest">FICHA TÉCNICA DE EQUIPO</span>
-                <span class="text-amber-400 font-mono text-xs">★ ${tool.averageRating ? Number(tool.averageRating).toFixed(1) : '5.0'} (${tool.totalReviews || 0} reseñas)</span>
+                <span class="text-amber-400 font-mono text-xs"> ${tool.averageRating ? Number(tool.averageRating).toFixed(1) : '5.0'} (${tool.totalReviews || 0} reseñas)</span>
               </div>
               <h3 class="font-display font-black text-2xl uppercase tracking-tight text-main leading-tight">${tool.name}</h3>
             </div>
@@ -152,7 +152,7 @@ export function initToolModal() {
                   PROGRAMACIÓN DE FAENA Y COTIZACIÓN
                 </h4>
                 <button id="btn-print-quote" type="button" class="btn-industrial btn-outline btn-xs font-mono">
-                  📄 Imprimir Cotización Formal
+                   Imprimir Cotización Formal
                 </button>
               </div>
 
@@ -264,7 +264,7 @@ export function initToolModal() {
             ${(c.providerReply || c.replied) ? `
               <div class="mt-2 ml-3 p-2.5 rounded bg-amber-500/10 border-l-2 border-amber-500 space-y-1">
                 <div class="flex items-center justify-between text-[10px] font-mono">
-                  <span class="text-amber-400 font-bold">✓ RESPUESTA PROVEEDOR PATIO</span>
+                  <span class="text-amber-400 font-bold"> RESPUESTA PROVEEDOR PATIO</span>
                   <span class="text-muted">${c.repliedAt ? new Date(c.repliedAt).toLocaleDateString('es-CO') : ''}</span>
                 </div>
                 <p class="font-sans text-xs text-slate-300 leading-relaxed">

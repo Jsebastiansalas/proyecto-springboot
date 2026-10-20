@@ -117,7 +117,7 @@ export function initComparisonModal() {
                           <img src="${img}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='/images/tools/placeholder-tool.svg';" />
                         </div>
                         <h4 class="font-display font-bold text-sm text-main uppercase">${t.name}</h4>
-                        <span class="text-[10px] text-amber-400 font-bold block mt-0.5">★ ${t.averageRating ? Number(t.averageRating).toFixed(1) : '5.0'} (${t.totalReviews || 0} reseñas)</span>
+                        <span class="text-[10px] text-amber-400 font-bold block mt-0.5"> ${t.averageRating ? Number(t.averageRating).toFixed(1) : '5.0'} (${t.totalReviews || 0} reseñas)</span>
                       </th>
                     `;
                   }).join('')}
@@ -173,7 +173,7 @@ export function initComparisonModal() {
                   <td class="p-3 bg-surface-subtle font-bold text-muted">CERTIFICACIÓN RETIE</td>
                   ${comparedTools.map(() => `
                     <td class="p-3 text-center border-l border-hairline text-emerald-400 font-bold">
-                      ✓ Aprobado RETIE
+                       Aprobado RETIE
                     </td>
                   `).join('')}
                 </tr>

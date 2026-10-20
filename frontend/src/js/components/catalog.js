@@ -154,7 +154,7 @@ export function initCatalog() {
           </div>
         </div>
         <div class="text-[11px] text-amber-500 font-bold">
-          ✓ Póliza de avería por contrato
+           Póliza de avería por contrato
         </div>
       </div>
 

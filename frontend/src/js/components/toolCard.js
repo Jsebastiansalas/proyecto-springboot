@@ -85,7 +85,7 @@ export function createToolCard(tool) {
 
         <div class="flex items-center justify-between mt-1 mb-1">
           <div class="flex items-center gap-1.5 text-amber-400 font-mono text-xs">
-            <span class="text-amber-500 font-bold">★</span>
+            <span class="text-amber-500 font-bold"></span>
             <span class="font-bold text-main">${tool.averageRating ? Number(tool.averageRating).toFixed(1) : '5.0'}</span>
             <span class="text-muted text-[10px]">(${tool.totalReviews || 0} reseñas)</span>
           </div>
@@ -105,7 +105,7 @@ export function createToolCard(tool) {
         <!-- Tags de Seguridad y EPP de Obra -->
         <div class="mt-3 flex flex-wrap gap-1.5 items-center">
           <span class="spec-chip font-bold text-amber-600 dark:text-amber-400">
-            ✓ ${normBadge}
+             ${normBadge}
           </span>
           ${eppTags}
         </div>
