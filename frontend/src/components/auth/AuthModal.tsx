@@ -19,7 +19,10 @@ import {
   CheckCircle2,
   AlertCircle,
   KeyRound,
-  UserPlus
+  UserPlus,
+  Eye,
+  EyeOff,
+  Wand2
 } from 'lucide-react';
 
 type AuthMode = 'login' | 'register_client' | 'register_provider';
@@ -29,6 +32,13 @@ export const AuthModal: React.FC = () => {
   
   const [mode, setMode] = useState<AuthMode>('login');
   const [loading, setLoading] = useState(false);
+
+  // Password visibility toggles
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showClientPassword, setShowClientPassword] = useState(false);
+  const [showClientConfirmPassword, setShowClientConfirmPassword] = useState(false);
+  const [showProviderPassword, setShowProviderPassword] = useState(false);
+  const [showProviderConfirmPassword, setShowProviderConfirmPassword] = useState(false);
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
@@ -74,12 +84,61 @@ export const AuthModal: React.FC = () => {
     };
   };
 
+  // Sanitizadores estrictos para evitar letras en teléfonos o números en nombres
+  const sanitizeOnlyNumbers = (val: string, maxLen: number = 10) => {
+    return val.replace(/\D/g, '').slice(0, maxLen);
+  };
+
+  const sanitizeNit = (val: string) => {
+    // Solo números y un único guion
+    const cleaned = val.replace(/[^0-9-]/g, '').slice(0, 12);
+    return cleaned;
+  };
+
+  const sanitizeOnlyLetters = (val: string, maxLen: number = 50) => {
+    return val.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]/g, '').slice(0, maxLen);
+  };
+
+  // Autocompletar datos de prueba válidos para agilizar pruebas del profesor
+  const fillSampleClientData = () => {
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    setClientForm({
+      firstName: 'Carlos Andrés',
+      lastName: 'Montoya Gómez',
+      documentType: 'CC',
+      documentNumber: `10${randomSuffix}789`,
+      email: `contratista.${randomSuffix}@constructora.com`,
+      phone: '3157894561',
+      address: 'Calle 100 # 19A-40 Of. 602',
+      city: 'Bogotá D.C.',
+      password: 'Cliente#Renta2026!Sec',
+      confirmPassword: 'Cliente#Renta2026!Sec'
+    });
+    showToast('Datos de cliente de prueba cargados con formato válido', 'info');
+  };
+
+  const fillSampleProviderData = () => {
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    setProviderForm({
+      companyName: `Maquinaria & Equipos ${randomSuffix} SAS`,
+      legalRepresentative: 'Álvaro Hernán Ruiz',
+      nitRut: `901${randomSuffix}321-4`,
+      email: `contacto.${randomSuffix}@equiposandinos.com`,
+      phone: '3206549871',
+      address: 'Autopista Sur Km 7 Parque Industrial',
+      city: 'Bogotá D.C.',
+      password: 'Proveedor#Renta2026!Sec',
+      confirmPassword: 'Proveedor#Renta2026!Sec'
+    });
+    showToast('Datos de proveedor de prueba cargados con formato válido', 'info');
+  };
+
   // Login submit handler
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const loggedUser = await rentaService.auth.login(loginEmail, loginPassword);
+      const loggedUser = await rentaService.auth.login(loginEmail.trim(), loginPassword);
       setUser(loggedUser);
       showToast('Sesión iniciada con éxito', 'success');
       setIsAuthModalOpen(false);
@@ -101,6 +160,16 @@ export const AuthModal: React.FC = () => {
   const handleClientRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (clientForm.phone.length < 7) {
+      showToast('El teléfono debe tener al menos 7 dígitos numéricos (ej: 3101234567)', 'error');
+      return;
+    }
+
+    if (clientForm.documentNumber.length < 6) {
+      showToast('El número de documento debe tener al menos 6 dígitos', 'error');
+      return;
+    }
+
     if (clientForm.password !== clientForm.confirmPassword) {
       showToast('Las contraseñas no coinciden', 'error');
       return;
@@ -108,7 +177,7 @@ export const AuthModal: React.FC = () => {
 
     const strength = validatePasswordStrength(clientForm.password);
     if (!strength.length || !strength.upper || !strength.lower || !strength.number || !strength.special) {
-      showToast('La contraseña debe tener mínimo 8 caracteres, mayúscula, minúscula, número y un símbolo especial', 'error');
+      showToast('La contraseña debe tener mínimo 8 caracteres, mayúscula, minúscula, número y un símbolo especial (@$!%*?&#)', 'error');
       return;
     }
 
@@ -141,6 +210,16 @@ export const AuthModal: React.FC = () => {
   const handleProviderRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (providerForm.phone.length < 7) {
+      showToast('El teléfono debe tener al menos 7 dígitos numéricos (ej: 3201234567)', 'error');
+      return;
+    }
+
+    if (!/^[0-9]{8,10}(-[0-9])?$/.test(providerForm.nitRut.trim())) {
+      showToast('El NIT/RUT debe tener de 8 a 10 dígitos y opcionalmente el dígito de verificación (ej: 900123456-1)', 'error');
+      return;
+    }
+
     if (providerForm.password !== providerForm.confirmPassword) {
       showToast('Las contraseñas no coinciden', 'error');
       return;
@@ -148,7 +227,7 @@ export const AuthModal: React.FC = () => {
 
     const strength = validatePasswordStrength(providerForm.password);
     if (!strength.length || !strength.upper || !strength.lower || !strength.number || !strength.special) {
-      showToast('La contraseña debe tener mínimo 8 caracteres, mayúscula, minúscula, número y un símbolo especial', 'error');
+      showToast('La contraseña debe tener mínimo 8 caracteres, mayúscula, minúscula, número y un símbolo especial (@$!%*?&#)', 'error');
       return;
     }
 
@@ -328,14 +407,23 @@ export const AuthModal: React.FC = () => {
                   <Lock className="w-3.5 h-3.5 text-[#D94E1F]" />
                   Contraseña
                 </label>
-                <input
-                  type="password"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  required
-                  className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] text-xs focus:outline-none focus:border-[#D94E1F] font-mono"
-                />
+                <div className="relative">
+                  <input
+                    type={showLoginPassword ? 'text' : 'password'}
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    required
+                    className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 pr-10 text-[#F5F4F0] text-xs focus:outline-none focus:border-[#D94E1F] font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPassword(!showLoginPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A8A69E] hover:text-[#F5F4F0]"
+                  >
+                    {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
 
               <button
@@ -372,46 +460,59 @@ export const AuthModal: React.FC = () => {
         {/* TAB 2: REGISTRO DE CLIENTE */}
         {mode === 'register_client' && (
           <form onSubmit={handleClientRegisterSubmit} className="p-5 space-y-4 text-xs max-h-[70vh] overflow-y-auto">
-            <div className="p-3 bg-[#1E1E1C] rounded-xl border border-[#363632] flex items-start gap-2.5">
-              <HardHat className="w-4 h-4 text-[#D94E1F] shrink-0 mt-0.5" />
-              <div className="text-[11px] text-[#A8A69E]">
-                <strong className="text-[#F5F4F0]">Cuenta de Cliente / Contratista:</strong> Podrás cotizar en tiempo real, solicitar despachos a obra y recibir facturación con IVA del 19%.
+            <div className="p-3 bg-[#1E1E1C] rounded-xl border border-[#363632] flex items-center justify-between gap-2.5">
+              <div className="flex items-start gap-2.5">
+                <HardHat className="w-4 h-4 text-[#D94E1F] shrink-0 mt-0.5" />
+                <div className="text-[11px] text-[#A8A69E]">
+                  <strong className="text-[#F5F4F0]">Cuenta de Cliente / Contratista:</strong> Alquila maquinaria con cotización y facturación electrónica.
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={fillSampleClientData}
+                className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#282824] hover:bg-[#32322E] text-[#D94E1F] border border-[#363632] text-[10px] font-bold transition-colors"
+                title="Rellena el formulario con datos válidos de prueba para probar de inmediato"
+              >
+                <Wand2 className="w-3 h-3" />
+                <span>Ejemplo</span>
+              </button>
             </div>
 
-            {/* Nombre y Apellido */}
+            {/* Nombre y Apellido (Solo Letras) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-[#A8A69E] font-semibold">Nombres *</label>
                 <input
                   type="text"
                   required
-                  placeholder="Carlos Alberto"
+                  placeholder="Carlos Andrés"
                   value={clientForm.firstName}
-                  onChange={(e) => setClientForm({ ...clientForm, firstName: e.target.value })}
+                  onChange={(e) => setClientForm({ ...clientForm, firstName: sanitizeOnlyLetters(e.target.value) })}
                   className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F]"
                 />
+                <span className="text-[10px] text-[#787670]">Solo letras y espacios</span>
               </div>
               <div className="space-y-1">
                 <label className="text-[#A8A69E] font-semibold">Apellidos *</label>
                 <input
                   type="text"
                   required
-                  placeholder="Gómez Restrepo"
+                  placeholder="Montoya Gómez"
                   value={clientForm.lastName}
-                  onChange={(e) => setClientForm({ ...clientForm, lastName: e.target.value })}
+                  onChange={(e) => setClientForm({ ...clientForm, lastName: sanitizeOnlyLetters(e.target.value) })}
                   className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F]"
                 />
+                <span className="text-[10px] text-[#787670]">Solo letras y espacios</span>
               </div>
             </div>
 
-            {/* Tipo y Número de Documento */}
+            {/* Tipo y Número de Documento (Solo Números para CC/NIT) */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1">
                 <label className="text-[#A8A69E] font-semibold">Tipo Doc. *</label>
                 <select
                   value={clientForm.documentType}
-                  onChange={(e) => setClientForm({ ...clientForm, documentType: e.target.value as DocumentType })}
+                  onChange={(e) => setClientForm({ ...clientForm, documentType: e.target.value as DocumentType, documentNumber: '' })}
                   className="w-full bg-[#121210] border border-[#363632] rounded-lg px-2.5 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F]"
                 >
                   <option value="CC">Cédula (CC)</option>
@@ -424,16 +525,23 @@ export const AuthModal: React.FC = () => {
                 <label className="text-[#A8A69E] font-semibold">Número de Documento *</label>
                 <input
                   type="text"
+                  inputMode="numeric"
                   required
                   placeholder="Ej: 1020304050"
                   value={clientForm.documentNumber}
-                  onChange={(e) => setClientForm({ ...clientForm, documentNumber: e.target.value })}
-                  className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F]"
+                  onChange={(e) => {
+                    const cleaned = clientForm.documentType === 'PASAPORTE'
+                      ? e.target.value.replace(/[^a-zA-Z0-9-]/g, '').slice(0, 15)
+                      : sanitizeOnlyNumbers(e.target.value, 15);
+                    setClientForm({ ...clientForm, documentNumber: cleaned });
+                  }}
+                  className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F] font-mono"
                 />
+                <span className="text-[10px] text-[#787670]">Solo dígitos (sin puntos ni letras)</span>
               </div>
             </div>
 
-            {/* Email y Teléfono */}
+            {/* Email y Teléfono (Solo números en teléfono) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-[#A8A69E] font-semibold flex items-center gap-1">
@@ -443,11 +551,12 @@ export const AuthModal: React.FC = () => {
                 <input
                   type="email"
                   required
-                  placeholder="cliente@constructora.com"
+                  placeholder="contratista@empresa.com"
                   value={clientForm.email}
                   onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })}
                   className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F]"
                 />
+                <span className="text-[10px] text-[#787670]">Ej: usuario@empresa.com</span>
               </div>
               <div className="space-y-1">
                 <label className="text-[#A8A69E] font-semibold flex items-center gap-1">
@@ -456,12 +565,14 @@ export const AuthModal: React.FC = () => {
                 </label>
                 <input
                   type="tel"
+                  inputMode="numeric"
                   required
                   placeholder="3101234567"
                   value={clientForm.phone}
-                  onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })}
-                  className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F]"
+                  onChange={(e) => setClientForm({ ...clientForm, phone: sanitizeOnlyNumbers(e.target.value, 10) })}
+                  className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F] font-mono"
                 />
+                <span className="text-[10px] text-[#787670]">Solo números (10 dígitos colombianos)</span>
               </div>
             </div>
 
@@ -494,55 +605,73 @@ export const AuthModal: React.FC = () => {
               </div>
             </div>
 
-            {/* Contraseña y Confirmación */}
+            {/* Contraseña y Confirmación con Botón Mostrar/Ocultar */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-[#A8A69E] font-semibold flex items-center gap-1">
                   <Lock className="w-3 h-3 text-[#D94E1F]" />
                   Contraseña Segura *
                 </label>
-                <input
-                  type="password"
-                  required
-                  placeholder="Ej: Renta#2026!Sec"
-                  value={clientForm.password}
-                  onChange={(e) => setClientForm({ ...clientForm, password: e.target.value })}
-                  className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F] font-mono"
-                />
+                <div className="relative">
+                  <input
+                    type={showClientPassword ? 'text' : 'password'}
+                    required
+                    placeholder="Ej: Cliente#2026!Sec"
+                    value={clientForm.password}
+                    onChange={(e) => setClientForm({ ...clientForm, password: e.target.value })}
+                    className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 pr-10 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F] font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowClientPassword(!showClientPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A8A69E] hover:text-[#F5F4F0]"
+                  >
+                    {showClientPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
               <div className="space-y-1">
                 <label className="text-[#A8A69E] font-semibold flex items-center gap-1">
                   <Lock className="w-3 h-3 text-[#D94E1F]" />
                   Confirmar Contraseña *
                 </label>
-                <input
-                  type="password"
-                  required
-                  placeholder="Repetir contraseña"
-                  value={clientForm.confirmPassword}
-                  onChange={(e) => setClientForm({ ...clientForm, confirmPassword: e.target.value })}
-                  className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F] font-mono"
-                />
+                <div className="relative">
+                  <input
+                    type={showClientConfirmPassword ? 'text' : 'password'}
+                    required
+                    placeholder="Repetir contraseña"
+                    value={clientForm.confirmPassword}
+                    onChange={(e) => setClientForm({ ...clientForm, confirmPassword: e.target.value })}
+                    className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 pr-10 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F] font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowClientConfirmPassword(!showClientConfirmPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A8A69E] hover:text-[#F5F4F0]"
+                  >
+                    {showClientConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
             </div>
 
             {/* Requisitos de Contraseña Dinámicos */}
             <div className="p-2.5 bg-[#121210] rounded-lg border border-[#363632] grid grid-cols-2 gap-1 text-[10px]">
-              <div className={`flex items-center gap-1 ${clientStrength.length ? 'text-[#1E6F43]' : 'text-[#A8A69E]'}`}>
+              <div className={`flex items-center gap-1 ${clientStrength.length ? 'text-[#1E6F43] font-bold' : 'text-[#A8A69E]'}`}>
                 <CheckCircle2 className="w-3 h-3" />
                 <span>Mínimo 8 caracteres</span>
               </div>
-              <div className={`flex items-center gap-1 ${clientStrength.upper && clientStrength.lower ? 'text-[#1E6F43]' : 'text-[#A8A69E]'}`}>
+              <div className={`flex items-center gap-1 ${clientStrength.upper && clientStrength.lower ? 'text-[#1E6F43] font-bold' : 'text-[#A8A69E]'}`}>
                 <CheckCircle2 className="w-3 h-3" />
                 <span>Mayúscula y minúscula</span>
               </div>
-              <div className={`flex items-center gap-1 ${clientStrength.number ? 'text-[#1E6F43]' : 'text-[#A8A69E]'}`}>
+              <div className={`flex items-center gap-1 ${clientStrength.number ? 'text-[#1E6F43] font-bold' : 'text-[#A8A69E]'}`}>
                 <CheckCircle2 className="w-3 h-3" />
                 <span>Al menos 1 número</span>
               </div>
-              <div className={`flex items-center gap-1 ${clientStrength.special ? 'text-[#1E6F43]' : 'text-[#A8A69E]'}`}>
+              <div className={`flex items-center gap-1 ${clientStrength.special ? 'text-[#1E6F43] font-bold' : 'text-[#A8A69E]'}`}>
                 <CheckCircle2 className="w-3 h-3" />
-                <span>Símbolo especial (@$!%*?&#)</span>
+                <span>Símbolo (@$!%*?&#)</span>
               </div>
             </div>
 
@@ -560,11 +689,22 @@ export const AuthModal: React.FC = () => {
         {/* TAB 3: REGISTRO DE PROVEEDOR */}
         {mode === 'register_provider' && (
           <form onSubmit={handleProviderRegisterSubmit} className="p-5 space-y-4 text-xs max-h-[70vh] overflow-y-auto">
-            <div className="p-3 bg-[#1E1E1C] rounded-xl border border-[#363632] flex items-start gap-2.5">
-              <Truck className="w-4 h-4 text-[#D94E1F] shrink-0 mt-0.5" />
-              <div className="text-[11px] text-[#A8A69E]">
-                <strong className="text-[#F5F4F0]">Cuenta de Proveedor / Ferretería:</strong> Podrás publicar herramientas, gestionar entregas y devoluciones con reportes de daños, y recibir desembolsos.
+            <div className="p-3 bg-[#1E1E1C] rounded-xl border border-[#363632] flex items-center justify-between gap-2.5">
+              <div className="flex items-start gap-2.5">
+                <Truck className="w-4 h-4 text-[#D94E1F] shrink-0 mt-0.5" />
+                <div className="text-[11px] text-[#A8A69E]">
+                  <strong className="text-[#F5F4F0]">Cuenta de Proveedor / Ferretería:</strong> Publica herramientas y gestiona entregas con reporte de daños.
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={fillSampleProviderData}
+                className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#282824] hover:bg-[#32322E] text-[#D94E1F] border border-[#363632] text-[10px] font-bold transition-colors"
+                title="Rellena el formulario con datos válidos de prueba para probar de inmediato"
+              >
+                <Wand2 className="w-3 h-3" />
+                <span>Ejemplo</span>
+              </button>
             </div>
 
             {/* Razón Social y Representante Legal */}
@@ -590,13 +730,14 @@ export const AuthModal: React.FC = () => {
                   required
                   placeholder="Pedro Pablo Mendoza"
                   value={providerForm.legalRepresentative}
-                  onChange={(e) => setProviderForm({ ...providerForm, legalRepresentative: e.target.value })}
+                  onChange={(e) => setProviderForm({ ...providerForm, legalRepresentative: sanitizeOnlyLetters(e.target.value) })}
                   className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F]"
                 />
+                <span className="text-[10px] text-[#787670]">Solo letras y espacios</span>
               </div>
             </div>
 
-            {/* NIT/RUT y Teléfono */}
+            {/* NIT/RUT (Solo Números y Guion) y Teléfono (Solo Números) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-[#A8A69E] font-semibold flex items-center gap-1">
@@ -608,9 +749,10 @@ export const AuthModal: React.FC = () => {
                   required
                   placeholder="Ej: 900543210-4"
                   value={providerForm.nitRut}
-                  onChange={(e) => setProviderForm({ ...providerForm, nitRut: e.target.value })}
-                  className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F]"
+                  onChange={(e) => setProviderForm({ ...providerForm, nitRut: sanitizeNit(e.target.value) })}
+                  className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F] font-mono"
                 />
+                <span className="text-[10px] text-[#787670]">Formato: 900123456-1 (solo números y guion)</span>
               </div>
               <div className="space-y-1">
                 <label className="text-[#A8A69E] font-semibold flex items-center gap-1">
@@ -619,12 +761,14 @@ export const AuthModal: React.FC = () => {
                 </label>
                 <input
                   type="tel"
+                  inputMode="numeric"
                   required
                   placeholder="3209876543"
                   value={providerForm.phone}
-                  onChange={(e) => setProviderForm({ ...providerForm, phone: e.target.value })}
-                  className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F]"
+                  onChange={(e) => setProviderForm({ ...providerForm, phone: sanitizeOnlyNumbers(e.target.value, 10) })}
+                  className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F] font-mono"
                 />
+                <span className="text-[10px] text-[#787670]">Solo números (10 dígitos colombianos)</span>
               </div>
             </div>
 
@@ -642,6 +786,7 @@ export const AuthModal: React.FC = () => {
                 onChange={(e) => setProviderForm({ ...providerForm, email: e.target.value })}
                 className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F]"
               />
+              <span className="text-[10px] text-[#787670]">Ej: contacto@empresa.com</span>
             </div>
 
             {/* Dirección y Ciudad */}
@@ -673,55 +818,73 @@ export const AuthModal: React.FC = () => {
               </div>
             </div>
 
-            {/* Contraseña y Confirmación */}
+            {/* Contraseña y Confirmación con Botón Mostrar/Ocultar */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-[#A8A69E] font-semibold flex items-center gap-1">
                   <Lock className="w-3 h-3 text-[#D94E1F]" />
                   Contraseña Segura *
                 </label>
-                <input
-                  type="password"
-                  required
-                  placeholder="Ej: Proveedor#2026!Sec"
-                  value={providerForm.password}
-                  onChange={(e) => setProviderForm({ ...providerForm, password: e.target.value })}
-                  className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F] font-mono"
-                />
+                <div className="relative">
+                  <input
+                    type={showProviderPassword ? 'text' : 'password'}
+                    required
+                    placeholder="Ej: Proveedor#2026!Sec"
+                    value={providerForm.password}
+                    onChange={(e) => setProviderForm({ ...providerForm, password: e.target.value })}
+                    className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 pr-10 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F] font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowProviderPassword(!showProviderPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A8A69E] hover:text-[#F5F4F0]"
+                  >
+                    {showProviderPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
               <div className="space-y-1">
                 <label className="text-[#A8A69E] font-semibold flex items-center gap-1">
                   <Lock className="w-3 h-3 text-[#D94E1F]" />
                   Confirmar Contraseña *
                 </label>
-                <input
-                  type="password"
-                  required
-                  placeholder="Repetir contraseña"
-                  value={providerForm.confirmPassword}
-                  onChange={(e) => setProviderForm({ ...providerForm, confirmPassword: e.target.value })}
-                  className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F] font-mono"
-                />
+                <div className="relative">
+                  <input
+                    type={showProviderConfirmPassword ? 'text' : 'password'}
+                    required
+                    placeholder="Repetir contraseña"
+                    value={providerForm.confirmPassword}
+                    onChange={(e) => setProviderForm({ ...providerForm, confirmPassword: e.target.value })}
+                    className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 pr-10 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F] font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowProviderConfirmPassword(!showProviderConfirmPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A8A69E] hover:text-[#F5F4F0]"
+                  >
+                    {showProviderConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
             </div>
 
             {/* Requisitos de Contraseña Dinámicos */}
             <div className="p-2.5 bg-[#121210] rounded-lg border border-[#363632] grid grid-cols-2 gap-1 text-[10px]">
-              <div className={`flex items-center gap-1 ${providerStrength.length ? 'text-[#1E6F43]' : 'text-[#A8A69E]'}`}>
+              <div className={`flex items-center gap-1 ${providerStrength.length ? 'text-[#1E6F43] font-bold' : 'text-[#A8A69E]'}`}>
                 <CheckCircle2 className="w-3 h-3" />
                 <span>Mínimo 8 caracteres</span>
               </div>
-              <div className={`flex items-center gap-1 ${providerStrength.upper && providerStrength.lower ? 'text-[#1E6F43]' : 'text-[#A8A69E]'}`}>
+              <div className={`flex items-center gap-1 ${providerStrength.upper && providerStrength.lower ? 'text-[#1E6F43] font-bold' : 'text-[#A8A69E]'}`}>
                 <CheckCircle2 className="w-3 h-3" />
                 <span>Mayúscula y minúscula</span>
               </div>
-              <div className={`flex items-center gap-1 ${providerStrength.number ? 'text-[#1E6F43]' : 'text-[#A8A69E]'}`}>
+              <div className={`flex items-center gap-1 ${providerStrength.number ? 'text-[#1E6F43] font-bold' : 'text-[#A8A69E]'}`}>
                 <CheckCircle2 className="w-3 h-3" />
                 <span>Al menos 1 número</span>
               </div>
-              <div className={`flex items-center gap-1 ${providerStrength.special ? 'text-[#1E6F43]' : 'text-[#A8A69E]'}`}>
+              <div className={`flex items-center gap-1 ${providerStrength.special ? 'text-[#1E6F43] font-bold' : 'text-[#A8A69E]'}`}>
                 <CheckCircle2 className="w-3 h-3" />
-                <span>Símbolo especial (@$!%*?&#)</span>
+                <span>Símbolo (@$!%*?&#)</span>
               </div>
             </div>
 
