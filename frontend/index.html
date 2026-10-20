@@ -1,147 +1,19 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RentaMaq - Alquiler Industrial de Maquinaria y Equipos de Construcción</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'><path d='M16 2.5L28 9.5V22.5L16 29.5L4 22.5V9.5L16 2.5Z' stroke='%23f59e0b' stroke-width='2' fill='%230f172a'/><path d='M10.5 8.5H18C20.5 8.5 22 9.8 22 12C22 13.8 20.8 15 18.8 15.3L22.5 22.5H19L15.6 16.5H13.2V22.5H10.5V8.5Z' fill='%23f59e0b'/><circle cx='23.5' cy='8.5' r='1.8' fill='%23fbbf24'/></svg>">
+  <title>RentaMaq — Alquiler Industrial de Maquinaria & Equipos de Construcción</title>
+  <meta name="description" content="Plataforma de alta gama para cotización, alquiler, telemetría y logística de maquinaria pesada y herramientas industriales.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'><rect width='32' height='32' rx='8' fill='%234f46e5'/><path d='M8 10h16M8 16h10m-10 6h16' stroke='white' stroke-width='2.5' stroke-linecap='round'/></svg>">
   
-  <!-- Tailwind CSS CDN para Layout Utilities -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            display: ['"Barlow Condensed"', 'sans-serif'],
-            sans: ['"Barlow"', '-apple-system', 'sans-serif'],
-            mono: ['"JetBrains Mono"', 'monospace']
-          },
-          colors: {
-            amber: {
-              400: '#fbbf24',
-              500: '#f59e0b',
-              600: '#d97706',
-              700: '#b45309'
-            }
-          }
-        }
-      }
-    }
-  </script>
-
-  <!-- Google Fonts: Barlow Condensed, Barlow, JetBrains Mono -->
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Chart.js para Telemetría y Dashboards -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-  <!-- QRious para Generación de Códigos QR de Entrega en Faena -->
-  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
-
-  <!-- Hojas de Estilo del Sistema de Diseño -->
-  <link rel="stylesheet" href="/src/css/app.css">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="antialiased flex flex-col min-h-screen">
-
-  <!-- 1. Barra de Telemetría Superior & Header de Navegación -->
-  <div id="navbar-container"></div>
-
-  <!-- 2. Área Principal de Contenido -->
-  <main class="flex-1">
-    
-    <!-- Hero Industrial de Telemetría -->
-    <div id="hero-container"></div>
-
-    <!-- Catálogo de Equipos y Filtros Dinámicos -->
-    <section id="catalog-section" aria-label="Catálogo de Maquinaria"></section>
-
-    <!-- Contenedor Dinámico para Dashboards de Rol (Cliente, Proveedor, Admin) -->
-    <div id="dashboards-container"></div>
-
-  </main>
-
-  <!-- 3. Portales para Modales Interactivas -->
-  <div id="tool-detail-modal-container"></div>
-  <div id="checkout-modal-container"></div>
-  <div id="auth-modal-container"></div>
-  <div id="operations-modal-container"></div>
-
-  <!-- 4. Contenedor del Notificador Físico Sonner -->
-  <div id="sonner-toast-container" class="sonner-toast-container" aria-live="polite"></div>
-
-  <!-- 5. Footer de Nivel Industrial -->
-  <footer class="industrial-footer mt-auto py-12 px-4 sm:px-6 lg:px-8 border-t border-slate-800">
-    <div class="max-w-7xl mx-auto">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-slate-800 text-xs">
-        
-        <div class="space-y-3">
-          <div class="flex items-center gap-2">
-            <span class="text-2xl font-black font-display tracking-wider text-white">RENTA<span class="text-amber-500">MAQ</span></span>
-            <span class="px-1.5 py-0.5 text-[9px] font-mono font-bold bg-amber-500 text-slate-950 rounded">HEAVY FLEET</span>
-          </div>
-          <p class="text-slate-400 font-sans leading-relaxed">
-            Plataforma digital de logística y alquiler de maquinaria pesada para empresas constructoras y contratistas en Colombia.
-          </p>
-          <div class="font-mono text-[11px] text-amber-400 font-bold">
-            CERTIFICACIÓN TÉCNICA RETIE VIGENTE
-          </div>
-        </div>
-
-        <div>
-          <h4 class="font-display font-bold text-sm tracking-wider uppercase text-white mb-3">PATIO DE MAQUINARIA</h4>
-          <ul class="space-y-1.5 text-slate-400 font-mono">
-            <li>Patio Central: Autopista Norte Km 19</li>
-            <li>Bogotá D.C. &bull; Cundinamarca</li>
-            <li>PBX: (601) 745-0000</li>
-            <li>Línea Despacho: 310-890-0000</li>
-          </ul>
-        </div>
-
-        <div>
-          <h4 class="font-display font-bold text-sm tracking-wider uppercase text-white mb-3">LÍNEAS DE EQUIPO</h4>
-          <ul class="space-y-1.5 text-slate-400 font-sans">
-            <li>Demolición y Rotomartillos</li>
-            <li>Mezclado y Vaciado de Concreto</li>
-            <li>Generación Eléctrica y Compresores</li>
-            <li>Topografía y Estaciones Totales</li>
-            <li>Andamios Certificados de Altura</li>
-          </ul>
-        </div>
-
-        <div>
-          <h4 class="font-display font-bold text-sm tracking-wider uppercase text-white mb-3">GARANTÍAS Y PÓLIZAS</h4>
-          <div class="p-3 bg-slate-900 rounded border border-slate-800 space-y-2">
-            <div class="flex items-center gap-2 text-emerald-400 font-mono text-[11px] font-bold">
-              <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-              PÓLIZA ALL-RISK INCLUIDA
-            </div>
-            <p class="text-slate-400 text-[11px] leading-relaxed">
-              Todos los alquileres cuentan con cobertura ante avería mecánica y asistencia técnica en obra.
-            </p>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono text-slate-500 gap-2">
-        <div>&copy; 2026 RentaMaq S.A.S. Todos los derechos reservados.</div>
-        <div class="flex items-center gap-4">
-          <span>Términos de Arrendamiento</span>
-          <span>&bull;</span>
-          <span>Manual de Seguridad RETIE</span>
-          <span>&bull;</span>
-          <span>Políticas de Privacidad</span>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-  <!-- Script Principal de la Aplicación -->
-  <script type="module" src="/src/js/main.js"></script>
+<body class="bg-obsidian-900 text-obsidian-50 antialiased selection:bg-indigo-500/30 selection:text-indigo-200 min-h-screen">
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>
