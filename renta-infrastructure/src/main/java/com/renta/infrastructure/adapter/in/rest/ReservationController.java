@@ -28,6 +28,25 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * ============================================================================
+ * ADAPTADOR PRIMARIO REST: CONTROLADOR DE RESERVAS Y COTIZADOR
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Expone los endpoints HTTP bajo `/api/v1/reservations`:
+ * 1. `POST /api/v1/reservations/calculate-price`: Cotizador dinámico público (aplica -15% y 19% IVA).
+ * 2. `POST /api/v1/reservations`: Creación de reservas con validación de no-solapamiento de fechas.
+ * 3. `GET /api/v1/reservations/tool/{id}/occupied-dates`: Consulta de calendario para bloquear días.
+ * 4. `GET /api/v1/reservations/my`: Listado de reservas del cliente autenticado.
+ * 5. `GET /api/v1/reservations/provider`: Bandeja de solicitudes para el proveedor.
+ * 6. `PATCH /api/v1/reservations/{id}/approve` y `reject`: Aprobación/rechazo de contratos.
+ * 
+ * ¿POR QUÉ ESTÁ CREADO Y DÓNDE ENCAJA EN LA ARQUITECTURA?
+ * En la Arquitectura Hexagonal, es el Adaptador de Entrada que recibe DTOs
+ * inmutables (`CreateReservationRequest`), delega la orquestación a
+ * {@link ReservationApplicationService} y responde con códigos HTTP estándar (200, 201, 409).
+ */
 @RestController
 @RequestMapping("/api/v1/reservations")
 @Tag(name = "3. Reservas y Alquileres", description = "Endpoints para cotización dinámica, creación y ciclo de vida de reservas")

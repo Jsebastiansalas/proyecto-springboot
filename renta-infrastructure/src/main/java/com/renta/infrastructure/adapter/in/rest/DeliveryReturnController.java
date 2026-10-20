@@ -24,6 +24,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * ============================================================================
+ * ADAPTADOR PRIMARIO REST: CONTROLADOR DE LOGÍSTICA (ENTREGAS Y RECEPCIÓN)
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Expone los endpoints HTTP para la operación logística en bodega y obra:
+ * 1. `POST /api/v1/deliveries`: Acta de entrega de maquinaria (inicia alquiler EN_CURSO).
+ * 2. `POST /api/v1/returns`: Acta de recepción y devolución técnica (FINALIZADA).
+ * 3. `POST /api/v1/damages`: Reporte de averías o daños en obra.
+ * 4. `GET /api/v1/logistics/settlement/{id}`: Liquidación final de depósitos de garantía.
+ * 
+ * ¿POR QUÉ ESTÁ CREADO Y DÓNDE ENCAJA EN LA ARQUITECTURA?
+ * En la Arquitectura Hexagonal, adapta las solicitudes de despacho y retorno
+ * de herramientas al servicio {@link DeliveryReturnApplicationService}.
+ */
 @RestController
 @RequestMapping("/api/v1")
 @Tag(name = "6. Entregas, Devoluciones e Inspección", description = "Control de despacho de maquinaria, acta de recepción, inspección física y reportes de avería")

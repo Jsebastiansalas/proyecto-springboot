@@ -9,7 +9,20 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * Domain entity representing a financial payment transaction linked to a reservation.
+ * ============================================================================
+ * ENTIDAD DE DOMINIO: TRANSACCIÓN FINANCIERA DE PAGO (Payment)
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Representa la transacción económica realizada por el cliente:
+ * 1. Genera y almacena la referencia bancaria única (`TXN-timestamp-hash`).
+ * 2. Registra el método de pago (TARJETA_CREDITO, PSE, TRANSFERENCIA).
+ * 3. Valida el importe monetario mediante {@link Money}.
+ * 4. Controla el estado de la transacción:
+ *    - `PENDIENTE`: Iniciada en el checkout.
+ *    - `APROBADA`: Confirmada por la pasarela de pagos.
+ *    - `RECHAZADA`: Denegada por fondos insuficientes o fallo bancario.
+ * 5. Soporta pago en cuotas financieras y cálculo de intereses si aplica.
  */
 public class Payment {
     private Long id;

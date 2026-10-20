@@ -16,6 +16,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.nio.charset.StandardCharsets;
 
+/**
+ * ============================================================================
+ * ADAPTADOR PRIMARIO REST: CONTROLADOR DE FACTURACIÓN ELECTRÓNICA
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Expone los endpoints HTTP bajo `/api/v1/invoices`:
+ * 1. `GET /api/v1/invoices/{id}`: Consulta de factura por su ID interno.
+ * 2. `GET /api/v1/invoices/reservation/{id}`: Consulta de factura por ID de reserva.
+ * 3. `GET /api/v1/invoices/{id}/pdf`: Descarga o previsualización del comprobante en PDF.
+ * 
+ * ¿POR QUÉ ESTÁ CREADO Y DÓNDE ENCAJA EN LA ARQUITECTURA?
+ * En la Arquitectura Hexagonal, adapta las solicitudes de consulta y descarga
+ * de documentos tributarios al servicio {@link InvoiceApplicationService},
+ * validando que el cliente autenticado sea el titular legal de la factura.
+ */
 @RestController
 @RequestMapping("/api/v1/invoices")
 @Tag(name = "5. Facturación Electrónica", description = "Consulta y descarga de comprobantes fiscales generados con desglose de IVA (19%)")

@@ -7,7 +7,20 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 /**
- * Immutable Value Object representing a closed temporal rental interval [startDate, endDate].
+ * ============================================================================
+ * OBJETO DE VALOR INMUTABLE (VALUE OBJECT): INTERVALO DE FECHAS (DateRange)
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Modela un periodo de tiempo cerrado `[startDate, endDate]` para contratos de alquiler:
+ * 1. Valida en su constructor compacto que la fecha final no sea anterior a la fecha inicial.
+ * 2. Calcula automáticamente el total de días calendario (`totalDays()`).
+ * 3. Provee el método matemático `overlaps(other)` para detectar si dos reservas
+ *    chocan en el tiempo: `!this.endDate.isBefore(other.startDate) && !other.endDate.isBefore(this.startDate)`.
+ * 
+ * ¿POR QUÉ ES UN RECORD?
+ * En DDD, los periodos de tiempo no tienen ciclo de vida ni ID de base de datos;
+ * son valores inmutables que no pueden corromperse una vez instanciados.
  */
 public record DateRange(LocalDate startDate, LocalDate endDate) {
 

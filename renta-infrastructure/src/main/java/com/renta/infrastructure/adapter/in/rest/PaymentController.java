@@ -17,6 +17,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * ============================================================================
+ * ADAPTADOR PRIMARIO REST: CONTROLADOR DE PAGOS Y TRANSACCIONES
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Expone los endpoints HTTP bajo `/api/v1/payments`:
+ * 1. `POST /api/v1/payments/process`: Procesa transacciones con validación de montos y emite factura.
+ * 2. `GET /api/v1/payments/reservation/{id}`: Consulta el comprobante de pago de una reserva.
+ * 
+ * ¿POR QUÉ ESTÁ CREADO Y DÓNDE ENCAJA EN LA ARQUITECTURA?
+ * En la Arquitectura Hexagonal, es el punto de enlace entre la pasarela web
+ * del cliente y el servicio {@link PaymentApplicationService}, asegurando que
+ * solo el titular de la reserva (`@authz.canAccessReservation`) o un ADMIN puedan pagar.
+ */
 @RestController
 @RequestMapping("/api/v1/payments")
 @Tag(name = "4. Pasarela y Transacciones de Pago", description = "Procesamiento de pagos de reservas, generación automática de factura y comprobante")

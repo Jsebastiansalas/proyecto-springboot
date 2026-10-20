@@ -4,7 +4,16 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * Domain entity representing an equipment provider or machinery rental company.
+ * ============================================================================
+ * ENTIDAD DE DOMINIO: EMPRESA PROVEEDORA DE MAQUINARIA (Provider)
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Modela la empresa o contratista dueño del parque de maquinaria en alquiler:
+ * 1. Vinculación 1 a 1 con la cuenta de acceso `userId` (ROLE_PROVEEDOR).
+ * 2. Datos corporativos: razón social (`companyName`), representante legal y NIT/RUT.
+ * 3. Ubicación física de sus bodegas y teléfono de contacto para despacho.
+ * 4. Control de verificación institucional (`verified`), administrado por el rol ADMIN.
  */
 public class Provider {
     private Long id;

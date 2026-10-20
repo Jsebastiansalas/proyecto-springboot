@@ -13,9 +13,22 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 /**
- * Aggregate Root representing a rental contract reservation.
- * Encapsulates lifecycle state machine transitions, tool availability guardrails,
- * and monetary invariant calculations.
+ * ============================================================================
+ * RAÍZ DE AGREGADO (AGGREGATE ROOT): CONTRATO DE RESERVA (Reservation)
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Es el corazón transaccional del negocio. Modela el contrato de alquiler:
+ * 1. Mantiene el código único de seguimiento legal (`RES-YYYY-XXXXXX`).
+ * 2. Encapsula el intervalo de fechas inmutable mediante {@link DateRange}.
+ * 3. Gestiona la MÁQUINA DE ESTADOS del contrato:
+ *    - `PENDIENTE` $\rightarrow$ Solicitada por el cliente.
+ *    - `APROBADA` / `RECHAZADA` $\rightarrow$ Decisión del proveedor.
+ *    - `PAGADA` $\rightarrow$ Confirmación de fondos en pasarela.
+ *    - `EN_CURSO` $\rightarrow$ Maquinaria despachada y en obra.
+ *    - `FINALIZADA` $\rightarrow$ Maquinaria recibida e inspeccionada en bodega.
+ *    - `CANCELADA` $\rightarrow$ Anulada antes de su inicio.
+ * 4. Protege los invariantes monetarios (subtotal, depósito de fianza y total).
  */
 public class Reservation {
     private Long id;

@@ -27,6 +27,24 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * ============================================================================
+ * ADAPTADOR PRIMARIO REST: CONTROLADOR DEL CATÁLOGO DE HERRAMIENTAS
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Expone los endpoints HTTP bajo `/api/v1/tools`:
+ * 1. `GET /api/v1/tools`: Catálogo público con filtros por texto, categoría y disponibilidad.
+ * 2. `GET /api/v1/tools/{id}`: Ficha técnica detallada en Cuarta Forma Normal (4FN).
+ * 3. `GET /api/v1/tools/categories`: Listado de las 20 categorías del sistema.
+ * 4. `POST /api/v1/tools`: Creación de equipos (requiere rol PROVEEDOR o ADMIN).
+ * 5. `PUT /api/v1/tools/{id}`: Edición de características y tarifas base.
+ * 
+ * ¿POR QUÉ ESTÁ CREADO Y DÓNDE ENCAJA EN LA ARQUITECTURA?
+ * En la Arquitectura Hexagonal, conecta la web y los clientes móviles con el
+ * servicio {@link ToolApplicationService}, serializando las entidades a DTOs
+ * enriquecidos con URLs de imágenes locales.
+ */
 @RestController
 @RequestMapping("/api/v1/tools")
 @Tag(name = "2. Catálogo de Maquinaria y Equipos", description = "Endpoints públicos de consulta y privados para gestión de herramientas")

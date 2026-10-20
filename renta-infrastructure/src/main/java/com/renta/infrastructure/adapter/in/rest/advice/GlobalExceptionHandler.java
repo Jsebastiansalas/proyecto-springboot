@@ -25,6 +25,26 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * ============================================================================
+ * MANEJADOR GLOBAL DE EXCEPCIONES: ESTÁNDAR RFC 7807 (PROBLEM DETAIL)
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Intercepta cualquier excepción ocurrida en cualquier capa de la aplicación
+ * y la transforma en una respuesta JSON estandarizada según el RFC 7807:
+ * 1. `ResourceNotFoundException` $\rightarrow$ `HTTP 404 Not Found` (Recurso no encontrado).
+ * 2. `ToolNotAvailableException` / `ReservationConflictException` $\rightarrow$ `HTTP 409 Conflict` (Solapamiento).
+ * 3. `BusinessRuleViolationException` $\rightarrow$ `HTTP 422 Unprocessable Entity` (Regla de negocio violada).
+ * 4. `MethodArgumentNotValidException` $\rightarrow$ `HTTP 400 Bad Request` (Errores de validación `@Valid`).
+ * 5. `BadCredentialsException` $\rightarrow$ `HTTP 401 Unauthorized` (Credenciales inválidas).
+ * 6. `AccessDeniedException` $\rightarrow$ `HTTP 403 Forbidden` (Acceso denegado por rol).
+ * 
+ * ¿POR QUÉ ESTÁ CREADO Y DÓNDE ENCAJA EN LA ARQUITECTURA?
+ * Centraliza el manejo de fallos para que ningún error lance 'stack traces'
+ * ni fugas de información interna al cliente, mejorando la seguridad y la
+ * experiencia de integración con el frontend.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

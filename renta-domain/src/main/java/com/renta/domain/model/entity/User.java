@@ -7,7 +7,21 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * Domain entity representing an authenticated platform user.
+ * ============================================================================
+ * ENTIDAD DE DOMINIO: USUARIO DEL SISTEMA (User)
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Modela la cuenta de acceso de cualquier persona o entidad en la plataforma:
+ * 1. Identificación y login: correo electrónico único validado con {@link Email}.
+ * 2. Hash criptográfico de contraseña (cifrado con BCrypt costo 12).
+ * 3. Asignación de rol {@link UserRole} (ROLE_ADMIN, ROLE_CLIENTE, ROLE_PROVEEDOR).
+ * 4. Control de activación/bloqueo de cuenta (`active`).
+ * 
+ * ¿CÓMO SE RELACIONA CON CLIENTES Y PROVEEDORES?
+ * Sigue el patrón de Especialización/Herencia de datos: la tabla `users` contiene
+ * las credenciales y el rol común. Si el rol es `ROLE_CLIENTE`, se asocia a
+ * la tabla `clients`; si es `ROLE_PROVEEDOR`, se asocia a la tabla `providers`.
  */
 public class User {
     private Long id;

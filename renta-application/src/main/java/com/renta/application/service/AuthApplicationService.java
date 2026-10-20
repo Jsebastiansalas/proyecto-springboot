@@ -28,6 +28,27 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * ============================================================================
+ * SERVICIO DE APLICACIÓN: AUTENTICACIÓN, REGISTRO Y GESTIÓN DE CREDENCIALES
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Es el núcleo de identidad y seguridad de la plataforma. Se encarga de:
+ * 1. Autenticar usuarios (Login) verificando la contraseña con BCrypt (costo 12)
+ *    y generando un token firmado JWT HMAC-SHA256 con vigencia de 12 horas.
+ * 2. Registrar nuevos Clientes validando unicidad de correo, tipos de documento
+ *    y creando simultáneamente el registro en las tablas `users` y `clients`.
+ * 3. Registrar nuevos Proveedores creando su entidad en `users` y `providers`
+ *    con validación de NIT empresarial y razón social.
+ * 4. Gestionar el cambio seguro de contraseñas verificando coincidencia con la
+ *    anterior y forzando la complejidad de 8 caracteres con números y símbolos.
+ * 
+ * ¿POR QUÉ ESTÁ CREADO Y DÓNDE ENCAJA EN LA ARQUITECTURA?
+ * Implementa el Puerto de Entrada {@link AuthUseCase}. Para mantenerse libre de
+ * acoplamientos con Spring Security, delega el cifrado al puerto {@link PasswordEncoderPort}
+ * y la emisión de tokens al puerto {@link TokenProviderPort}.
+ */
 public class AuthApplicationService implements AuthUseCase {
 
     private final UserRepositoryPort userRepository;

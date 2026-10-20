@@ -11,6 +11,21 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * ============================================================================
+ * SERVICIO DE APLICACIÓN: PREGUNTAS Y COMENTARIOS EN EL CATÁLOGO (Q&A)
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Gestiona el sistema de preguntas y respuestas técnicas tipo Amazon/MercadoLibre:
+ * 1. Permite a los clientes hacer preguntas sobre una herramienta antes de alquilarla.
+ * 2. Permite a los proveedores o administradores responder a las dudas técnicas.
+ * 3. Consulta el hilo de comentarios y respuestas ordenados cronológicamente.
+ * 
+ * ¿POR QUÉ ESTÁ CREADO Y DÓNDE ENCAJA EN LA ARQUITECTURA?
+ * En la Arquitectura Hexagonal, encapsula la lógica de comunicación bidireccional
+ * cliente-proveedor dentro de la capa de aplicación sin depender de tecnologías web.
+ */
 public class ToolCommentApplicationService {
 
     private final ToolCommentRepositoryPort commentRepository;

@@ -32,6 +32,32 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 
+/**
+ * ============================================================================
+ * SERVICIO DE APLICACIÓN: INFORMES Y ANALÍTICA DE NEGOCIO (DASHBOARDS)
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Este servicio implementa el caso de uso {@link ReportUseCase}. Es el motor de
+ * analítica y reportería del sistema. Se encarga de:
+ * 1. Consolidar las métricas financieras globales para el Administrador: total de
+ *    ingresos netos, recaudo de IVA (19%), depósitos en garantía bajo custodia y
+ *    herramientas activas en obra.
+ * 2. Agrupar dinámicamente las ventas por periodos mensuales (año-mes: YYYY-MM)
+ *    para alimentar los gráficos de tendencia histórica.
+ * 3. Calcular el ranking de clientes frecuentes y la rotación del inventario
+ *    (Top herramientas más rentadas).
+ * 4. Generar el reporte personalizado para cada Proveedor con sus ingresos y
+ *    estado de alquileres particulares.
+ * 
+ * ¿POR QUÉ ESTÁ CREADO Y DÓNDE ENCAJA EN LA ARQUITECTURA?
+ * En la Arquitectura Hexagonal (DDD), este archivo pertenece a la capa de
+ * APLICACIÓN (renta-application). Actúa como orquestador: no interactúa directamente
+ * con controladores web ni con SQL de base de datos; en su lugar, consume
+ * Puertos de Salida (interfaces de repositorios como {@link ToolRepositoryPort},
+ * {@link ReservationRepositoryPort}) y transforma entidades de dominio en DTOs
+ * inmutables para responder a la capa de presentación REST.
+ */
 public class ReportApplicationService implements ReportUseCase {
 
     private final ToolRepositoryPort toolRepository;

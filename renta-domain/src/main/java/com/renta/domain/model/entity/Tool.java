@@ -11,8 +11,25 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Aggregate Root representing equipment or machinery available for rental.
- * Encapsulates pricing invariants, status lifecycle, and 4NF child collections.
+ * ============================================================================
+ * RAÍZ DE AGREGADO (AGGREGATE ROOT): HERRAMIENTA O MAQUINARIA (Tool)
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Es la entidad principal del catálogo de inventario. Encapsula:
+ * 1. Datos descriptivos: código SKU, nombre, marca, modelo y categoría.
+ * 2. Reglas de cobro: tarifa base diaria y depósito de fianza (Value Objects {@link Money}).
+ * 3. Ciclo de vida operativo: estado {@link ToolStatus} (DISPONIBLE, EN_ALQUILER, EN_MANTENIMIENTO).
+ * 4. Descomposición en Cuarta Forma Normal (4FN):
+ *    - `images`: Colección de fotografías de inspección técnica.
+ *    - `specifications`: Atributos técnicos normalizados (potencia, combustible, peso).
+ *    - `pricingTiers`: Escalas de precios según duración (diaria, semanal, mensual).
+ *    - `safetyRequirements`: Normas de seguridad y EPP exigidos para su manipulación.
+ * 
+ * ¿POR QUÉ NO TIENE ANOTACIONES DE JPA COMO @Entity O @Table?
+ * Porque pertenece al módulo `renta-domain` (Java puro sin dependencias de frameworks).
+ * Su mapeo a la base de datos relacional se realiza en el adaptador de persistencia
+ * de `renta-infrastructure`, cumpliendo con la pureza arquitectónica de DDD.
  */
 public class Tool {
     private Long id;

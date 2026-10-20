@@ -34,6 +34,28 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * ============================================================================
+ * SERVICIO DE APLICACIÓN: PROCESAMIENTO DE PAGOS Y CUOTAS FINANCIERAS
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Es el motor transaccional de pagos de la plataforma. Se encarga de:
+ * 1. Procesar pagos de alquileres (tarjeta de crédito, PSE, transferencia)
+ *    validando montos exactos y generando referencias únicas de auditoría (TXN-...).
+ * 2. Transicionar el estado de la reserva de APROBADA a PAGADA.
+ * 3. Disparar automáticamente la emisión de la factura electrónica DIAN y la
+ *    notificación por correo al cliente.
+ * 4. Gestionar planes de pago diferido por cuotas (PaymentInstallments) con
+ *    cálculo de fechas de vencimiento y amortización de saldos.
+ * 
+ * ¿POR QUÉ ESTÁ CREADO Y DÓNDE ENCAJA EN LA ARQUITECTURA?
+ * En la Arquitectura Hexagonal, orquesta los casos de uso {@link ProcessPaymentUseCase}
+ * y {@link RegisterPaymentUseCase}. Se comunica con la pasarela a través del
+ * Puerto de Salida {@link PaymentGatewayPort} y con la persistencia mediante
+ * {@link PaymentRepositoryPort} y {@link ReservationRepositoryPort}, manteniendo
+ * el aislamiento transaccional y la integridad contable.
+ */
 public class PaymentApplicationService implements ProcessPaymentUseCase, RegisterPaymentUseCase {
 
     private final PaymentRepositoryPort paymentRepository;

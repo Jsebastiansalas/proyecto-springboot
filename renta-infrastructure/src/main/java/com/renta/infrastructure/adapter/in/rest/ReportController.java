@@ -13,6 +13,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * ============================================================================
+ * ADAPTADOR PRIMARIO REST: CONTROLADOR DE REPORTES Y ANALÍTICA
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Expone los endpoints HTTP bajo `/api/v1/reports`:
+ * 1. `GET /api/v1/reports/admin`: Métricas gerenciales protegidas con `@PreAuthorize("hasRole('ADMIN')")`.
+ * 2. `GET /api/v1/reports/provider/{id}`: KPIs por proveedor protegidos con `@PreAuthorize("hasAnyRole('PROVEEDOR', 'ADMIN')")`.
+ * 
+ * ¿POR QUÉ ESTÁ CREADO Y DÓNDE ENCAJA EN LA ARQUITECTURA?
+ * En la Arquitectura Hexagonal, es un Adaptador de Entrada (Primary Adapter).
+ * Traduce peticiones HTTP/JSON y cabeceras JWT en llamadas directas al
+ * servicio de aplicación {@link ReportApplicationService}.
+ */
 @RestController
 @RequestMapping("/api/v1/reports")
 @Tag(name = "7. Reportes y Dashboards Analíticos", description = "Métricas financieras, utilización de equipos y KPIs gerenciales para administradores y proveedores")

@@ -7,7 +7,21 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- * Immutable Value Object representing a validated and normalized email address.
+ * ============================================================================
+ * OBJETO DE VALOR INMUTABLE (VALUE OBJECT): CORREO ELECTRÓNICO (Email)
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Encapsula la dirección de correo electrónico del usuario garantizando:
+ * 1. Validación de formato RFC 5322 mediante expresión regular estricta.
+ * 2. Normalización automática a minúsculas y eliminación de espacios en blanco.
+ * 3. Inmutabilidad total: si un correo es inválido, arroja inmediatamente una
+ *    excepción de dominio `BusinessRuleViolationException`.
+ * 
+ * ¿POR QUÉ NO USAR UN SIMPLE String?
+ * En DDD se evita la "obsesión por primitivos" (Primitive Obsession). Un String
+ * puede contener cualquier texto no validado, mientras que un Value Object `Email`
+ * garantiza que todo objeto que lo posea tiene un correo 100% válido por contrato.
  */
 public record Email(String value) {
 

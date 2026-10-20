@@ -9,13 +9,31 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
- * Pure domain service for calculating rental fees, volume-based weekly discounts (85%),
- * and value-added tax (IVA 19%).
+ * ============================================================================
+ * SERVICIO DE DOMINIO PURO: CALCULADORA FINANCIERA DE TARIFAS E IMPUESTOS
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Es el motor matemático central de las reglas de cobro de la plataforma:
+ * 1. Calcula el número de días efectivos de alquiler.
+ * 2. Evalúa si aplica el DESCUENTO SEMANAL POR VOLUMEN (15% de ahorro para alquileres
+ *    de 7 o más días, multiplicando por el factor 0.85).
+ * 3. Calcula el subtotal monetario usando el Value Object inmutable {@link Money}.
+ * 4. Aplica la tasa legal del IMPUESTO AL VALOR AGREGADO (IVA del 19% en Colombia).
+ * 5. Suma el depósito de garantía requerido y genera el desglose financiero completo
+ *    {@link RentalPriceCalculation}.
+ * 
+ * ¿POR QUÉ ESTÁ CREADO Y DÓNDE ENCAJA EN LA ARQUITECTURA?
+ * En el Diseño Guiado por el Dominio (DDD), esta clase es un SERVICIO DE DOMINIO PURO
+ * (Domain Service). Vive en el módulo `renta-domain`. No tiene anotaciones `@Service` de
+ * Spring, ni dependencias de frameworks ni de SQL. Es 100% Java estándar inmutable, lo
+ * que permite probarlo con pruebas unitarias ultra rápidas y garantiza que la regla de
+ * negocio nunca cambie por decisiones tecnológicas externas.
  */
 public class RentalPricingCalculator {
 
     /**
-     * Volume discount factor for 7 or more rental days: 85% of base price (15% discount).
+     * Factor de descuento por volumen para 7 o más días: 85% de la tarifa base (15% de descuento).
      */
     public static final BigDecimal WEEKLY_DISCOUNT_FACTOR = BigDecimal.valueOf(0.85);
 

@@ -33,6 +33,29 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * ============================================================================
+ * SERVICIO DE APLICACIÓN: GESTIÓN Y CATÁLOGO DE HERRAMIENTAS (4FN)
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Es el servicio responsable de toda la operativa del inventario de maquinaria:
+ * 1. Consultar el catálogo público de herramientas para alquiler con filtros
+ *    de disponibilidad, categoría, marca y búsqueda por texto.
+ * 2. Cargar la ficha técnica completa en Cuarta Forma Normal (4FN): imágenes de
+ *    inspección, especificaciones técnicas (potencia, combustible), tarifas
+ *    escalonadas y requisitos de seguridad obligatorios (EPP).
+ * 3. Permitir a los Proveedores y Administradores registrar nuevas herramientas,
+ *    actualizar precios base, depósitos de garantía y cambiar estados operativos
+ *    (DISPONIBLE, EN_MANTENIMIENTO, DE_BAJA).
+ * 
+ * ¿POR QUÉ ESTÁ CREADO Y DÓNDE ENCAJA EN LA ARQUITECTURA?
+ * En la Arquitectura Hexagonal, desacopla la API Web REST de la persistencia:
+ * Implementa los casos de uso (Puertos de Entrada) {@link ManageToolUseCase} y
+ * {@link ToolQueryUseCase}, y se comunica con la base de datos a través de los
+ * Puertos de Salida {@link ToolRepositoryPort}, {@link CategoryRepositoryPort}
+ * y {@link ProviderRepositoryPort}.
+ */
 public class ToolApplicationService implements ManageToolUseCase, ToolQueryUseCase {
 
     private final ToolRepositoryPort toolRepository;

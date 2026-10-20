@@ -30,6 +30,24 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * ============================================================================
+ * ADAPTADOR PRIMARIO REST: CONTROLADOR DE AUTENTICACIÓN Y REGISTRO
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Es la puerta de entrada pública del sistema para la gestión de usuarios:
+ * 1. `POST /api/v1/auth/login`: Autentica credenciales y emite el JWT.
+ * 2. `POST /api/v1/auth/register-client`: Registra clientes con tipo y número de documento.
+ * 3. `POST /api/v1/auth/register-provider`: Registra empresas proveedoras con NIT y razón social.
+ * 4. `POST /api/v1/auth/change-password`: Permite actualizar contraseñas de forma segura.
+ * 5. `GET /api/v1/auth/profile`: Devuelve los datos del usuario autenticado actual.
+ * 
+ * ¿POR QUÉ ESTÁ CREADO Y DÓNDE ENCAJA EN LA ARQUITECTURA?
+ * En la Arquitectura Hexagonal, adapta el protocolo HTTP al servicio
+ * {@link AuthApplicationService}. Los endpoints están exentos de token JWT en
+ * {@link SecurityConfig} excepto `/change-password` y `/profile`.
+ */
 @RestController
 @RequestMapping("/api/v1/auth")
 @Tag(name = "1. Autenticación y Cuentas", description = "Endpoints públicos de inicio de sesión y registro de clientes/proveedores")

@@ -8,7 +8,19 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * Domain entity representing a legal commercial/tax invoice with IVA (19%).
+ * ============================================================================
+ * ENTIDAD DE DOMINIO: FACTURA FISCAL ELECTRÓNICA (Invoice)
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Modela el documento contable y tributario oficial generado tras un pago:
+ * 1. Almacena el número de factura legal consecutivo (ej. `FAC-2026-000001`).
+ * 2. Guarda el desglose fiscal exacto con Value Objects {@link Money}:
+ *    - `subtotal`: Valor neto antes de impuestos.
+ *    - `taxAmount`: Importe retenido por IVA colombiano (19%).
+ *    - `total`: Monto final pagado por el cliente.
+ * 3. Enlaza de manera inmutable el identificador de la reserva y del pago.
+ * 4. Almacena el enlace de acceso al archivo PDF oficial emitido.
  */
 public class Invoice {
     private Long id;

@@ -23,6 +23,26 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Objects;
 
+/**
+ * ============================================================================
+ * SERVICIO DE APLICACIÓN: FACTURACIÓN ELECTRÓNICA LEGAL (TIPO DIAN)
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Es el servicio de facturación tributaria de la plataforma. Se encarga de:
+ * 1. Generar facturas electrónicas con numeración oficial consecutiva (FAC-YYYY-NNNNNN).
+ * 2. Discriminar contablemente el subtotal neto, el impuesto al valor agregado
+ *    (IVA 19% colombiano) y el valor total a pagar.
+ * 3. Asociar de forma inmutable la factura con su contrato de reserva y su
+ *    comprobante de pago bancario.
+ * 4. Proveer la URL para descarga e impresión del documento PDF formal.
+ * 
+ * ¿POR QUÉ ESTÁ CREADO Y DÓNDE ENCAJA EN LA ARQUITECTURA?
+ * En la Arquitectura Hexagonal, implementa los Puertos de Entrada
+ * {@link GenerateInvoiceUseCase} y {@link EmitInvoiceUseCase}. Al estar en la
+ * capa de aplicación, aísla la normativa de facturación colombiana de los
+ * controladores REST y de los detalles del motor de base de datos.
+ */
 public class InvoiceApplicationService implements GenerateInvoiceUseCase, EmitInvoiceUseCase {
 
     private final InvoiceRepositoryPort invoiceRepository;

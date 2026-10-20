@@ -7,8 +7,22 @@ import java.math.RoundingMode;
 import java.util.Objects;
 
 /**
- * Immutable Value Object representing monetary values with fixed 2-decimal scale.
- * Default currency is Colombian Peso (COP).
+ * ============================================================================
+ * OBJETO DE VALOR INMUTABLE (VALUE OBJECT): DINERO Y MONEDA (Money)
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Representa importes monetarios con precisión matemática fija de 2 decimales
+ * y moneda por defecto en Pesos Colombianos (COP).
+ * 
+ * ¿POR QUÉ ES UN RECORD Y NO UNA CLASE NORMAL O UN DOUBLE?
+ * 1. Los tipos primitivos como `double` o `float` sufren errores de precisión
+ *    en operaciones de coma flotante binaria (ej. 0.1 + 0.2 != 0.3). Usar `BigDecimal`
+ *    garantiza exactitud contable obligatoria para facturación y DIAN.
+ * 2. En DDD, es un Value Object inmutable: dos instancias de `Money` con el mismo
+ *    monto y moneda son iguales por valor, no por identidad (`equals` y `hashCode` automáticos).
+ * 3. Proporciona operaciones matemáticas seguras: `plus()`, `minus()`, `multiply()`,
+ *    `percentage()` y comparaciones de negocio.
  */
 public record Money(BigDecimal amount, String currency) implements Comparable<Money> {
 

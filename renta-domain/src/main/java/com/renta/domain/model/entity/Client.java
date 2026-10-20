@@ -6,7 +6,16 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * Domain entity representing a customer or contractor renting equipment.
+ * ============================================================================
+ * ENTIDAD DE DOMINIO: PERFIL DE CLIENTE / CONTRATISTA (Client)
+ * ============================================================================
+ * 
+ * ¿QUÉ HACE ESTE ARCHIVO?
+ * Modela la información personal y fiscal del arrendatario:
+ * 1. Vinculación 1 a 1 con la cuenta de acceso `userId` (ROLE_CLIENTE).
+ * 2. Datos personales: nombres, apellidos, teléfono y dirección física de entrega en obra.
+ * 3. Identificación legal para facturación: tipo de documento (CC, CE, NIT, PASAPORTE)
+ *    y número de documento sin caracteres especiales.
  */
 public class Client {
     private Long id;
