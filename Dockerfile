@@ -16,7 +16,8 @@ COPY renta-domain/pom.xml renta-domain/
 COPY renta-application/pom.xml renta-application/
 COPY renta-infrastructure/pom.xml renta-infrastructure/
 COPY renta-boot/pom.xml renta-boot/
-COPY frontend/package.json frontend/
+# Copiar dependencias de frontend
+COPY frontend/package*.json frontend/
 
 # Descargar dependencias en cache
 RUN cd frontend && npm install
@@ -30,7 +31,10 @@ COPY renta-boot/src renta-boot/src
 COPY frontend/src frontend/src
 COPY frontend/public frontend/public
 COPY frontend/index.html frontend/index.html
-COPY frontend/vite.config.js frontend/vite.config.js
+COPY frontend/vite.config.ts frontend/vite.config.ts
+COPY frontend/tsconfig*.json frontend/
+COPY frontend/tailwind.config.js frontend/tailwind.config.js
+COPY frontend/postcss.config.js frontend/postcss.config.js
 
 # Compilar frontend Vite antes de empaquetar Maven
 RUN cd frontend && npm run build

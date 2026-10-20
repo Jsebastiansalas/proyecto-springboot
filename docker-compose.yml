@@ -50,7 +50,7 @@ services:
       - postgres
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@renta.com
-      PGADMIN_DEFAULT_PASSWORD: Admin123*
+      PGADMIN_DEFAULT_PASSWORD: Admin#Renta2026!SecOps
     ports:
       - "5050:80"
 
