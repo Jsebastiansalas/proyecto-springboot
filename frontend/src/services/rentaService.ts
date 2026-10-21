@@ -13,6 +13,44 @@ import {
   RegisterProviderData
 } from '../types';
 
+// Normalizador defensivo de reservas para conciliar modelos DTO del Backend con la UI
+const mapReservation = (raw: any): Reservation => {
+  if (!raw) return raw;
+  const totalPrice = Number(raw.totalPrice ?? raw.totalAmount ?? 0);
+  const depositAmount = Number(raw.depositAmount ?? raw.depositTotal ?? 0);
+  const subtotalPrice = Number(raw.subtotalPrice ?? raw.subtotal ?? 0);
+  const taxAmount = Number(raw.taxAmount ?? Math.round(subtotalPrice * 0.19) ?? 0);
+  const days = Math.max(1, Number(raw.totalDays || 1));
+  const dailyPrice = Number(raw.dailyPrice ?? (days > 0 ? Math.round(subtotalPrice / days) : 0));
+
+  return {
+    id: raw.id,
+    reservationCode: raw.reservationCode || `RES-${raw.id}`,
+    toolId: raw.toolId,
+    toolName: raw.toolName || 'Maquinaria de Obra',
+    toolImage: raw.toolImage || raw.toolImageUrl || 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=600&q=80',
+    clientId: raw.clientId,
+    clientName: raw.clientName || 'Cliente Constructora',
+    startDate: raw.startDate || '',
+    endDate: raw.endDate || '',
+    totalDays: days,
+    dailyPrice,
+    subtotalPrice,
+    depositAmount,
+    taxAmount,
+    totalPrice,
+    status: raw.status || 'PENDIENTE',
+    paymentStatus: raw.paymentStatus || (raw.hasPayment ? 'PAGADO' : 'PENDIENTE'),
+    paymentMethod: raw.paymentMethod || 'TARJETA_CREDITO',
+    installmentCount: raw.installmentCount || 1,
+    paidInstallments: raw.paidInstallments || 0,
+    totalInstallments: raw.installmentCount || 1,
+    createdAt: raw.createdAt || new Date().toISOString(),
+    invoiceId: raw.invoiceId,
+    invoiceNumber: raw.invoiceNumber
+  };
+};
+
 export const rentaService = {
   // 1. AUTENTICACIÓN & SEGURIDAD
   auth: {
@@ -206,7 +244,7 @@ export const rentaService = {
 
   // 3. COTIZACIÓN & RESERVAS
   reservations: {
-    calculatePrice: (toolId: number, days: number): Promise<{
+    calculatePrice: (toolId: number, daysOrStartDate: number | string, endDate?: string): Promise<{
       dailyPrice: number;
       subtotalPrice: number;
       depositAmount: number;
@@ -215,9 +253,23 @@ export const rentaService = {
       weeklyDiscountApplied: boolean;
       discountAmount: number;
     }> => {
-      return apiClient.post('/reservations/calculate-price', { toolId, days });
+      if (typeof daysOrStartDate === 'number') {
+        const start = new Date().toISOString().split('T')[0];
+        const end = new Date(Date.now() + Math.max(1, daysOrStartDate) * 86400000).toISOString().split('T')[0];
+        return apiClient.post('/reservations/calculate-price', {
+          toolId,
+          days: daysOrStartDate,
+          startDate: start,
+          endDate: end
+        });
+      }
+      return apiClient.post('/reservations/calculate-price', {
+        toolId,
+        startDate: daysOrStartDate,
+        endDate: endDate || daysOrStartDate
+      });
     },
-    create: (data: {
+    create: async (data: {
       toolId: number;
       startDate: string;
       endDate: string;
@@ -226,38 +278,49 @@ export const rentaService = {
       installmentCount?: number;
       notes?: string;
     }): Promise<Reservation> => {
-      return apiClient.post<Reservation>('/reservations', data);
+      const res = await apiClient.post<any>('/reservations', data);
+      return mapReservation(res);
     },
-    getAll: (): Promise<Reservation[]> => {
-      return apiClient.get<Reservation[]>('/reservations');
+    getAll: async (): Promise<Reservation[]> => {
+      const res = await apiClient.get<any[]>('/reservations');
+      return Array.isArray(res) ? res.map(mapReservation) : [];
     },
-    getByClient: (clientId: number): Promise<Reservation[]> => {
-      return apiClient.get<Reservation[]>(`/reservations/client/${clientId}`);
+    getByClient: async (clientId: number): Promise<Reservation[]> => {
+      const res = await apiClient.get<any[]>(`/reservations/client/${clientId}`);
+      return Array.isArray(res) ? res.map(mapReservation) : [];
     },
-    getByProvider: (providerId: number): Promise<Reservation[]> => {
-      return apiClient.get<Reservation[]>(`/reservations/provider/${providerId}`);
+    getByProvider: async (providerId: number): Promise<Reservation[]> => {
+      const res = await apiClient.get<any[]>(`/reservations/provider/${providerId}`);
+      return Array.isArray(res) ? res.map(mapReservation) : [];
     },
-    getById: (id: number): Promise<Reservation> => {
-      return apiClient.get<Reservation>(`/reservations/${id}`);
+    getById: async (id: number): Promise<Reservation> => {
+      const res = await apiClient.get<any>(`/reservations/${id}`);
+      return mapReservation(res);
     },
-    approve: (id: number): Promise<Reservation> => {
-      return apiClient.patch<Reservation>(`/reservations/${id}/approve`);
+    approve: async (id: number): Promise<Reservation> => {
+      const res = await apiClient.patch<any>(`/reservations/${id}/approve`);
+      return mapReservation(res);
     },
-    reject: (id: number, reason: string): Promise<Reservation> => {
-      return apiClient.patch<Reservation>(`/reservations/${id}/reject`, { reason });
+    reject: async (id: number, reason: string): Promise<Reservation> => {
+      const cleanReason = reason || 'Rechazada por el proveedor';
+      const res = await apiClient.patch<any>(`/reservations/${id}/reject?reason=${encodeURIComponent(cleanReason)}`, { reason: cleanReason });
+      return mapReservation(res);
     },
-    cancel: (id: number, reason?: string): Promise<Reservation> => {
-      return apiClient.patch<Reservation>(`/reservations/${id}/cancel?reason=${encodeURIComponent(reason || 'Cancelada por el usuario')}`);
+    cancel: async (id: number, reason?: string): Promise<Reservation> => {
+      const cleanReason = reason || 'Cancelada por el usuario';
+      const res = await apiClient.patch<any>(`/reservations/${id}/cancel?reason=${encodeURIComponent(cleanReason)}`, { reason: cleanReason });
+      return mapReservation(res);
     }
   },
 
   // 4. PAGOS & PLAN DE CUOTAS
   payments: {
-    process: (reservationId: number, paymentMethod: string, installmentCount: number = 1): Promise<{ status: string; transactionId: string }> => {
+    process: (reservationId: number, paymentMethod: string, installmentCount: number = 1, amount?: number): Promise<{ status: string; transactionId: string }> => {
       return apiClient.post('/payments/process', {
         reservationId,
         paymentMethod,
-        installmentCount
+        installmentCount,
+        ...(amount != null ? { amount } : {})
       });
     },
     getInstallments: (reservationId: number): Promise<PaymentInstallment[]> => {
@@ -284,10 +347,10 @@ export const rentaService = {
       return apiClient.get<ToolComment[]>(`/tools/${toolId}/comments`);
     },
     create: (toolId: number, content: string): Promise<ToolComment> => {
-      return apiClient.post(`/tools/${toolId}/comments`, { content });
+      return apiClient.post(`/tools/${toolId}/comments`, { content, commentText: content });
     },
     reply: (commentId: number, replyContent: string): Promise<ToolComment> => {
-      return apiClient.patch(`/tools/comments/${commentId}/reply`, { replyContent });
+      return apiClient.patch(`/tools/comments/${commentId}/reply`, { replyContent, providerReply: replyContent });
     }
   },
 
@@ -332,14 +395,40 @@ export const rentaService = {
 
   // 8. ENTREGAS, DEVOLUCIONES & DAÑOS
   deliveries: {
-    startRental: (data: { reservationId: number; initialOperatingHours: number; deliveryNotes?: string }): Promise<any> => {
-      return apiClient.post('/deliveries', data);
+    startRental: (data: { reservationId: number; initialOperatingHours?: number; deliveryNotes?: string; deliveredBy?: string }): Promise<any> => {
+      return apiClient.post('/deliveries', {
+        reservationId: data.reservationId,
+        deliveredBy: data.deliveredBy || 'Patio Central RentaMaq',
+        initialConditionNotes: data.deliveryNotes || 'Equipo inspeccionado y entregado según protocolo 4FN',
+        clientSignatureAck: true,
+        initialOperatingHours: data.initialOperatingHours || 0,
+        observations: data.deliveryNotes
+      });
     },
-    finishRental: (data: { reservationId: number; returnDate?: string; returnCondition: string; returnNotes?: string }): Promise<any> => {
-      return apiClient.post('/returns', data);
+    finishRental: (data: { reservationId: number; returnDate?: string; returnCondition?: string; returnNotes?: string; extraDamageFee?: number }): Promise<any> => {
+      const fee = data.extraDamageFee || 0;
+      return apiClient.post('/returns', {
+        reservationId: data.reservationId,
+        receivedBy: 'Inspector Técnico RentaMaq',
+        conditionStatus: data.returnCondition || (fee > 0 ? 'CON_DESGASTE' : 'OPTIMO'),
+        inspectionNotes: data.returnNotes || 'Inspección técnica de retorno completada.',
+        extraDamageFee: fee,
+        depositRefunded: fee === 0,
+        damageDescription: fee > 0 ? data.returnNotes : null
+      });
     },
-    registerDamage: (data: { rentalReturnId: number; description: string; estimatedRepairCost: number }): Promise<any> => {
-      return apiClient.post('/damages', data);
+    registerDamage: (data: { returnId?: number; rentalReturnId?: number; description: string; repairCostEstimate?: number; estimatedRepairCost?: number }): Promise<any> => {
+      const id = data.returnId || data.rentalReturnId || 0;
+      const cost = data.repairCostEstimate != null ? data.repairCostEstimate : (data.estimatedRepairCost || 0);
+      return apiClient.post('/damages', {
+        returnId: id,
+        rentalReturnId: id,
+        reportedBy: 'Inspector Técnico RentaMaq',
+        damageType: 'ESTRUCTURA',
+        description: data.description,
+        repairCostEstimate: cost,
+        estimatedRepairCost: cost
+      });
     },
     getDamageReports: (returnId: number): Promise<any[]> => {
       return apiClient.get<any[]>(`/damages/return/${returnId}`);
@@ -349,10 +438,31 @@ export const rentaService = {
   // 9. LOGÍSTICA & LIQUIDACIÓN DE GARANTÍAS
   logistics: {
     dispatch: (reservationId: number, initialHours: number, observations: string) => {
-      return apiClient.post(`/logistics/dispatch/${reservationId}`, { initialHours, observations });
+      return apiClient.post('/deliveries', {
+        reservationId,
+        deliveredBy: 'Patio Central RentaMaq',
+        initialConditionNotes: observations || `Horómetro inicial: ${initialHours} hrs. Equipo en óptimas condiciones.`,
+        clientSignatureAck: true,
+        initialOperatingHours: initialHours,
+        initialHours,
+        observations
+      });
     },
     returnDelivery: (reservationId: number, finalHours: number, damageCost: number, damageReport: string) => {
-      return apiClient.post(`/logistics/return/${reservationId}`, { finalHours, damageCost, damageReport });
+      const condition = damageCost > 0 ? 'CON_DESGASTE' : 'OPTIMO';
+      return apiClient.post('/returns', {
+        reservationId,
+        receivedBy: 'Inspector Técnico RentaMaq',
+        conditionStatus: condition,
+        inspectionNotes: damageReport || `Horómetro final: ${finalHours} hrs.`,
+        extraDamageFee: damageCost,
+        damageCost,
+        repairCostEstimate: damageCost,
+        depositRefunded: damageCost === 0,
+        damageDescription: damageCost > 0 ? damageReport : null,
+        damageReport,
+        finalHours
+      });
     },
     getSettlement: (reservationId: number) => {
       return apiClient.get(`/logistics/settlement/${reservationId}`);

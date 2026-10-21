@@ -71,9 +71,12 @@ export const ClientPortal: React.FC = () => {
     );
   }
 
-  // Métricas rápidas del cliente
-  const totalInvertido = reservations.reduce((acc, r) => acc + r.totalPrice, 0);
-  const totalGarantias = reservations.reduce((acc, r) => acc + r.depositAmount, 0);
+  // Formateador seguro de pesos colombianos (nunca falla ante valores nulos o indefinidos)
+  const formatCOP = (val?: number | null) => '$ ' + Number(val || 0).toLocaleString('es-CO');
+
+  // Métricas rápidas del cliente calculadas defensivamente
+  const totalInvertido = reservations.reduce((acc, r) => acc + Number(r.totalPrice ?? (r as any).totalAmount ?? 0), 0);
+  const totalGarantias = reservations.reduce((acc, r) => acc + Number(r.depositAmount ?? (r as any).depositTotal ?? 0), 0);
   const activosCount = reservations.filter(r => r.status === 'EN_CURSO' || r.status === 'APROBADA').length;
 
   return (
@@ -119,7 +122,7 @@ export const ClientPortal: React.FC = () => {
             <DollarSign className="w-4 h-4 text-[#4ade80]" />
           </div>
           <div className="text-2xl font-black font-mono text-[#F5F4F0]">
-            ${totalInvertido.toLocaleString('es-CO')}
+            {formatCOP(totalInvertido)}
           </div>
           <div className="text-[11px] text-[#706E66] mt-1">Facturación acumulada en contratos vigentes</div>
         </div>
@@ -130,7 +133,7 @@ export const ClientPortal: React.FC = () => {
             <ShieldCheck className="w-4 h-4 text-sky-400" />
           </div>
           <div className="text-2xl font-black font-mono text-[#F5F4F0]">
-            ${totalGarantias.toLocaleString('es-CO')}
+            {formatCOP(totalGarantias)}
           </div>
           <div className="text-[11px] text-[#706E66] mt-1">Retornables al finalizar sin novedades</div>
         </div>
@@ -174,8 +177,12 @@ export const ClientPortal: React.FC = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#363632]">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center shrink-0">
-                      {res.toolImage ? (
-                        <img src={res.toolImage} alt={res.toolName} className="w-full h-full object-cover" />
+                      {(res.toolImage || (res as any).toolImageUrl) ? (
+                        <img 
+                          src={res.toolImage || (res as any).toolImageUrl} 
+                          alt={res.toolName || 'Maquinaria'} 
+                          className="w-full h-full object-cover" 
+                        />
                       ) : (
                         <Wrench className="w-5 h-5 text-slate-400" />
                       )}
@@ -183,14 +190,14 @@ export const ClientPortal: React.FC = () => {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-[11px] font-bold text-[#D94E1F] bg-[#E05A2B]/10 px-2 py-0.5 rounded border border-[#D94E1F]">
-                          {res.reservationCode}
+                          {res.reservationCode || `RES-${res.id}`}
                         </span>
                         <span className="text-[11px] text-slate-400 font-mono">
-                          {res.startDate} ➔ {res.endDate} ({res.totalDays} días)
+                          {res.startDate || 'N/A'} ➔ {res.endDate || 'N/A'} ({res.totalDays || 1} días)
                         </span>
                       </div>
                       <h3 className="text-base font-bold text-white mt-0.5">
-                        {res.toolName}
+                        {res.toolName || 'Maquinaria Industrial'}
                       </h3>
                     </div>
                   </div>
@@ -198,7 +205,7 @@ export const ClientPortal: React.FC = () => {
                   <div className="flex items-center gap-2">
                     {/* Status Badge */}
                     <span className="text-xs font-mono font-semibold px-2.5 py-1 rounded-full bg-[#E05A2B]/10 text-[#D94E1F] border border-[#D94E1F]">
-                      {res.status}
+                      {res.status || 'PENDIENTE'}
                     </span>
 
                     {/* Payment Status Badge */}
@@ -207,7 +214,7 @@ export const ClientPortal: React.FC = () => {
                         ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
                         : 'bg-amber-500/10 text-amber-300 border-amber-500/30'
                     }`}>
-                      {res.paymentStatus}
+                      {res.paymentStatus || 'PENDIENTE'}
                     </span>
                   </div>
                 </div>
@@ -223,18 +230,18 @@ export const ClientPortal: React.FC = () => {
                     <div>
                       <span className="text-slate-400 block">Total Contrato:</span>
                       <span className="font-mono font-bold text-white text-sm">
-                        ${res.totalPrice.toLocaleString('es-CO')}
+                        {formatCOP(res.totalPrice ?? (res as any).totalAmount)}
                       </span>
                     </div>
                     <div>
                       <span className="text-slate-400 block">Depósito Escrow:</span>
                       <span className="font-mono text-slate-300">
-                        ${res.depositAmount.toLocaleString('es-CO')}
+                        {formatCOP(res.depositAmount ?? (res as any).depositTotal)}
                       </span>
                     </div>
                     <div>
                       <span className="text-slate-400 block">Método:</span>
-                      <span className="font-mono text-slate-300">{res.paymentMethod}</span>
+                      <span className="font-mono text-slate-300">{res.paymentMethod || 'PASARELA DE PAGO'}</span>
                     </div>
                   </div>
 
@@ -333,15 +340,17 @@ export const ClientPortal: React.FC = () => {
               <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800 space-y-1">
                 <div className="flex justify-between">
                   <span className="text-slate-400">Subtotal Operativo:</span>
-                  <span className="font-mono text-slate-200">${activeDianModal.subtotalPrice.toLocaleString('es-CO')}</span>
+                  <span className="font-mono text-slate-200">{formatCOP(activeDianModal.subtotalPrice ?? (activeDianModal as any).subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">IVA 19%:</span>
-                  <span className="font-mono text-slate-200">${activeDianModal.taxAmount.toLocaleString('es-CO')}</span>
+                  <span className="font-mono text-slate-200">
+                    {formatCOP(activeDianModal.taxAmount ?? Math.round(Number(activeDianModal.subtotalPrice ?? (activeDianModal as any).subtotal ?? 0) * 0.19))}
+                  </span>
                 </div>
                 <div className="flex justify-between pt-1 border-t border-slate-800 font-bold text-white">
                   <span>Total Timbrado DIAN:</span>
-                  <span className="font-mono text-[#D94E1F]">${activeDianModal.totalPrice.toLocaleString('es-CO')}</span>
+                  <span className="font-mono text-[#D94E1F]">{formatCOP(activeDianModal.totalPrice ?? (activeDianModal as any).totalAmount)}</span>
                 </div>
               </div>
             </div>

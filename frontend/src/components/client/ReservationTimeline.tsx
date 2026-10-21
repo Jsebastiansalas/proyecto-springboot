@@ -24,6 +24,19 @@ export const ReservationTimeline: React.FC<ReservationTimelineProps> = ({ status
     { key: 'LIQUIDADA', label: 'Liquidada', icon: Receipt, desc: 'Escrow liberado' },
   ];
 
+  if (status === 'CANCELADA' || status === 'RECHAZADA') {
+    return (
+      <div className="w-full py-2.5 px-4 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-between text-xs font-mono">
+        <span className="text-rose-300">
+          Contrato {status === 'CANCELADA' ? 'cancelado' : 'rechazado'}: Garantías y cupos liberados.
+        </span>
+        <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 font-bold border border-rose-500/30">
+          {status}
+        </span>
+      </div>
+    );
+  }
+
   // Map database status to current step index
   let activeIndex = 0;
   if (status === 'APROBADA') activeIndex = 1;

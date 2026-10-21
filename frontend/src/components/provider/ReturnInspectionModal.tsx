@@ -44,7 +44,8 @@ export const ReturnInspectionModal: React.FC<ReturnInspectionModalProps> = ({
     }
   };
 
-  const depositRefund = Math.max(0, reservation.depositAmount - damageCost);
+  const depositRefund = Math.max(0, Number(reservation.depositAmount ?? (reservation as any).depositTotal ?? 0) - damageCost);
+  const formatCOP = (val?: number | null) => '$ ' + Number(val || 0).toLocaleString('es-CO');
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
@@ -62,7 +63,7 @@ export const ReturnInspectionModal: React.FC<ReturnInspectionModalProps> = ({
                 Inspección de Retorno & Liquidación
               </h3>
               <p className="text-xs text-slate-400 font-mono">
-                Reserva: {reservation.reservationCode} · {reservation.toolName}
+                Reserva: {reservation.reservationCode || `RES-${reservation.id}`} · {reservation.toolName || 'Maquinaria'}
               </p>
             </div>
           </div>
@@ -78,11 +79,11 @@ export const ReturnInspectionModal: React.FC<ReturnInspectionModalProps> = ({
           <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-1">
             <div className="flex justify-between">
               <span className="text-slate-400">Depósito en Custodia (Escrow):</span>
-              <span className="font-mono text-white font-bold">${reservation.depositAmount.toLocaleString('es-CO')}</span>
+              <span className="font-mono text-white font-bold">{formatCOP(reservation.depositAmount ?? (reservation as any).depositTotal)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Cliente Adquiriente:</span>
-              <span className="text-slate-200">{reservation.clientName}</span>
+              <span className="text-slate-200">{reservation.clientName || 'Cliente Constructora'}</span>
             </div>
           </div>
 
@@ -137,17 +138,17 @@ export const ReturnInspectionModal: React.FC<ReturnInspectionModalProps> = ({
           <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
             <div className="flex justify-between text-slate-400">
               <span>Depósito Original:</span>
-              <span className="font-mono">${reservation.depositAmount.toLocaleString('es-CO')}</span>
+              <span className="font-mono">{formatCOP(reservation.depositAmount ?? (reservation as any).depositTotal)}</span>
             </div>
             <div className="flex justify-between text-rose-400">
               <span>Deducción por Daños:</span>
-              <span className="font-mono">-${damageCost.toLocaleString('es-CO')}</span>
+              <span className="font-mono">-{formatCOP(damageCost)}</span>
             </div>
             <div className="flex justify-between pt-1 border-t border-slate-800 font-bold text-white">
               <span className="flex items-center gap-1 text-emerald-400">
                 <ShieldCheck className="w-3.5 h-3.5" /> Reembolso al Cliente:
               </span>
-              <span className="font-mono text-emerald-400">${depositRefund.toLocaleString('es-CO')}</span>
+              <span className="font-mono text-emerald-400">{formatCOP(depositRefund)}</span>
             </div>
           </div>
 

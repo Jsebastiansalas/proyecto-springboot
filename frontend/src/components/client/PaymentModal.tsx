@@ -40,7 +40,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const handlePayFull = async () => {
     setLoading(true);
     try {
-      await rentaService.payments.process(reservation.id, reservation.paymentMethod);
+      await rentaService.payments.process(reservation.id, reservation.paymentMethod, 1, reservation.totalPrice);
       showToast('Pago procesado y verificado por pasarela segura', 'success');
       onPaymentSuccess();
       onClose();
@@ -66,6 +66,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     }
   };
 
+  const formatCOP = (val?: number | null) => '$ ' + Number(val || 0).toLocaleString('es-CO');
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
       <div 
@@ -83,7 +85,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 Gestión de Pagos & Garantía
               </h3>
               <p className="text-xs text-slate-400 font-mono">
-                Reserva: {reservation.reservationCode}
+                Reserva: {reservation.reservationCode || `RES-${reservation.id}`}
               </p>
             </div>
           </div>
@@ -105,23 +107,25 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Duración:</span>
-              <span className="text-slate-200 font-mono">{reservation.totalDays} días ({reservation.startDate} a {reservation.endDate})</span>
+              <span className="text-slate-200 font-mono">{reservation.totalDays || 1} días ({reservation.startDate || ''} a {reservation.endDate || ''})</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Subtotal Alquiler:</span>
-              <span className="text-slate-200 font-mono">${reservation.subtotalPrice.toLocaleString('es-CO')}</span>
+              <span className="text-slate-200 font-mono">{formatCOP(reservation.subtotalPrice ?? (reservation as any).subtotal)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">IVA (19%):</span>
-              <span className="text-slate-200 font-mono">${reservation.taxAmount.toLocaleString('es-CO')}</span>
+              <span className="text-slate-200 font-mono">
+                {formatCOP(reservation.taxAmount ?? Math.round(Number(reservation.subtotalPrice ?? (reservation as any).subtotal ?? 0) * 0.19))}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Garantía Escrow:</span>
-              <span className="text-slate-200 font-mono">${reservation.depositAmount.toLocaleString('es-CO')}</span>
+              <span className="text-slate-200 font-mono">{formatCOP(reservation.depositAmount ?? (reservation as any).depositTotal)}</span>
             </div>
             <div className="flex justify-between pt-2 border-t border-slate-800 text-sm font-bold">
               <span className="text-white">Total a Liquidar:</span>
-              <span className="text-[#D94E1F] font-mono">${reservation.totalPrice.toLocaleString('es-CO')}</span>
+              <span className="text-[#D94E1F] font-mono">{formatCOP(reservation.totalPrice ?? (reservation as any).totalAmount)}</span>
             </div>
           </div>
 
@@ -149,7 +153,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
                     <div className="flex items-center gap-3">
                       <span className="font-mono font-bold text-slate-200">
-                        ${inst.amount.toLocaleString('es-CO')}
+                        {formatCOP(inst.amount)}
                       </span>
                       {inst.status === 'PAGADA' ? (
                         <span className="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded text-[11px] font-semibold flex items-center gap-1 border border-emerald-500/20">

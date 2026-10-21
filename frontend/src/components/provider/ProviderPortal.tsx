@@ -42,6 +42,7 @@ export const ProviderPortal: React.FC = () => {
   const [isCreateToolModalOpen, setIsCreateToolModalOpen] = useState(false);
 
   const providerId = user?.providerId || 1;
+  const formatCOP = (val?: number | null) => '$ ' + Number(val || 0).toLocaleString('es-CO');
 
   const fetchProviderReservations = async () => {
     if (!user || (user.role !== 'ROLE_PROVEEDOR' && user.role !== 'ROLE_ADMIN')) {
@@ -319,8 +320,8 @@ export const ProviderPortal: React.FC = () => {
                         </td>
 
                         <td className="py-3.5 px-4 font-mono">
-                          <div className="text-white font-bold">${res.totalPrice.toLocaleString('es-CO')}</div>
-                          <div className="text-[11px] text-[#D94E1F]">Fianza: ${res.depositAmount.toLocaleString('es-CO')}</div>
+                          <div className="text-white font-bold">{formatCOP(res.totalPrice ?? (res as any).totalAmount)}</div>
+                          <div className="text-[11px] text-[#D94E1F]">Fianza: {formatCOP(res.depositAmount ?? (res as any).depositTotal)}</div>
                         </td>
 
                         <td className="py-3.5 px-4">
@@ -512,7 +513,7 @@ export const ProviderPortal: React.FC = () => {
             <div className="p-4 rounded-xl bg-[#0c1220] border border-slate-800 glass-panel">
               <div className="text-xs font-semibold text-slate-400 uppercase">Facturación Neta Cobrada</div>
               <div className="text-2xl font-black font-mono text-emerald-400 mt-1">
-                ${totalFacturado.toLocaleString('es-CO')} COP
+                {formatCOP(totalFacturado)} COP
               </div>
               <div className="text-[11px] text-slate-500 mt-1">Con IVA del 19% deducible</div>
             </div>
@@ -520,7 +521,7 @@ export const ProviderPortal: React.FC = () => {
             <div className="p-4 rounded-xl bg-[#0c1220] border border-slate-800 glass-panel">
               <div className="text-xs font-semibold text-slate-400 uppercase">Depósitos Escrow Respaldados</div>
               <div className="text-2xl font-black font-mono text-sky-400 mt-1">
-                ${reservations.reduce((sum, r) => sum + r.depositAmount, 0).toLocaleString('es-CO')} COP
+                {formatCOP(reservations.reduce((sum, r) => sum + Number(r.depositAmount ?? (r as any).depositTotal ?? 0), 0))} COP
               </div>
               <div className="text-[11px] text-slate-500 mt-1">Garantía total en custodia fiduciaria</div>
             </div>
@@ -544,14 +545,14 @@ export const ProviderPortal: React.FC = () => {
               {reservations.map(res => (
                 <div key={res.id} className="p-4 flex items-center justify-between">
                   <div>
-                    <div className="font-mono font-bold text-amber-400">{res.reservationCode}</div>
-                    <div className="text-white font-medium mt-0.5">{res.toolName} · Cliente: {res.clientName}</div>
-                    <div className="text-[11px] text-slate-400 font-mono mt-0.5">Método de Pago: {res.paymentMethod}</div>
+                    <div className="font-mono font-bold text-amber-400">{res.reservationCode || `RES-${res.id}`}</div>
+                    <div className="text-white font-medium mt-0.5">{res.toolName || 'Maquinaria'} · Cliente: {res.clientName || 'Cliente Constructora'}</div>
+                    <div className="text-[11px] text-slate-400 font-mono mt-0.5">Método de Pago: {res.paymentMethod || 'PASARELA DE PAGO'}</div>
                   </div>
                   <div className="text-right font-mono">
-                    <div className="text-emerald-400 font-bold">${res.totalPrice.toLocaleString('es-CO')}</div>
+                    <div className="text-emerald-400 font-bold">{formatCOP(res.totalPrice ?? (res as any).totalAmount)}</div>
                     <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded">
-                      Estado: {res.paymentStatus}
+                      Estado: {res.paymentStatus || 'PENDIENTE'}
                     </span>
                   </div>
                 </div>
