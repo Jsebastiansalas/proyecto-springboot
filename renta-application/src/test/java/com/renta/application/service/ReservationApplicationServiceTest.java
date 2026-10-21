@@ -169,4 +169,19 @@ class ReservationApplicationServiceTest {
         verify(reservationRepository, times(1)).save(reservation);
         verify(notificationService, times(1)).notifyReservationApproved(reservation);
     }
+
+    @Test
+    @DisplayName("Crear reserva falla: Lanza IllegalArgumentException si la duración supera 30 días (1 mes)")
+    void testCreateReservation_ThrowsWhenDurationExceeds30Days() {
+        when(toolRepository.findById(10L)).thenReturn(Optional.of(sampleTool));
+        when(clientRepository.findById(1L)).thenReturn(Optional.of(sampleClient));
+
+        LocalDate start = LocalDate.now().plusDays(2);
+        LocalDate end = start.plusDays(31); // 32 días
+        CreateReservationRequest req = new CreateReservationRequest(1L, 10L, start, end, "Obra");
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> reservationService.createFromRequest(req));
+        assertTrue(ex.getMessage().contains("30 días"));
+        verify(reservationRepository, never()).save(any(Reservation.class));
+    }
 }

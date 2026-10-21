@@ -184,25 +184,41 @@ export const QuoteCartDrawer: React.FC = () => {
 
                         {/* Rental Days Interactive Stepper */}
                         <div className="flex items-center justify-between pt-2 border-t border-[#363632] text-xs">
-                          <span className="text-[#A8A69E]">Días de Alquiler:</span>
+                          <div>
+                            <span className="text-[#A8A69E]">Días de Alquiler:</span>
+                            <span className="block text-[10px] text-[#706E66] font-mono">Máx. 30 días (1 mes)</span>
+                          </div>
                           <div className="flex items-center gap-2">
                             <button
+                              type="button"
                               onClick={() => updateCartDays(item.tool.id, Math.max(1, item.days - 1))}
-                              className="w-6 h-6 rounded bg-[#232320] hover:bg-[#282824] text-[#F5F4F0] flex items-center justify-center border border-[#363632]"
+                              disabled={item.days <= 1}
+                              className="w-6 h-6 rounded bg-[#232320] hover:bg-[#282824] disabled:opacity-30 disabled:cursor-not-allowed text-[#F5F4F0] flex items-center justify-center border border-[#363632] transition-colors"
+                              title={item.days <= 1 ? 'Mínimo 1 día' : 'Disminuir días'}
                             >
                               <Minus className="w-3 h-3" />
                             </button>
-                            <span className="font-mono font-bold text-[#F5F4F0] px-2">
+                            <span className="font-mono font-bold text-[#F5F4F0] px-2 min-w-[65px] text-center">
                               {item.days} {item.days === 1 ? 'día' : 'días'}
                             </span>
                             <button
-                              onClick={() => updateCartDays(item.tool.id, item.days + 1)}
-                              className="w-6 h-6 rounded bg-[#232320] hover:bg-[#282824] text-[#F5F4F0] flex items-center justify-center border border-[#363632]"
+                              type="button"
+                              onClick={() => updateCartDays(item.tool.id, Math.min(30, item.days + 1))}
+                              disabled={item.days >= 30}
+                              className="w-6 h-6 rounded bg-[#232320] hover:bg-[#282824] disabled:opacity-30 disabled:cursor-not-allowed text-[#F5F4F0] flex items-center justify-center border border-[#363632] transition-colors"
+                              title={item.days >= 30 ? 'Límite alcanzado: máximo 30 días (1 mes)' : 'Aumentar días'}
                             >
                               <Plus className="w-3 h-3" />
                             </button>
                           </div>
                         </div>
+
+                        {/* Limit reached warning */}
+                        {item.days >= 30 && (
+                          <div className="text-[10px] text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-md border border-amber-400/20 font-mono text-center">
+                            Límite máximo por contrato alcanzado: 30 días (1 mes)
+                          </div>
+                        )}
 
                         {/* Weekly Discount Pill */}
                         {hasDiscount ? (

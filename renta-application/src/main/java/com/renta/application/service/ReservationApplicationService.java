@@ -116,6 +116,9 @@ public class ReservationApplicationService implements
 
         // PASO 4: Validar rango de fechas y solapamientos
         DateRange dateRange = DateRange.of(command.startDate(), command.endDate());
+        if (dateRange.totalDays() > 30) {
+            throw new IllegalArgumentException("El periodo de alquiler no puede exceder los 30 días calendario (1 mes) por contrato");
+        }
         if (reservationRepository.existsOverlapping(command.toolId(), dateRange)) {
             throw new ReservationConflictException(command.toolId(),
                     "La herramienta ya tiene una reserva activa que se solapa con las fechas solicitadas: " + dateRange);

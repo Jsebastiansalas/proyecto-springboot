@@ -102,16 +102,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const addToCart = (tool: Tool, days: number = 3) => {
+    const clampedDays = Math.max(1, Math.min(30, days));
     setCart(prev => {
       const idx = prev.findIndex(item => item.tool.id === tool.id);
       if (idx >= 0) {
         const updated = [...prev];
-        updated[idx].days = days;
-        showToast(`Se actualizó la cotización de "${tool.name}" a ${days} días`, 'info');
+        updated[idx].days = clampedDays;
+        showToast(`Se actualizó la cotización de "${tool.name}" a ${clampedDays} días`, 'info');
         return updated;
       }
       showToast(`"${tool.name}" añadido a la cotización activa`, 'success');
-      return [...prev, { tool, days }];
+      return [...prev, { tool, days: clampedDays }];
     });
     setIsQuoteDrawerOpen(true);
   };
@@ -122,7 +123,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const updateCartDays = (toolId: number, days: number) => {
-    setCart(prev => prev.map(item => item.tool.id === toolId ? { ...item, days } : item));
+    if (days > 30) {
+      showToast('Límite de alquiler alcanzado: máximo 30 días (1 mes) por contrato.', 'info');
+      return;
+    }
+    const clamped = Math.max(1, Math.min(30, days));
+    setCart(prev => prev.map(item => item.tool.id === toolId ? { ...item, days: clamped } : item));
   };
 
   const clearCart = () => {
