@@ -60,10 +60,10 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
   };
 
   return (
-    <div className="group relative bg-[#FAF9F5] border border-[#D6D3C9] hover:border-[#D94E1F] rounded-xl overflow-hidden transition-all duration-200 flex flex-col justify-between shadow-xs">
+    <div className="group relative bg-[#1E1E1C] border border-[#363632] hover:border-[#D94E1F] rounded-xl overflow-hidden transition-all duration-200 flex flex-col justify-between shadow-xs">
       
       {/* Top Image & Overlays */}
-      <div className="relative aspect-[16/10] bg-[#E8E5DC] overflow-hidden flex items-center justify-center border-b border-[#D6D3C9]">
+      <div className="relative aspect-[16/10] bg-[#141412] overflow-hidden flex items-center justify-center border-b border-[#363632]">
         {tool.mainImageUrl ? (
           <img
             src={tool.mainImageUrl}
@@ -72,7 +72,7 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
             loading="lazy"
           />
         ) : (
-          <Wrench className="w-12 h-12 text-[#969389]" />
+          <Wrench className="w-12 h-12 text-[#706E66]" />
         )}
 
         {/* Status Badge Overlay */}
@@ -90,13 +90,13 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
             }}
             className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all ${
               isFav
-                ? 'bg-[#FEE2E2] border-[#FCA5A5] text-[#B91C1C]'
-                : 'bg-[#FAF9F5] border-[#D6D3C9] text-[#78766F] hover:text-[#B91C1C] hover:bg-[#FAF9F5]'
+                ? 'bg-rose-500/20 border-rose-500/40 text-rose-400'
+                : 'bg-[#232320] border-[#363632] text-[#A8A69E] hover:text-rose-400 hover:bg-[#282824]'
             }`}
             title={isFav ? 'Quitar de favoritos' : 'Guardar en favoritos'}
             aria-label="Favorito"
           >
-            <Heart className={`w-4 h-4 ${isFav ? 'fill-[#B91C1C]' : ''}`} />
+            <Heart className={`w-4 h-4 ${isFav ? 'fill-rose-500' : ''}`} />
           </button>
 
           {/* Compare button */}
@@ -108,7 +108,7 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
             className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all ${
               isCompared
                 ? 'bg-[#D94E1F] border-[#B83D14] text-white shadow-xs'
-                : 'bg-[#FAF9F5] border-[#D6D3C9] text-[#78766F] hover:text-[#181816]'
+                : 'bg-[#232320] border-[#363632] text-[#A8A69E] hover:text-[#F5F4F0] hover:bg-[#282824]'
             }`}
             title="Comparar especificaciones"
             aria-label="Comparar"
@@ -130,36 +130,36 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
         
         {/* Header & Title */}
         <div>
-          <div className="flex items-center justify-between text-xs text-[#78766F] font-mono mb-1">
+          <div className="flex items-center justify-between text-xs text-[#A8A69E] font-mono mb-1">
             <span>{tool.brand} · {tool.model}</span>
-            <span className="text-[10px] bg-[#E8E5DC] text-[#181816] px-2 py-0.5 rounded border border-[#D6D3C9] font-bold">
+            <span className="text-[10px] bg-[#282824] text-[#F5F4F0] px-2 py-0.5 rounded border border-[#363632] font-bold">
               SKU: {tool.codeSku}
             </span>
           </div>
 
           <h3 
             onClick={() => setSelectedToolDetail(tool)}
-            className="text-base font-bold text-[#181816] hover:text-[#D94E1F] transition-colors cursor-pointer line-clamp-1 leading-snug"
+            className="text-base font-bold text-[#F5F4F0] hover:text-[#D94E1F] transition-colors cursor-pointer line-clamp-1 leading-snug"
           >
             {tool.name}
           </h3>
 
-          <div className="text-xs text-[#78766F] mt-1">
-            Patio: <span className="text-[#181816] font-medium">{tool.providerName}</span>
+          <div className="text-xs text-[#A8A69E] mt-1">
+            Patio: <span className="text-[#F5F4F0] font-medium">{tool.providerName}</span>
           </div>
 
           {/* IoT Telemetry Micro-Badges */}
           {tool.telemetry && (
-            <div className="mt-3 grid grid-cols-3 gap-1.5 p-2 rounded-lg bg-[#E8E5DC]/60 border border-[#D6D3C9] text-[10px] font-mono">
-              <div className="flex items-center gap-1 text-[#181816]" title="Horas de trabajo acumuladas">
-                <Gauge className="w-3 h-3 text-[#B45309] shrink-0" />
+            <div className="mt-3 grid grid-cols-3 gap-1.5 p-2 rounded-lg bg-[#141412] border border-[#363632] text-[10px] font-mono">
+              <div className="flex items-center gap-1 text-[#F5F4F0]" title="Horas de trabajo acumuladas">
+                <Gauge className="w-3 h-3 text-[#fbbf24] shrink-0" />
                 <span>{tool.telemetry.horometro}h</span>
               </div>
-              <div className="flex items-center gap-1 text-[#181816]" title="Nivel de combustible o carga eléctrica">
+              <div className="flex items-center gap-1 text-[#F5F4F0]" title="Nivel de combustible o carga eléctrica">
                 <Zap className="w-3 h-3 text-[#D94E1F] shrink-0" />
                 <span>{tool.telemetry.fuelOrBatteryLevel}%</span>
               </div>
-              <div className="flex items-center gap-1 text-[#1E6F43] font-bold" title="Certificación eléctrica e industrial">
+              <div className="flex items-center gap-1 text-[#4ade80] font-bold" title="Certificación eléctrica e industrial">
                 <ShieldCheck className="w-3 h-3 shrink-0" />
                 <span>RETIE</span>
               </div>
@@ -168,17 +168,17 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
         </div>
 
         {/* Pricing & Actions */}
-        <div className="pt-3 border-t border-[#D6D3C9]">
+        <div className="pt-3 border-t border-[#363632]">
           <div className="flex items-baseline justify-between mb-3">
             <div>
-              <span className="text-[11px] text-[#78766F] block font-mono">Tarifa por día</span>
-              <span className="text-lg font-black font-mono text-[#181816]">
+              <span className="text-[11px] text-[#A8A69E] block font-mono">Tarifa por día</span>
+              <span className="text-lg font-black font-mono text-[#F5F4F0]">
                 ${tool.baseDailyPrice.toLocaleString('es-CO')}
               </span>
             </div>
             <div className="text-right">
-              <span className="text-[10px] text-[#78766F] block font-mono">Fianza Custodia</span>
-              <span className="text-xs font-mono text-[#57564F]">
+              <span className="text-[10px] text-[#A8A69E] block font-mono">Fianza Custodia</span>
+              <span className="text-xs font-mono text-[#706E66]">
                 ${tool.depositAmount.toLocaleString('es-CO')}
               </span>
             </div>
@@ -188,9 +188,9 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => setSelectedToolDetail(tool)}
-              className="py-2.5 px-3 rounded-lg bg-[#E8E5DC] hover:bg-[#D6D3C9] text-[#181816] text-xs font-semibold flex items-center justify-center gap-1.5 border border-[#D6D3C9] transition-colors"
+              className="py-2.5 px-3 rounded-lg bg-[#232320] hover:bg-[#282824] text-[#F5F4F0] text-xs font-semibold flex items-center justify-center gap-1.5 border border-[#363632] transition-colors"
             >
-              <Eye className="w-3.5 h-3.5 text-[#78766F]" />
+              <Eye className="w-3.5 h-3.5 text-[#A8A69E]" />
               <span>Ficha</span>
             </button>
 
@@ -199,8 +199,8 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
               disabled={!isAvailable}
               className={`py-2.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
                 isAvailable
-                  ? 'bg-[#181816] hover:bg-[#D94E1F] text-white shadow-xs'
-                  : 'bg-[#E8E5DC] text-[#969389] cursor-not-allowed border border-[#D6D3C9]'
+                  ? 'bg-[#D94E1F] hover:bg-[#B83D14] text-white shadow-xs'
+                  : 'bg-[#141412] text-[#706E66] cursor-not-allowed border border-[#363632]'
               }`}
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />

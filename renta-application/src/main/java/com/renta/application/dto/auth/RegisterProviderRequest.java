@@ -60,8 +60,8 @@ public record RegisterProviderRequest(
         @NotBlank(message = "La ciudad es obligatoria")
         @Size(min = 3, max = 50, message = "La ciudad debe tener entre 3 y 50 caracteres")
         @Pattern(
-                regexp = "^[A-Za-zÁÉÍÓÚáéíóúÑñüÜ\\s]{3,50}$",
-                message = "La ciudad solo puede contener letras y espacios"
+                regexp = "^[A-Za-zÁÉÍÓÚáéíóúÑñüÜ\\s\\.-]{3,50}$",
+                message = "La ciudad solo puede contener letras, puntos y espacios"
         )
         String city
 ) {}

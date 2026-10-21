@@ -148,7 +148,7 @@ export const App: React.FC = () => {
   }, [tools, selectedCategoryId, searchQuery, selectedBrands, priceLimit, onlyAvailable, sortBy]);
 
   return (
-    <div className="min-h-screen bg-[#F2F0EA] text-[#181816] flex flex-col font-sans selection:bg-[#D94E1F]/20 selection:text-[#B83D14]">
+    <div className="min-h-screen bg-[#121210] text-[#F5F4F0] flex flex-col font-sans selection:bg-[#D94E1F]/20 selection:text-white">
       {/* Main Navigation Bar */}
       <Navbar />
 
@@ -199,22 +199,22 @@ export const App: React.FC = () => {
               />
 
               {/* Search & Sort Controls Toolbar */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#FAF9F5] border border-[#D6D3C9] shadow-xs">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#1E1E1C] border border-[#363632] shadow-xs">
                 
                 {/* Search input with SKU & brand helper */}
                 <div className="relative flex-1">
-                  <Search className="w-4 h-4 text-[#78766F] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Search className="w-4 h-4 text-[#A8A69E] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Filtrar por nombre, modelo, SKU o fabricante..."
-                    className="w-full bg-[#E8E5DC]/50 border border-[#D6D3C9] rounded-lg pl-10 pr-4 py-2.5 text-xs text-[#181816] placeholder-[#78766F] focus:outline-none focus:border-[#D94E1F] transition-colors"
+                    className="w-full bg-[#141412] border border-[#363632] rounded-lg pl-10 pr-4 py-2.5 text-xs text-[#F5F4F0] placeholder-[#706E66] focus:outline-none focus:border-[#D94E1F] transition-colors"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#78766F] hover:text-[#181816]"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A8A69E] hover:text-[#F5F4F0]"
                     >
                       <XCircle className="w-4 h-4" />
                     </button>
@@ -223,14 +223,14 @@ export const App: React.FC = () => {
 
                 {/* Sort Dropdown & Quick Count */}
                 <div className="flex items-center gap-3 shrink-0">
-                  <div className="flex items-center gap-2 text-xs text-[#78766F]">
+                  <div className="flex items-center gap-2 text-xs text-[#A8A69E]">
                     <ArrowUpDown className="w-3.5 h-3.5 text-[#D94E1F]" />
                     <span>Ordenar:</span>
                   </div>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as any)}
-                    className="bg-[#E8E5DC]/50 border border-[#D6D3C9] rounded-lg px-3 py-2 text-xs text-[#181816] focus:outline-none focus:border-[#D94E1F] font-medium"
+                    className="bg-[#141412] border border-[#363632] rounded-lg px-3 py-2 text-xs text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F] font-medium"
                   >
                     <option value="default">Relevancia Industrial</option>
                     <option value="price_asc">Menor Tarifa Diaria</option>
@@ -263,21 +263,21 @@ export const App: React.FC = () => {
                 {/* Machinery Cards Grid */}
                 <div className="lg:col-span-3">
                   {loading ? (
-                    <div className="p-16 rounded-xl bg-[#FAF9F5] border border-[#D6D3C9] text-center space-y-3">
+                    <div className="p-16 rounded-xl bg-[#1E1E1C] border border-[#363632] text-center space-y-3">
                       <div className="w-10 h-10 border-2 border-[#D94E1F] border-t-transparent rounded-full animate-spin mx-auto" />
-                      <div className="text-[#181816] font-semibold text-sm">Consultando catálogo técnico...</div>
-                      <p className="text-xs text-[#78766F]">Verificando disponibilidad en patio y sensores IoT</p>
+                      <div className="text-[#F5F4F0] font-semibold text-sm">Consultando catálogo técnico...</div>
+                      <p className="text-xs text-[#A8A69E]">Verificando disponibilidad en patio y sensores IoT</p>
                     </div>
                   ) : filteredTools.length === 0 ? (
-                    <div className="p-16 rounded-xl bg-[#FAF9F5] border border-[#D6D3C9] text-center space-y-3">
-                      <Wrench className="w-12 h-12 text-[#969389] mx-auto" />
-                      <h3 className="text-base font-bold text-[#181816]">No se encontró maquinaria con estos criterios</h3>
-                      <p className="text-xs text-[#78766F] max-w-sm mx-auto">
+                    <div className="p-16 rounded-xl bg-[#1E1E1C] border border-[#363632] text-center space-y-3">
+                      <Wrench className="w-12 h-12 text-[#706E66] mx-auto" />
+                      <h3 className="text-base font-bold text-[#F5F4F0]">No se encontró maquinaria con estos criterios</h3>
+                      <p className="text-xs text-[#A8A69E] max-w-sm mx-auto">
                         Intenta ajustar el rango de tarifa diaria, desmarcar fabricantes o limpiar los filtros aplicados.
                       </p>
                       <button
                         onClick={handleResetFilters}
-                        className="px-4 py-2 bg-[#181816] hover:bg-[#D94E1F] text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 shadow-xs transition-all"
+                        className="px-4 py-2 bg-[#232320] hover:bg-[#D94E1F] text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 shadow-xs transition-all border border-[#363632]"
                       >
                         <SlidersHorizontal className="w-3.5 h-3.5" />
                         <span>Restablecer Filtros</span>

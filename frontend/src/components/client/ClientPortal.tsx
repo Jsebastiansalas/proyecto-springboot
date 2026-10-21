@@ -80,22 +80,22 @@ export const ClientPortal: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       
       {/* Header & Client Info */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#363632]">
         <div>
           <div className="flex items-center gap-2 text-[#D94E1F] text-xs font-semibold mb-1">
             <HardHat className="w-4 h-4" />
             <span>Portal de Operaciones B2B</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-[#F5F4F0] tracking-tight">
             Mis Alquileres & Maquinaria en Obra
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Cliente: <span className="text-slate-200 font-semibold">{user.companyName || user.fullName || user.email}</span> · NIT: 900.548.120-1
+          <p className="text-xs text-[#A8A69E] mt-1">
+            Cliente: <span className="text-[#F5F4F0] font-semibold">{user.companyName || user.fullName || user.email}</span> · NIT: 900.548.120-1
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+          <span className="text-xs font-mono bg-[#1E6F43]/15 text-[#4ade80] border border-[#1E6F43]/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-bold">
             <ShieldCheck className="w-4 h-4" />
             <span>Póliza SURA Activa</span>
           </span>
@@ -104,62 +104,62 @@ export const ClientPortal: React.FC = () => {
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <div className="p-4 rounded-xl bg-[#1E1E1C] border border-[#363632]">
+          <div className="flex items-center justify-between text-xs text-[#A8A69E] mb-1">
             <span className="font-semibold uppercase tracking-wider">Equipos en Despacho/Obra</span>
             <Clock className="w-4 h-4 text-[#D94E1F]" />
           </div>
-          <div className="text-2xl font-black font-mono text-white">{activosCount}</div>
-          <div className="text-[11px] text-slate-500 mt-1">Frentes de trabajo en Bogotá y Cundinamarca</div>
+          <div className="text-2xl font-black font-mono text-[#F5F4F0]">{activosCount}</div>
+          <div className="text-[11px] text-[#706E66] mt-1">Frentes de trabajo en Bogotá y Cundinamarca</div>
         </div>
 
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <div className="p-4 rounded-xl bg-[#1E1E1C] border border-[#363632]">
+          <div className="flex items-center justify-between text-xs text-[#A8A69E] mb-1">
             <span className="font-semibold uppercase tracking-wider">Total Inversión Alquiler</span>
-            <DollarSign className="w-4 h-4 text-emerald-400" />
+            <DollarSign className="w-4 h-4 text-[#4ade80]" />
           </div>
-          <div className="text-2xl font-black font-mono text-white">
+          <div className="text-2xl font-black font-mono text-[#F5F4F0]">
             ${totalInvertido.toLocaleString('es-CO')}
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">Facturación acumulada en contratos vigentes</div>
+          <div className="text-[11px] text-[#706E66] mt-1">Facturación acumulada en contratos vigentes</div>
         </div>
 
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <div className="p-4 rounded-xl bg-[#1E1E1C] border border-[#363632]">
+          <div className="flex items-center justify-between text-xs text-[#A8A69E] mb-1">
             <span className="font-semibold uppercase tracking-wider">Garantías en Custodia (Escrow)</span>
             <ShieldCheck className="w-4 h-4 text-sky-400" />
           </div>
-          <div className="text-2xl font-black font-mono text-white">
+          <div className="text-2xl font-black font-mono text-[#F5F4F0]">
             ${totalGarantias.toLocaleString('es-CO')}
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">Retornables al finalizar sin novedades</div>
+          <div className="text-[11px] text-[#706E66] mt-1">Retornables al finalizar sin novedades</div>
         </div>
       </div>
 
       {/* Reservations List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-base font-bold text-[#F5F4F0] tracking-tight flex items-center gap-2">
             <FileText className="w-4 h-4 text-[#D94E1F]" />
             <span>Contratos de Maquinaria Registrados ({reservations.length})</span>
           </h2>
           <button
             onClick={fetchReservations}
-            className="text-xs text-[#D94E1F] hover:text-[#D94E1F] font-semibold"
+            className="text-xs text-[#D94E1F] hover:text-[#B83D14] font-semibold"
           >
             Actualizar Estado
           </button>
         </div>
 
         {loading ? (
-          <div className="p-12 text-center text-xs text-slate-400">
+          <div className="p-12 text-center text-xs text-[#A8A69E]">
             Consultando contratos en base de datos...
           </div>
         ) : reservations.length === 0 ? (
-          <div className="p-12 rounded-2xl bg-slate-900/40 border border-slate-800 text-center space-y-3">
-            <FileText className="w-8 h-8 text-slate-600 mx-auto" />
-            <div className="text-white font-semibold text-sm">No tienes contratos de alquiler activos</div>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto">
+          <div className="p-12 rounded-2xl bg-[#1E1E1C] border border-[#363632] text-center space-y-3">
+            <FileText className="w-8 h-8 text-[#706E66] mx-auto" />
+            <div className="text-[#F5F4F0] font-semibold text-sm">No tienes contratos de alquiler activos</div>
+            <p className="text-xs text-[#A8A69E] max-w-sm mx-auto">
               Explora el catálogo de maquinaria, añade equipos a tu cotización y emite tu primer contrato.
             </p>
           </div>
@@ -168,10 +168,10 @@ export const ClientPortal: React.FC = () => {
             {reservations.map(res => (
               <div
                 key={res.id}
-                className="p-5 rounded-2xl bg-[#0c1220] border border-slate-800 shadow-xl space-y-5 glass-panel"
+                className="p-5 rounded-2xl bg-[#1E1E1C] border border-[#363632] shadow-xl space-y-5"
               >
                 {/* Top Row: Meta info */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#363632]">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center shrink-0">
                       {res.toolImage ? (

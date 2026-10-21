@@ -4,12 +4,12 @@
 
 @layer base {
   :root {
-    color-scheme: light;
+    color-scheme: dark;
   }
 
   body {
-    background-color: #F2F0EA;
-    color: #181816;
+    background-color: #121210;
+    color: #F5F4F0;
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     overflow-x: hidden;
   }
@@ -20,14 +20,14 @@
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #E8E5DC;
+    background: #121210;
   }
   ::-webkit-scrollbar-thumb {
-    background: #B8B5AB;
+    background: #363632;
     border-radius: 4px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #78766F;
+    background: #4A4944;
   }
 }
 
@@ -41,11 +41,11 @@
     background-size: 32px 32px;
   }
 
-  /* Superficies Arquitectónicas */
+  /* Superficies Arquitectónicas Oscuras */
   .card-technical {
-    background-color: #FAF9F5;
-    border: 1px solid #D6D3C9;
-    box-shadow: 0 1px 3px rgba(24, 24, 22, 0.05);
+    background-color: #1E1E1C;
+    border: 1px solid #363632;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
   }
 
   .card-graphite {
@@ -54,52 +54,52 @@
   }
 
   .panel-mortar {
-    background-color: #E8E5DC;
-    border: 1px solid #D6D3C9;
+    background-color: #1E1E1C;
+    border: 1px solid #363632;
   }
 
   /* Paneles de compatibilidad sin brillo de IA */
   .glass-panel {
-    background: #FAF9F5;
-    border: 1px solid #D6D3C9;
+    background: #181816;
+    border: 1px solid #363632;
   }
 
   .glass-card {
-    background: #FAF9F5;
-    border: 1px solid #D6D3C9;
-    box-shadow: 0 2px 8px -2px rgba(24, 24, 22, 0.06);
+    background: #1E1E1C;
+    border: 1px solid #363632;
+    box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.4);
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .glass-card:hover {
     border-color: #D94E1F;
-    box-shadow: 0 8px 24px -4px rgba(24, 24, 22, 0.1);
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.6);
     transform: translateY(-2px);
   }
 
   .glass-modal {
-    background: #FAF9F5;
-    border: 1px solid #D6D3C9;
-    box-shadow: 0 25px 60px -15px rgba(24, 24, 22, 0.35);
+    background: #181816;
+    border: 1px solid #363632;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85);
   }
 
   /* Colores Semánticos de Ingeniería Civil */
   .badge-status-disponible {
-    background-color: #E3F1E8;
-    color: #1E6F43;
-    border: 1px solid #A7D7B8;
+    background-color: rgba(30, 111, 67, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.3);
   }
 
   .badge-status-alquilada {
-    background-color: #FEF3C7;
-    color: #B45309;
-    border: 1px solid #FCD34D;
+    background-color: rgba(180, 83, 9, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.3);
   }
 
   .badge-status-mantenimiento {
-    background-color: #FEE2E2;
-    color: #B91C1C;
-    border: 1px solid #FCA5A5;
+    background-color: rgba(185, 28, 28, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(248, 113, 113, 0.3);
   }
 
   /* Micro-interacciones táctiles */

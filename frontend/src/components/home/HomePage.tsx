@@ -210,32 +210,32 @@ export const HomePage: React.FC<HomePageProps> = ({ featuredTools }) => {
               <span>Transparencia Operativa 100% Digital</span>
             </div>
 
-            <h2 className="text-3xl sm:text-4xl font-black text-[#181816] tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-black text-[#F5F4F0] tracking-tight">
               Telemetría Satelital en Tiempo Real. <br />
-              <span className="text-[#78766F]">Cero disputas por horas o consumo.</span>
+              <span className="text-[#A8A69E]">Cero disputas por horas o consumo.</span>
             </h2>
 
-            <p className="text-[#57564F] text-sm leading-relaxed">
+            <p className="text-[#A8A69E] text-sm leading-relaxed">
               Cada equipo de nuestra flota cuenta con hardware IoT industrial embebido. Como contratista, tienes acceso al horómetro digital exacto, niveles de combustible, diagnóstico térmico y alertas de vibración desde cualquier dispositivo.
             </p>
 
             <div className="grid grid-cols-2 gap-4 pt-2">
-              <div className="p-4 rounded-xl bg-[#FAF9F5] border border-[#D6D3C9] space-y-1.5 shadow-sm">
+              <div className="p-4 rounded-xl bg-[#1E1E1C] border border-[#363632] space-y-1.5 shadow-sm">
                 <div className="flex items-center gap-2 text-[#D94E1F] font-semibold text-xs">
                   <Gauge className="w-4 h-4" />
                   <span>Horómetro Irrefutable</span>
                 </div>
-                <p className="text-xs text-[#57564F]">
+                <p className="text-xs text-[#A8A69E]">
                   Facturación milimétrica por horas efectivas de motor sin lecturas manuales.
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-[#FAF9F5] border border-[#D6D3C9] space-y-1.5 shadow-sm">
-                <div className="flex items-center gap-2 text-[#1E6F43] font-semibold text-xs">
+              <div className="p-4 rounded-xl bg-[#1E1E1C] border border-[#363632] space-y-1.5 shadow-sm">
+                <div className="flex items-center gap-2 text-[#4ade80] font-semibold text-xs">
                   <ShieldCheck className="w-4 h-4" />
                   <span>Seguro SURA Activo</span>
                 </div>
-                <p className="text-xs text-[#57564F]">
+                <p className="text-xs text-[#A8A69E]">
                   Cobertura Todo Riesgo y auxilio mecánico en patio en menos de 2 horas.
                 </p>
               </div>
@@ -244,23 +244,23 @@ export const HomePage: React.FC<HomePageProps> = ({ featuredTools }) => {
 
           {/* Tarjeta Interactiva con Switch IoT vs Ficha Técnica */}
           <div className="lg:col-span-6">
-            <div className="bg-[#FAF9F5] border border-[#D6D3C9] rounded-2xl p-6 shadow-sm space-y-4">
+            <div className="bg-[#1E1E1C] border border-[#363632] rounded-2xl p-6 shadow-sm space-y-4">
               
-              <div className="flex items-center justify-between pb-3 border-b border-[#D6D3C9]">
+              <div className="flex items-center justify-between pb-3 border-b border-[#363632]">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#1E6F43] animate-pulse" />
-                  <span className="text-xs font-mono font-bold text-[#181816] uppercase tracking-wider">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#4ade80] animate-pulse" />
+                  <span className="text-xs font-mono font-bold text-[#F5F4F0] uppercase tracking-wider">
                     Telemetría en Vivo · IoT 4FN
                   </span>
                 </div>
 
-                <div className="flex bg-[#E8E5DC] p-0.5 rounded-lg border border-[#D6D3C9] text-[11px] font-semibold">
+                <div className="flex bg-[#141412] p-0.5 rounded-lg border border-[#363632] text-[11px] font-semibold">
                   <button
                     onClick={() => setTelemetryMode('telemetry')}
                     className={`px-3 py-1 rounded-md transition-all ${
                       telemetryMode === 'telemetry'
-                        ? 'bg-[#181816] text-white shadow-sm'
-                        : 'text-[#57564F] hover:text-[#181816]'
+                        ? 'bg-[#D94E1F] text-white shadow-sm'
+                        : 'text-[#A8A69E] hover:text-[#F5F4F0]'
                     }`}
                   >
                     Sensores IoT
@@ -269,8 +269,8 @@ export const HomePage: React.FC<HomePageProps> = ({ featuredTools }) => {
                     onClick={() => setTelemetryMode('specs')}
                     className={`px-3 py-1 rounded-md transition-all ${
                       telemetryMode === 'specs'
-                        ? 'bg-[#181816] text-white shadow-sm'
-                        : 'text-[#57564F] hover:text-[#181816]'
+                        ? 'bg-[#D94E1F] text-white shadow-sm'
+                        : 'text-[#A8A69E] hover:text-[#F5F4F0]'
                     }`}
                   >
                     Ficha 4FN
@@ -278,14 +278,14 @@ export const HomePage: React.FC<HomePageProps> = ({ featuredTools }) => {
                 </div>
               </div>
 
-              <div className="relative aspect-[16/10] rounded-xl bg-[#E8E5DC] border border-[#D6D3C9] overflow-hidden flex items-center justify-center">
+              <div className="relative aspect-[16/10] rounded-xl bg-[#141412] border border-[#363632] overflow-hidden flex items-center justify-center">
                 <img
                   src="images/tools/HERR-0017.jpg"
                   alt="Minicargador Bobcat S570"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute top-2.5 left-2.5">
-                  <span className="px-2 py-0.5 rounded-md bg-[#FAF9F5] text-[10px] font-mono text-[#1E6F43] border border-[#A7D7B8] font-semibold">
+                  <span className="px-2 py-0.5 rounded-md bg-[#1E6F43]/20 text-[10px] font-mono text-[#4ade80] border border-[#1E6F43]/40 font-semibold">
                     DISPONIBLE EN PATIO
                   </span>
                 </div>
@@ -299,41 +299,41 @@ export const HomePage: React.FC<HomePageProps> = ({ featuredTools }) => {
               {telemetryMode === 'telemetry' ? (
                 <div className="space-y-3">
                   <div className="flex justify-between items-baseline">
-                    <h4 className="text-sm font-bold text-[#181816]">Minicargador Bobcat S570</h4>
+                    <h4 className="text-sm font-bold text-[#F5F4F0]">Minicargador Bobcat S570</h4>
                     <span className="text-xs font-mono font-bold text-[#D94E1F]">$480.000 /día</span>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
-                    <div className="p-2.5 rounded-lg bg-[#E8E5DC] border border-[#D6D3C9]">
-                      <div className="flex items-center justify-center gap-1 text-[#B45309] mb-1">
+                    <div className="p-2.5 rounded-lg bg-[#141412] border border-[#363632]">
+                      <div className="flex items-center justify-center gap-1 text-[#fbbf24] mb-1">
                         <Gauge className="w-3.5 h-3.5" />
-                        <span className="text-[10px] uppercase text-[#78766F]">Horómetro</span>
+                        <span className="text-[10px] uppercase text-[#706E66]">Horómetro</span>
                       </div>
-                      <div className="font-bold text-[#181816] text-sm">168.4 <span className="text-[10px] font-normal text-[#78766F]">h</span></div>
+                      <div className="font-bold text-[#F5F4F0] text-sm">168.4 <span className="text-[10px] font-normal text-[#706E66]">h</span></div>
                     </div>
 
-                    <div className="p-2.5 rounded-lg bg-[#E8E5DC] border border-[#D6D3C9]">
+                    <div className="p-2.5 rounded-lg bg-[#141412] border border-[#363632]">
                       <div className="flex items-center justify-center gap-1 text-[#D94E1F] mb-1">
                         <Zap className="w-3.5 h-3.5" />
-                        <span className="text-[10px] uppercase text-[#78766F]">Batería</span>
+                        <span className="text-[10px] uppercase text-[#706E66]">Batería</span>
                       </div>
-                      <div className="font-bold text-[#181816] text-sm">88%</div>
+                      <div className="font-bold text-[#F5F4F0] text-sm">88%</div>
                     </div>
 
-                    <div className="p-2.5 rounded-lg bg-[#E8E5DC] border border-[#D6D3C9]">
-                      <div className="flex items-center justify-center gap-1 text-[#1E6F43] mb-1">
+                    <div className="p-2.5 rounded-lg bg-[#141412] border border-[#363632]">
+                      <div className="flex items-center justify-center gap-1 text-[#4ade80] mb-1">
                         <ShieldCheck className="w-3.5 h-3.5" />
-                        <span className="text-[10px] uppercase text-[#78766F]">RETIE</span>
+                        <span className="text-[10px] uppercase text-[#706E66]">RETIE</span>
                       </div>
-                      <div className="font-bold text-[#1E6F43] text-sm">VIGENTE</div>
+                      <div className="font-bold text-[#4ade80] text-sm">VIGENTE</div>
                     </div>
                   </div>
 
-                  <div className="p-2.5 rounded-lg bg-[#E8E5DC]/60 border border-[#D6D3C9] flex items-center justify-between text-xs text-[#57564F]">
+                  <div className="p-2.5 rounded-lg bg-[#141412] border border-[#363632] flex items-center justify-between text-xs text-[#A8A69E]">
                     <span className="flex items-center gap-1.5">
-                      <Flame className="w-3.5 h-3.5 text-[#B91C1C]" /> Temperatura: 76°C
+                      <Flame className="w-3.5 h-3.5 text-rose-400" /> Temperatura: 76°C
                     </span>
-                    <span className="flex items-center gap-1.5 text-[#1E6F43]">
+                    <span className="flex items-center gap-1.5 text-[#4ade80]">
                       <Activity className="w-3.5 h-3.5" /> Vibración: ÓPTIMO
                     </span>
                   </div>
@@ -341,22 +341,22 @@ export const HomePage: React.FC<HomePageProps> = ({ featuredTools }) => {
               ) : (
                 <div className="space-y-3 text-xs">
                   <div className="flex justify-between items-baseline">
-                    <h4 className="text-sm font-bold text-[#181816]">Especificaciones de Fabricante</h4>
-                    <span className="text-xs font-mono text-[#78766F]">Bobcat · MOD-219</span>
+                    <h4 className="text-sm font-bold text-[#F5F4F0]">Especificaciones de Fabricante</h4>
+                    <span className="text-xs font-mono text-[#A8A69E]">Bobcat · MOD-219</span>
                   </div>
 
-                  <div className="space-y-1.5 border border-[#D6D3C9] rounded-lg p-2.5 bg-[#E8E5DC]/50">
-                    <div className="flex justify-between text-[#57564F]">
+                  <div className="space-y-1.5 border border-[#363632] rounded-lg p-2.5 bg-[#141412]">
+                    <div className="flex justify-between text-[#A8A69E]">
                       <span>Potencia de Motor:</span>
-                      <span className="font-semibold text-[#181816]">61 HP Diésel Turbo</span>
+                      <span className="font-semibold text-[#F5F4F0]">61 HP Diésel Turbo</span>
                     </div>
-                    <div className="flex justify-between text-[#57564F]">
+                    <div className="flex justify-between text-[#A8A69E]">
                       <span>Capacidad Operativa:</span>
-                      <span className="font-semibold text-[#181816]">1.2 Toneladas</span>
+                      <span className="font-semibold text-[#F5F4F0]">1.2 Toneladas</span>
                     </div>
-                    <div className="flex justify-between text-[#57564F]">
+                    <div className="flex justify-between text-[#A8A69E]">
                       <span>Póliza Todo Riesgo:</span>
-                      <span className="font-mono text-[#1E6F43]">SURA No. 98421</span>
+                      <span className="font-mono text-[#4ade80]">SURA No. 98421</span>
                     </div>
                   </div>
                 </div>
@@ -386,17 +386,17 @@ export const HomePage: React.FC<HomePageProps> = ({ featuredTools }) => {
          ========================================================================= */}
       <section id="simulador-presupuesto" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="p-6 sm:p-10 rounded-2xl bg-[#FAF9F5] border border-[#D6D3C9] shadow-sm space-y-8">
+        <div className="p-6 sm:p-10 rounded-2xl bg-[#181816] border border-[#363632] shadow-xl space-y-8">
           
           <div className="max-w-2xl">
             <div className="flex items-center gap-2 text-[#D94E1F] text-xs font-mono font-semibold mb-2">
               <SlidersHorizontal className="w-4 h-4" />
               <span>SIMULADOR INTELIGENTE DE PRESUPUESTO</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-[#181816] tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-black text-[#F5F4F0] tracking-tight">
               ¿Cuánto costará la maquinaria para tu frente de obra?
             </h2>
-            <p className="text-xs sm:text-sm text-[#57564F] mt-1">
+            <p className="text-xs sm:text-sm text-[#A8A69E] mt-1">
               Selecciona el tipo de trabajo y ajusta los días. Nuestro algoritmo aplica el 15% de ahorro semanal y desglosa el depósito escrow en custodia.
             </p>
           </div>
@@ -407,7 +407,7 @@ export const HomePage: React.FC<HomePageProps> = ({ featuredTools }) => {
             <div className="lg:col-span-7 space-y-6">
               
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-[#78766F] block mb-3 font-mono">
+                <label className="text-xs font-semibold uppercase tracking-wider text-[#A8A69E] block mb-3 font-mono">
                   1. Tipo de Frente de Trabajo
                 </label>
                 <div className="grid grid-cols-2 gap-2.5">
@@ -417,8 +417,8 @@ export const HomePage: React.FC<HomePageProps> = ({ featuredTools }) => {
                       onClick={() => setSelectedCategoryIndex(idx)}
                       className={`p-3 rounded-lg border text-left transition-all ${
                         selectedCategoryIndex === idx
-                          ? 'bg-[#FAF9F5] border-2 border-[#D94E1F] text-[#181816] shadow-sm'
-                          : 'bg-[#E8E5DC] border-[#D6D3C9] text-[#57564F] hover:border-[#B8B5AB]'
+                          ? 'bg-[#232320] border-2 border-[#D94E1F] text-[#F5F4F0] shadow-sm'
+                          : 'bg-[#1E1E1C] border-[#363632] text-[#A8A69E] hover:border-[#4A4944]'
                       }`}
                     >
                       <div className="font-semibold text-xs leading-tight">{cat.name}</div>
@@ -432,7 +432,7 @@ export const HomePage: React.FC<HomePageProps> = ({ featuredTools }) => {
 
               <div className="space-y-3 pt-2">
                 <div className="flex justify-between items-center text-xs">
-                  <label className="font-semibold uppercase tracking-wider text-[#78766F] font-mono">
+                  <label className="font-semibold uppercase tracking-wider text-[#A8A69E] font-mono">
                     2. Duración Estimada de Operación:
                   </label>
                   <span className="font-mono font-bold text-[#D94E1F] text-sm bg-[#D94E1F]/10 px-3 py-1 rounded-md border border-[#D94E1F]/20">
@@ -447,10 +447,10 @@ export const HomePage: React.FC<HomePageProps> = ({ featuredTools }) => {
                   step="1"
                   value={estimateDays}
                   onChange={(e) => setEstimateDays(Number(e.target.value))}
-                  className="w-full accent-[#D94E1F] cursor-pointer h-2 bg-[#E8E5DC] rounded-lg"
+                  className="w-full accent-[#D94E1F] cursor-pointer h-2 bg-[#282824] rounded-lg"
                 />
 
-                <div className="flex justify-between text-[11px] font-mono text-[#78766F]">
+                <div className="flex justify-between text-[11px] font-mono text-[#706E66]">
                   <span>1 Día (Express)</span>
                   <span>7 Días (-15% OFF)</span>
                   <span>15 Días</span>
@@ -459,7 +459,7 @@ export const HomePage: React.FC<HomePageProps> = ({ featuredTools }) => {
               </div>
 
               {hasWeeklyDiscount && (
-                <div className="p-3 rounded-lg bg-[#E3F1E8] border border-[#A7D7B8] flex items-center gap-2.5 text-xs text-[#1E6F43]">
+                <div className="p-3 rounded-lg bg-[#1E6F43]/15 border border-[#1E6F43]/40 flex items-center gap-2.5 text-xs text-[#4ade80]">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <span>
                     <strong>Descuento Corporativo Activado:</strong> Ahorraste ${discountAmount.toLocaleString('es-CO')} COP por alquiler superior a 7 días.
@@ -546,7 +546,7 @@ export const HomePage: React.FC<HomePageProps> = ({ featuredTools }) => {
             <div className="text-xs font-mono font-semibold uppercase tracking-wider text-[#D94E1F]">
               Disponibilidad Inmediata
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-[#181816] tracking-tight mt-1">
+            <h2 className="text-2xl sm:text-3xl font-black text-[#F5F4F0] tracking-tight mt-1">
               Flota Pesada Destacada
             </h2>
           </div>
@@ -564,16 +564,16 @@ export const HomePage: React.FC<HomePageProps> = ({ featuredTools }) => {
           {top3Tools.map((tool) => (
             <div 
               key={tool.id}
-              className="bg-[#FAF9F5] border border-[#D6D3C9] rounded-xl overflow-hidden shadow-sm hover:border-[#D94E1F] transition-all flex flex-col group"
+              className="bg-[#181816] border border-[#363632] rounded-xl overflow-hidden shadow-sm hover:border-[#D94E1F] transition-all flex flex-col group"
             >
-              <div className="relative aspect-[16/10] bg-[#E8E5DC] overflow-hidden border-b border-[#D6D3C9]">
+              <div className="relative aspect-[16/10] bg-[#141412] overflow-hidden border-b border-[#363632]">
                 <img
                   src={tool.mainImageUrl || 'images/tools/HERR-0017.jpg'}
                   alt={tool.name}
                   className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
                 />
                 <div className="absolute top-3 left-3">
-                  <span className="px-2.5 py-1 rounded-md bg-[#FAF9F5] text-[10px] font-mono text-[#1E6F43] border border-[#A7D7B8] font-bold shadow-xs">
+                  <span className="px-2.5 py-1 rounded-md bg-[#181816]/90 backdrop-blur-xs text-[10px] font-mono text-[#22C55E] border border-[#22C55E]/30 font-bold shadow-xs">
                     DISPONIBLE
                   </span>
                 </div>
@@ -586,36 +586,36 @@ export const HomePage: React.FC<HomePageProps> = ({ featuredTools }) => {
 
               <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                 <div>
-                  <div className="text-[11px] font-mono text-[#78766F] uppercase tracking-wide">
+                  <div className="text-[11px] font-mono text-[#706E66] uppercase tracking-wide">
                     {tool.brand} · {tool.model}
                   </div>
-                  <h3 className="font-bold text-[#181816] text-base mt-1 line-clamp-1 group-hover:text-[#D94E1F] transition-colors">
+                  <h3 className="font-bold text-[#F5F4F0] text-base mt-1 line-clamp-1 group-hover:text-[#D94E1F] transition-colors">
                     {tool.name}
                   </h3>
-                  <p className="text-xs text-[#57564F] line-clamp-2 mt-1.5 font-normal">
+                  <p className="text-xs text-[#A8A69E] line-clamp-2 mt-1.5 font-normal">
                     {tool.description}
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-[#D6D3C9] flex items-center justify-between">
+                <div className="pt-3 border-t border-[#363632] flex items-center justify-between">
                   <div>
-                    <div className="text-[10px] text-[#78766F] uppercase font-mono">Tarifa Base</div>
-                    <div className="text-sm font-black font-mono text-[#181816]">
-                      ${tool.baseDailyPrice.toLocaleString('es-CO')} <span className="text-[10px] text-[#78766F] font-normal">/día</span>
+                    <div className="text-[10px] text-[#706E66] uppercase font-mono">Tarifa Base</div>
+                    <div className="text-sm font-black font-mono text-[#F5F4F0]">
+                      ${tool.baseDailyPrice.toLocaleString('es-CO')} <span className="text-[10px] text-[#706E66] font-normal">/día</span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setSelectedToolDetail(tool)}
-                      className="p-2 rounded-lg bg-[#E8E5DC] hover:bg-[#D6D3C9] text-[#181816] transition-colors"
+                      className="p-2 rounded-lg bg-[#232320] hover:bg-[#2B2B28] text-[#F5F4F0] border border-[#363632] transition-colors"
                       title="Ver Ficha Técnica"
                     >
                       <Eye className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => addToCart(tool, 1)}
-                      className="px-3.5 py-2 rounded-lg bg-[#181816] hover:bg-[#D94E1F] text-white font-semibold text-xs transition-colors shadow-xs"
+                      className="px-3.5 py-2 rounded-lg bg-[#D94E1F] hover:bg-[#B83D14] text-white font-semibold text-xs transition-colors shadow-xs"
                     >
                       Alquilar
                     </button>
@@ -635,56 +635,56 @@ export const HomePage: React.FC<HomePageProps> = ({ featuredTools }) => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         <div className="text-center max-w-2xl mx-auto space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#FAF9F5] border border-[#D6D3C9] text-[#D94E1F] text-xs font-mono font-semibold">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#232320] border border-[#363632] text-[#D94E1F] text-xs font-mono font-semibold">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Seguridad B2B Contractual</span>
           </div>
-          <h2 className="text-3xl font-black text-[#181816] tracking-tight">
+          <h2 className="text-3xl font-black text-[#F5F4F0] tracking-tight">
             El Estándar 4FN de Confianza Operativa
           </h2>
-          <p className="text-xs sm:text-sm text-[#57564F]">
+          <p className="text-xs sm:text-sm text-[#A8A69E]">
             Diseñado para cumplir los requisitos de auditoría y compliance de constructoras en Colombia.
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           
-          <div className="p-5 rounded-xl bg-[#FAF9F5] border border-[#D6D3C9] space-y-3 shadow-xs">
-            <div className="w-10 h-10 rounded-lg bg-[#E8E5DC] flex items-center justify-center text-[#D94E1F]">
+          <div className="p-5 rounded-xl bg-[#181816] border border-[#363632] space-y-3 shadow-xs">
+            <div className="w-10 h-10 rounded-lg bg-[#232320] border border-[#363632] flex items-center justify-center text-[#D94E1F]">
               <Cpu className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-bold text-[#181816]">Telemetría IoT Activa</h3>
-            <p className="text-xs text-[#57564F] leading-relaxed">
+            <h3 className="text-sm font-bold text-[#F5F4F0]">Telemetría IoT Activa</h3>
+            <p className="text-xs text-[#A8A69E] leading-relaxed">
               Monitoreo satelital continuo de horómetros y estado mecánico para evitar disputas en las horas liquidadas.
             </p>
           </div>
 
-          <div className="p-5 rounded-xl bg-[#FAF9F5] border border-[#D6D3C9] space-y-3 shadow-xs">
-            <div className="w-10 h-10 rounded-lg bg-[#E3F1E8] flex items-center justify-center text-[#1E6F43]">
+          <div className="p-5 rounded-xl bg-[#181816] border border-[#363632] space-y-3 shadow-xs">
+            <div className="w-10 h-10 rounded-lg bg-[#1E6F43]/20 border border-[#1E6F43]/40 flex items-center justify-center text-[#4ade80]">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-bold text-[#181816]">Custodia Escrow</h3>
-            <p className="text-xs text-[#57564F] leading-relaxed">
+            <h3 className="text-sm font-bold text-[#F5F4F0]">Custodia Escrow</h3>
+            <p className="text-xs text-[#A8A69E] leading-relaxed">
               Tu depósito de garantía permanece bloqueado en custodia fiduciaria y se reintegra al finalizar el acta de entrega.
             </p>
           </div>
 
-          <div className="p-5 rounded-xl bg-[#FAF9F5] border border-[#D6D3C9] space-y-3 shadow-xs">
-            <div className="w-10 h-10 rounded-lg bg-[#E8E5DC] flex items-center justify-center text-[#181816]">
+          <div className="p-5 rounded-xl bg-[#181816] border border-[#363632] space-y-3 shadow-xs">
+            <div className="w-10 h-10 rounded-lg bg-[#232320] border border-[#363632] flex items-center justify-center text-[#D94E1F]">
               <Truck className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-bold text-[#181816]">Despacho Express 24h</h3>
-            <p className="text-xs text-[#57564F] leading-relaxed">
+            <h3 className="text-sm font-bold text-[#F5F4F0]">Despacho Express 24h</h3>
+            <p className="text-xs text-[#A8A69E] leading-relaxed">
               Flota propia de camas bajas que transporta la maquinaria directamente al campamento de obra en Bogotá y Cundinamarca.
             </p>
           </div>
 
-          <div className="p-5 rounded-xl bg-[#FAF9F5] border border-[#D6D3C9] space-y-3 shadow-xs">
-            <div className="w-10 h-10 rounded-lg bg-[#FEF3C7] flex items-center justify-center text-[#B45309]">
+          <div className="p-5 rounded-xl bg-[#181816] border border-[#363632] space-y-3 shadow-xs">
+            <div className="w-10 h-10 rounded-lg bg-[#B45309]/20 border border-[#B45309]/40 flex items-center justify-center text-[#fbbf24]">
               <Receipt className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-bold text-[#181816]">Factura DIAN con CUFE</h3>
-            <p className="text-xs text-[#57564F] leading-relaxed">
+            <h3 className="text-sm font-bold text-[#F5F4F0]">Factura DIAN con CUFE</h3>
+            <p className="text-xs text-[#A8A69E] leading-relaxed">
               Generación y timbrado electrónico legal en cada ciclo para deducción tributaria inmediata de tu compañía constructora.
             </p>
           </div>
@@ -698,24 +698,24 @@ export const HomePage: React.FC<HomePageProps> = ({ featuredTools }) => {
           7. CONSTRUCTORAS ALIADAS & PROYECTOS EN OPERACIÓN
          ========================================================================= */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="p-6 rounded-xl bg-[#E8E5DC] border border-[#D6D3C9] flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+        <div className="p-6 rounded-xl bg-[#181816] border border-[#363632] flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
           <div className="space-y-1">
-            <div className="text-xs font-mono font-semibold uppercase tracking-wider text-[#78766F]">
+            <div className="text-xs font-mono font-semibold uppercase tracking-wider text-[#706E66]">
               Alianzas Corporativas de Construcción
             </div>
-            <div className="text-sm font-bold text-[#181816]">
+            <div className="text-sm font-bold text-[#F5F4F0]">
               Más de 45 constructoras y consorcios operan con el respaldo RentaMaq
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs font-mono font-semibold text-[#57564F]">
-            <span className="hover:text-[#181816]">Consorcio Bogotá Norte</span>
+          <div className="flex flex-wrap items-center justify-center gap-6 text-xs font-mono font-semibold text-[#A8A69E]">
+            <span className="hover:text-[#F5F4F0]">Consorcio Bogotá Norte</span>
             <span>·</span>
-            <span className="hover:text-[#181816]">Amarilo Obra Civil</span>
+            <span className="hover:text-[#F5F4F0]">Amarilo Obra Civil</span>
             <span>·</span>
-            <span className="hover:text-[#181816]">Conconcreto Vías</span>
+            <span className="hover:text-[#F5F4F0]">Conconcreto Vías</span>
             <span>·</span>
-            <span className="hover:text-[#181816]">Marval Andina</span>
+            <span className="hover:text-[#F5F4F0]">Marval Andina</span>
           </div>
         </div>
       </section>

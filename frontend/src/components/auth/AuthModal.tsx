@@ -95,7 +95,7 @@ export const AuthModal: React.FC = () => {
   };
 
   const sanitizeOnlyLetters = (val: string, maxLen: number = 50) => {
-    return val.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]/g, '').slice(0, maxLen);
+    return val.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'.-]/g, '').slice(0, maxLen);
   };
 
   // Login submit handler
@@ -132,6 +132,11 @@ export const AuthModal: React.FC = () => {
 
     if (clientForm.documentNumber.length < 6) {
       showToast('El número de documento debe tener al menos 6 dígitos', 'error');
+      return;
+    }
+
+    if (clientForm.documentType !== 'PASAPORTE' && clientForm.documentNumber.length > 10) {
+      showToast('Para Cédula o NIT el número debe tener máximo 10 dígitos', 'error');
       return;
     }
 
@@ -473,19 +478,24 @@ export const AuthModal: React.FC = () => {
                 <label className="text-[#A8A69E] font-semibold">Número de Documento *</label>
                 <input
                   type="text"
-                  inputMode="numeric"
+                  inputMode={clientForm.documentType === 'PASAPORTE' ? 'text' : 'numeric'}
                   required
-                  placeholder="Ej: 1020304050"
+                  placeholder={clientForm.documentType === 'PASAPORTE' ? 'Ej: PA1234567' : 'Ej: 1020304050'}
                   value={clientForm.documentNumber}
                   onChange={(e) => {
+                    const maxLen = clientForm.documentType === 'PASAPORTE' ? 15 : 10;
                     const cleaned = clientForm.documentType === 'PASAPORTE'
-                      ? e.target.value.replace(/[^a-zA-Z0-9-]/g, '').slice(0, 15)
-                      : sanitizeOnlyNumbers(e.target.value, 15);
+                      ? e.target.value.replace(/[^a-zA-Z0-9-]/g, '').slice(0, maxLen)
+                      : sanitizeOnlyNumbers(e.target.value, maxLen);
                     setClientForm({ ...clientForm, documentNumber: cleaned });
                   }}
                   className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F] font-mono"
                 />
-                <span className="text-[10px] text-[#787670]">Solo dígitos (sin puntos ni letras)</span>
+                <span className="text-[10px] text-[#787670]">
+                  {clientForm.documentType === 'PASAPORTE'
+                    ? 'Solo letras, números y guiones (máx. 15 caracteres)'
+                    : 'Solo dígitos (de 6 a 10 dígitos colombianos)'}
+                </span>
               </div>
             </div>
 
@@ -547,9 +557,10 @@ export const AuthModal: React.FC = () => {
                   required
                   placeholder="Bogotá D.C."
                   value={clientForm.city}
-                  onChange={(e) => setClientForm({ ...clientForm, city: e.target.value })}
+                  onChange={(e) => setClientForm({ ...clientForm, city: sanitizeOnlyLetters(e.target.value, 40) })}
                   className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F]"
                 />
+                <span className="text-[10px] text-[#787670]">Solo letras (sin números)</span>
               </div>
             </div>
 
@@ -743,9 +754,10 @@ export const AuthModal: React.FC = () => {
                   required
                   placeholder="Bogotá D.C."
                   value={providerForm.city}
-                  onChange={(e) => setProviderForm({ ...providerForm, city: e.target.value })}
+                  onChange={(e) => setProviderForm({ ...providerForm, city: sanitizeOnlyLetters(e.target.value, 40) })}
                   className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F]"
                 />
+                <span className="text-[10px] text-[#787670]">Solo letras (sin números)</span>
               </div>
             </div>
 

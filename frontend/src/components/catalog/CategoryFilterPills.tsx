@@ -36,7 +36,7 @@ export const CategoryFilterPills: React.FC<CategoryFilterPillsProps> = ({
         className={`px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap flex items-center gap-2 transition-all shrink-0 ${
           selectedCategoryId === null
             ? 'bg-[#D94E1F] text-white shadow-xs border border-[#B83D14]'
-            : 'bg-[#FAF9F5] text-[#57564F] hover:bg-[#E8E5DC] border border-[#D6D3C9]'
+            : 'bg-[#1E1E1C] text-[#A8A69E] hover:bg-[#282824] hover:text-[#F5F4F0] border border-[#363632]'
         }`}
       >
         <Layers className="w-3.5 h-3.5" />
@@ -54,14 +54,14 @@ export const CategoryFilterPills: React.FC<CategoryFilterPillsProps> = ({
             className={`px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap flex items-center gap-2 transition-all shrink-0 ${
               isSelected
                 ? 'bg-[#D94E1F] text-white shadow-xs border border-[#B83D14]'
-                : 'bg-[#FAF9F5] text-[#57564F] hover:bg-[#E8E5DC] border border-[#D6D3C9]'
+                : 'bg-[#1E1E1C] text-[#A8A69E] hover:bg-[#282824] hover:text-[#F5F4F0] border border-[#363632]'
             }`}
           >
             <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-[#D94E1F]'}`} />
             <span>{cat.name}</span>
             {cat.toolCount !== undefined && (
               <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-md ${
-                isSelected ? 'bg-[#B83D14] text-white' : 'bg-[#E8E5DC] text-[#181816]'
+                isSelected ? 'bg-[#B83D14] text-white' : 'bg-[#282824] text-[#F5F4F0] border border-[#363632]'
               }`}>
                 {cat.toolCount}
               </span>
