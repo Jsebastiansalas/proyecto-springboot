@@ -73,6 +73,7 @@ export type ReservationStatus =
 export type PaymentStatus = 
   | 'PENDIENTE' 
   | 'PAGADO' 
+  | 'COMPLETADO'
   | 'RECHAZADO' 
   | 'REEMBOLSADO' 
   | 'RETENIDO';

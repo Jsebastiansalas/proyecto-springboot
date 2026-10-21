@@ -1,7 +1,7 @@
 import { Reservation, PaymentRecord } from '../types';
 
 /**
- * Normaliza y escapa caracteres especiales para el formato binario estándar PDF 1.4
+ * Normaliza y escapa caracteres para el estándar binario PDF 1.4 (fuentes Helvetica)
  */
 function escapePdfText(str: string | number | null | undefined): string {
   if (str === null || str === undefined) return '';
@@ -23,14 +23,13 @@ function formatCOP(val?: number | null): string {
 }
 
 /**
- * Empaqueta un stream de operadores de dibujo y texto en un documento PDF 1.4 binario válido
+ * Empaqueta un stream de operadores PDF 1.4 en un documento binario válido
  */
 function compilePdfDocument(streamContent: string): Uint8Array {
   const encoder = new TextEncoder();
   const streamBytes = encoder.encode(streamContent);
   const streamLen = streamBytes.length;
 
-  const header = '%PDF-1.4\n%\xe2\xe3\xcf\xd3\n';
   const headerBytes = new Uint8Array([
     0x25, 0x50, 0x44, 0x46, 0x2D, 0x31, 0x2E, 0x34, 0x0A, 
     0x25, 0xE2, 0xE3, 0xCF, 0xD3, 0x0A
@@ -120,7 +119,7 @@ function compilePdfDocument(streamContent: string): Uint8Array {
 }
 
 /**
- * Desencadena la descarga de un archivo binario en el navegador del usuario
+ * Desencadena la descarga de un archivo binario en el navegador
  */
 function triggerBrowserDownload(bytes: Uint8Array, filename: string): void {
   const blob = new Blob([bytes.buffer as ArrayBuffer], { type: 'application/pdf' });
@@ -136,8 +135,9 @@ function triggerBrowserDownload(bytes: Uint8Array, filename: string): void {
 
 /**
  * Genera y descarga la Factura Electrónica de Venta oficial con estándar DIAN
+ * Incluye todos los datos de la transacción financiera, pasarela, adquiriente y rubros
  */
-export function downloadDianInvoicePdf(reservation: Reservation): void {
+export function downloadDianInvoicePdf(reservation: Reservation, paymentRecord?: PaymentRecord | null): void {
   const subtotal = Number(reservation.subtotalPrice ?? (reservation as any).subtotal ?? 0);
   const tax = Number(reservation.taxAmount ?? Math.round(subtotal * 0.19) ?? 0);
   const deposit = Number(reservation.depositAmount ?? (reservation as any).depositTotal ?? 0);
@@ -148,8 +148,22 @@ export function downloadDianInvoicePdf(reservation: Reservation): void {
   const invoiceNumber = `FE-2026-${String(reservation.id).padStart(6, '0')}`;
   const now = new Date();
   const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
   const cufe = `fe80::1ff:fe00:3a60:8b9c:${reservation.id}a8f:c712:44bb:92e1:810f`;
+
+  // Datos completos de la transacción bancaria
+  const txnRef = paymentRecord?.transactionReference || `TXN-RES-${reservation.id}-CONF`;
+  const gwRef = paymentRecord?.gatewayReference || `GW-AUT-${reservation.id}-982`;
+  const rawMethod = paymentRecord?.paymentMethod || reservation.paymentMethod || 'TARJETA_CREDITO';
+  const paymentMethodLabel = 
+    rawMethod === 'TARJETA_CREDITO' ? 'Tarjeta de Credito (Visa / Mastercard)' :
+    rawMethod === 'PSE' ? 'Debito Bancario PSE (Bancolombia)' :
+    rawMethod === 'TRANSFERENCIA' ? 'Billetera Digital Nequi / Daviplata' :
+    rawMethod === 'EN_CUOTAS' ? 'Tarjeta de Credito en Cuotas' : rawMethod;
+
+  const installmentLabel = (reservation as any).installmentCount && (reservation as any).installmentCount > 1
+    ? `${(reservation as any).installmentCount} cuotas mensuales diferidas`
+    : '1 cuota (Pago Total Inmediato)';
 
   const lines: string[] = [];
 
@@ -158,109 +172,128 @@ export function downloadDianInvoicePdf(reservation: Reservation): void {
 
   // 2. Encabezado Emisor
   lines.push('0.1 0.1 0.1 rg');
-  lines.push('BT /F2 16 Tf 36 734 Td (RENTAMAQ INDUSTRIAL S.A.S.) Tj ET');
-  lines.push('BT /F1 9 Tf 36 720 Td (NIT: 901.442.189-4 | Regimen Responsable de IVA | Bogota D.C., Colombia) Tj ET');
-  lines.push('BT /F1 9 Tf 36 708 Td (Av. El Dorado #68C-61 | Tel: +57 (601) 745-9000 | facturacion@rentamaq.com.co) Tj ET');
+  lines.push('BT /F2 15 Tf 36 734 Td (RENTAMAQ INDUSTRIAL S.A.S.) Tj ET');
+  lines.push('BT /F1 8.5 Tf 36 720 Td (NIT: 901.442.189-4 | Regimen Responsable de IVA | Bogota D.C., Colombia) Tj ET');
+  lines.push('BT /F1 8.5 Tf 36 708 Td (Av. El Dorado #68C-61 | PBX: +57 (601) 745-9000 | facturacion@rentamaq.com.co) Tj ET');
 
   // 3. Recuadro de Factura Electrónica (Superior Derecho)
-  lines.push('0.96 0.96 0.96 rg 380 695 196 55 re f');
-  lines.push('0.8 0.8 0.8 RG 380 695 196 55 re s');
+  lines.push('0.96 0.96 0.96 rg 375 696 201 56 re f');
+  lines.push('0.8 0.8 0.8 RG 375 696 201 56 re s');
   lines.push('0.85 0.35 0.12 rg');
-  lines.push('BT /F2 11 Tf 390 735 Td (FACTURA ELECTRONICA DE VENTA) Tj ET');
+  lines.push('BT /F2 10.5 Tf 385 736 Td (FACTURA ELECTRONICA DE VENTA) Tj ET');
   lines.push('0.1 0.1 0.1 rg');
-  lines.push(`BT /F2 12 Tf 390 720 Td (No. ${escapePdfText(invoiceNumber)}) Tj ET`);
-  lines.push('BT /F1 8 Tf 390 705 Td (Resolucion DIAN 18764000001 de 2026-01-15) Tj ET');
+  lines.push(`BT /F2 11 Tf 385 722 Td (No. ${escapePdfText(invoiceNumber)}) Tj ET`);
+  lines.push('BT /F1 7.5 Tf 385 710 Td (Resolucion DIAN 18764000001 de 2026-01-15) Tj ET');
+  lines.push('BT /F1 7 Tf 385 700 Td (Rango Autorizado: FE-000001 a FE-100000) Tj ET');
 
-  // Separador
-  lines.push('0.8 0.8 0.8 RG 36 685 540 0 m 576 685 l s');
+  // Separador 1 (usando rectángulos rellenos para evitar cualquier fallo de trazado)
+  lines.push('0.85 0.85 0.85 rg 36 688 540 1 re f');
 
-  // 4. Datos del Adquiriente / Cliente
-  lines.push('0.98 0.98 0.98 rg 36 605 540 70 re f');
-  lines.push('0.85 0.85 0.85 RG 36 605 540 70 re s');
+  // 4. Panel Completo: Datos de la Transacción Financiera & Pasarela Bancaria
+  lines.push('0.94 0.98 0.95 rg 36 618 540 64 re f');
+  lines.push('0.3 0.65 0.45 RG 36 618 540 64 re s');
+  lines.push('0.1 0.45 0.25 rg');
+  lines.push('BT /F2 9.5 Tf 46 667 Td (DATOS DE LA TRANSACCION FINANCIERA & PASARELA BANCARIA) Tj ET');
+  lines.push('BT /F2 8.5 Tf 360 667 Td (ESTADO: APROBADA Y LIQUIDADA) Tj ET');
+
+  lines.push('0.15 0.15 0.15 rg');
+  lines.push(`BT /F1 8.5 Tf 46 652 Td (Referencia TXN: ${escapePdfText(txnRef)}) Tj ET`);
+  lines.push(`BT /F1 8.5 Tf 46 639 Td (Autorizacion Pasarela: ${escapePdfText(gwRef)}) Tj ET`);
+  lines.push(`BT /F1 8.5 Tf 46 626 Td (Fecha y Hora de Pago: ${escapePdfText(dateStr)} ${escapePdfText(timeStr)} COT) Tj ET`);
+
+  lines.push(`BT /F1 8.5 Tf 310 652 Td (Medio de Pago: ${escapePdfText(paymentMethodLabel)}) Tj ET`);
+  lines.push(`BT /F1 8.5 Tf 310 639 Td (Plan de Pago: ${escapePdfText(installmentLabel)}) Tj ET`);
+  lines.push('BT /F1 8.5 Tf 310 626 Td (Custodia Escrow: Poliza SURA N 84920-B2B Fiduciaria) Tj ET');
+
+  // 5. Panel: Datos del Adquiriente / Cliente & Contrato
+  lines.push('0.98 0.98 0.98 rg 36 546 540 64 re f');
+  lines.push('0.85 0.85 0.85 RG 36 546 540 64 re s');
   lines.push('0.1 0.1 0.1 rg');
-  lines.push('BT /F2 10 Tf 46 660 Td (DATOS DEL ADQUIRIENTE / CLIENTE) Tj ET');
-  lines.push(`BT /F1 9 Tf 46 644 Td (Razon Social: ${escapePdfText(reservation.clientName || 'Cliente Constructora')}) Tj ET`);
-  lines.push('BT /F1 9 Tf 46 630 Td (NIT / Identificacion: 900.548.120-1 | Responsable de IVA) Tj ET');
-  lines.push('BT /F1 9 Tf 46 616 Td (Frente de Obra: Proyecto Construccion Bogota D.C.) Tj ET');
+  lines.push('BT /F2 9.5 Tf 46 595 Td (DATOS DEL ADQUIRIENTE / CLIENTE & CONTRATO DE OBRA) Tj ET');
 
-  lines.push(`BT /F1 9 Tf 360 644 Td (Fecha y Hora Emision: ${escapePdfText(dateStr)} ${escapePdfText(timeStr)}) Tj ET`);
-  lines.push(`BT /F1 9 Tf 360 630 Td (Vencimiento: ${escapePdfText(reservation.endDate || dateStr)}) Tj ET`);
-  lines.push(`BT /F1 9 Tf 360 616 Td (Medio de Pago: ${escapePdfText(reservation.paymentMethod || 'Tarjeta / PSE')}) Tj ET`);
+  lines.push(`BT /F1 8.5 Tf 46 580 Td (Razon Social / Cliente: ${escapePdfText(reservation.clientName || 'Cliente Constructora')}) Tj ET`);
+  lines.push('BT /F1 8.5 Tf 46 567 Td (NIT / Identificacion: 900.548.120-1 | Responsable de IVA) Tj ET');
+  lines.push('BT /F1 8.5 Tf 46 554 Td (Frente de Obra: Proyecto Construccion Bogota D.C.) Tj ET');
 
-  // 5. Caja CUFE
-  lines.push('0.94 0.96 0.99 rg 36 570 540 26 re f');
-  lines.push('0.7 0.8 0.9 RG 36 570 540 26 re s');
-  lines.push('0.1 0.25 0.45 rg');
-  lines.push('BT /F2 8 Tf 46 584 Td (CUFE:) Tj ET');
-  lines.push(`BT /F1 8 Tf 80 584 Td (${escapePdfText(cufe)}) Tj ET`);
+  lines.push(`BT /F1 8.5 Tf 310 580 Td (Contrato / Reserva: ${escapePdfText(reservation.reservationCode || `RES-${reservation.id}`)}) Tj ET`);
+  lines.push('BT /F1 8.5 Tf 310 567 Td (Patio Despacho: Patio Suba Bogota Central) Tj ET');
+  lines.push(`BT /F1 8.5 Tf 310 554 Td (Vigencia: ${escapePdfText(reservation.startDate)} al ${escapePdfText(reservation.endDate)} [${days} dias]) Tj ET`);
 
-  // 6. Encabezado de la Tabla de Rubros
-  lines.push('0.12 0.15 0.20 rg 36 535 540 22 re f');
+  // 6. Caja CUFE DIAN
+  lines.push('0.93 0.95 0.99 rg 36 514 540 24 re f');
+  lines.push('0.6 0.75 0.9 RG 36 514 540 24 re s');
+  lines.push('0.1 0.25 0.5 rg');
+  lines.push('BT /F2 8 Tf 46 522 Td (CUFE DIAN:) Tj ET');
+  lines.push(`BT /F1 7.5 Tf 98 522 Td (${escapePdfText(cufe)}) Tj ET`);
+
+  // 7. Encabezado de la Tabla de Rubros
+  lines.push('0.12 0.15 0.20 rg 36 486 540 20 re f');
   lines.push('1 1 1 rg');
-  lines.push('BT /F2 9 Tf 46 542 Td (DESCRIPCION DEL SERVICIO / CONCEPTO) Tj ET');
-  lines.push('BT /F2 9 Tf 300 542 Td (CANTIDAD) Tj ET');
-  lines.push('BT /F2 9 Tf 380 542 Td (VR. UNITARIO) Tj ET');
-  lines.push('BT /F2 9 Tf 460 542 Td (SUBTOTAL) Tj ET');
-  lines.push('BT /F2 9 Tf 530 542 Td (IVA) Tj ET');
+  lines.push('BT /F2 8.5 Tf 46 492 Td (DESCRIPCION DEL SERVICIO / CONCEPTO LIQUIDADO) Tj ET');
+  lines.push('BT /F2 8.5 Tf 290 492 Td (CANTIDAD) Tj ET');
+  lines.push('BT /F2 8.5 Tf 370 492 Td (VR. UNITARIO) Tj ET');
+  lines.push('BT /F2 8.5 Tf 455 492 Td (SUBTOTAL) Tj ET');
+  lines.push('BT /F2 8.5 Tf 530 492 Td (IVA) Tj ET');
 
-  // 7. Fila 1: Alquiler de Equipo
+  // 8. Fila 1: Alquiler de Equipo
   lines.push('0.1 0.1 0.1 rg');
-  lines.push(`BT /F2 9 Tf 46 515 Td (Arrendamiento: ${escapePdfText(reservation.toolName)}) Tj ET`);
-  lines.push(`BT /F1 8 Tf 46 503 Td (Vigencia: ${escapePdfText(reservation.startDate)} a ${escapePdfText(reservation.endDate)} | Reserva: ${escapePdfText(reservation.reservationCode || `RES-${reservation.id}`)}) Tj ET`);
-  lines.push(`BT /F1 9 Tf 300 515 Td (${days} dias) Tj ET`);
-  lines.push(`BT /F1 9 Tf 380 515 Td (${escapePdfText(formatCOP(daily))}) Tj ET`);
-  lines.push(`BT /F1 9 Tf 460 515 Td (${escapePdfText(formatCOP(subtotal))}) Tj ET`);
-  lines.push('BT /F1 9 Tf 530 515 Td (19%) Tj ET');
+  lines.push(`BT /F2 9 Tf 46 470 Td (Arrendamiento: ${escapePdfText(reservation.toolName)}) Tj ET`);
+  lines.push(`BT /F1 7.5 Tf 46 458 Td (Vigencia: ${escapePdfText(reservation.startDate)} a ${escapePdfText(reservation.endDate)} | Reserva: ${escapePdfText(reservation.reservationCode || `RES-${reservation.id}`)}) Tj ET`);
+  lines.push(`BT /F1 8.5 Tf 290 470 Td (${days} dias) Tj ET`);
+  lines.push(`BT /F1 8.5 Tf 370 470 Td (${escapePdfText(formatCOP(daily))}) Tj ET`);
+  lines.push(`BT /F1 8.5 Tf 455 470 Td (${escapePdfText(formatCOP(subtotal))}) Tj ET`);
+  lines.push('BT /F1 8.5 Tf 530 470 Td (19%) Tj ET');
 
-  lines.push('0.85 0.85 0.85 RG 36 490 540 0 m 576 490 l s');
+  lines.push('0.88 0.88 0.88 rg 36 448 540 1 re f');
 
-  // 8. Fila 2: Garantía Escrow
+  // 9. Fila 2: Garantía Escrow
   lines.push('0.1 0.1 0.1 rg');
-  lines.push('BT /F2 9 Tf 46 470 Td (Garantia en Custodia Escrow) Tj ET');
-  lines.push('BT /F1 8 Tf 46 458 Td (Amparada con Poliza SURA N 84920-B2B - Reembolsable contra entrega) Tj ET');
-  lines.push('BT /F1 9 Tf 300 470 Td (1 deposito) Tj ET');
-  lines.push(`BT /F1 9 Tf 380 470 Td (${escapePdfText(formatCOP(deposit))}) Tj ET`);
-  lines.push(`BT /F1 9 Tf 460 470 Td (${escapePdfText(formatCOP(deposit))}) Tj ET`);
-  lines.push('BT /F1 9 Tf 530 470 Td (0%) Tj ET');
+  lines.push('BT /F2 9 Tf 46 432 Td (Garantia en Custodia Escrow Fiduciaria) Tj ET');
+  lines.push('BT /F1 7.5 Tf 46 420 Td (Amparada con Poliza SURA N 84920-B2B - Reembolsable al retornar maquinaria) Tj ET');
+  lines.push('BT /F1 8.5 Tf 290 432 Td (1 custodia) Tj ET');
+  lines.push(`BT /F1 8.5 Tf 370 432 Td (${escapePdfText(formatCOP(deposit))}) Tj ET`);
+  lines.push(`BT /F1 8.5 Tf 455 432 Td (${escapePdfText(formatCOP(deposit))}) Tj ET`);
+  lines.push('BT /F1 8.5 Tf 530 432 Td (0%) Tj ET');
 
-  lines.push('0.85 0.85 0.85 RG 36 445 540 0 m 576 445 l s');
+  lines.push('0.88 0.88 0.88 rg 36 410 540 1 re f');
 
-  // 9. Caja de Totales (Inferior Derecha)
-  lines.push('0.98 0.98 0.98 rg 340 335 236 95 re f');
-  lines.push('0.8 0.8 0.8 RG 340 335 236 95 re s');
+  // 10. Caja de Totales Financieros (Inferior Derecha)
+  lines.push('0.98 0.98 0.98 rg 335 305 241 98 re f');
+  lines.push('0.8 0.8 0.8 RG 335 305 241 98 re s');
   lines.push('0.2 0.2 0.2 rg');
-  lines.push('BT /F1 9 Tf 355 412 Td (Subtotal Operativo:) Tj ET');
-  lines.push(`BT /F2 9 Tf 475 412 Td (${escapePdfText(formatCOP(subtotal))}) Tj ET`);
-  lines.push('BT /F1 9 Tf 355 394 Td (IVA Discriminado 19%:) Tj ET');
-  lines.push(`BT /F2 9 Tf 475 394 Td (${escapePdfText(formatCOP(tax))}) Tj ET`);
-  lines.push('BT /F1 9 Tf 355 376 Td (Garantia Escrow en Custodia:) Tj ET');
-  lines.push(`BT /F2 9 Tf 475 376 Td (${escapePdfText(formatCOP(deposit))}) Tj ET`);
+  lines.push('BT /F1 8.5 Tf 348 386 Td (Subtotal Operativo Alquiler:) Tj ET');
+  lines.push(`BT /F2 8.5 Tf 480 386 Td (${escapePdfText(formatCOP(subtotal))}) Tj ET`);
+  lines.push('BT /F1 8.5 Tf 348 370 Td (IVA Discriminado General (19%):) Tj ET');
+  lines.push(`BT /F2 8.5 Tf 480 370 Td (${escapePdfText(formatCOP(tax))}) Tj ET`);
+  lines.push('BT /F1 8.5 Tf 348 354 Td (Garantia Escrow en Custodia:) Tj ET');
+  lines.push(`BT /F2 8.5 Tf 480 354 Td (${escapePdfText(formatCOP(deposit))}) Tj ET`);
 
-  lines.push('0.85 0.35 0.12 rg 340 335 236 28 re f');
+  lines.push('0.85 0.35 0.12 rg 335 305 241 34 re f');
   lines.push('1 1 1 rg');
-  lines.push('BT /F2 11 Tf 355 345 Td (TOTAL LIQUIDADO:) Tj ET');
-  lines.push(`BT /F2 12 Tf 475 345 Td (${escapePdfText(formatCOP(total))}) Tj ET`);
+  lines.push('BT /F2 10.5 Tf 348 318 Td (TOTAL LIQUIDADO & PAGADO:) Tj ET');
+  lines.push(`BT /F2 12 Tf 480 318 Td (${escapePdfText(formatCOP(total))}) Tj ET`);
 
-  // 10. Bloque QR Mock & Validación DIAN (Inferior Izquierda)
-  lines.push('0.92 0.92 0.92 rg 36 345 80 80 re f');
-  lines.push('0.6 0.6 0.6 RG 36 345 80 80 re s');
+  // 11. Bloque de Validez Fiscal y Título Valor (Inferior Izquierda)
+  lines.push('0.92 0.92 0.92 rg 36 324 75 75 re f');
+  lines.push('0.6 0.6 0.6 RG 36 324 75 75 re s');
   lines.push('0.2 0.2 0.2 rg');
-  lines.push('BT /F2 7 Tf 42 390 Td (TIMBRADO DIAN) Tj ET');
-  lines.push('BT /F1 6 Tf 42 375 Td (Validacion Previa) Tj ET');
-  lines.push('BT /F1 6 Tf 42 363 Td (Aprobada) Tj ET');
-  lines.push('BT /F1 6 Tf 42 352 Td (Anexo 1.8) Tj ET');
+  lines.push('BT /F2 7 Tf 42 378 Td (TIMBRADO DIAN) Tj ET');
+  lines.push('BT /F1 6.5 Tf 42 364 Td (Validacion Previa) Tj ET');
+  lines.push('BT /F1 6.5 Tf 42 352 Td (Aprobada 100%) Tj ET');
+  lines.push('BT /F1 6 Tf 42 338 Td (Anexo Tecnico 1.8) Tj ET');
 
   lines.push('0.3 0.3 0.3 rg');
-  lines.push('BT /F1 8 Tf 125 408 Td (Documento oficial emitido conforme a la Resolucion 18764000001 de la DIAN.) Tj ET');
-  lines.push('BT /F1 8 Tf 125 393 Td (Representacion grafica digital de Factura Electronica de Venta.) Tj ET');
-  lines.push('BT /F1 8 Tf 125 378 Td (La firma digital y el timbrado CUFE garantizan la plena validez fiscal.) Tj ET');
-  lines.push('BT /F1 8 Tf 125 363 Td (Constituye titulo valor en los terminos de la Ley 1231 de 2008.) Tj ET');
+  lines.push('BT /F1 7.5 Tf 120 386 Td (Documento oficial emitido conforme a la Resolucion 18764000001 de la DIAN.) Tj ET');
+  lines.push('BT /F1 7.5 Tf 120 372 Td (Representacion grafica digital de Factura Electronica de Venta.) Tj ET');
+  lines.push('BT /F1 7.5 Tf 120 358 Td (Transaccion financiera confirmada y conciliada por pasarela bancaria.) Tj ET');
+  lines.push('BT /F1 7.5 Tf 120 344 Td (Constituye titulo valor en los terminos del Art. 772 del C.Co. y Ley 1231 de 2008.) Tj ET');
+  lines.push('BT /F1 7.5 Tf 120 330 Td (No requiere firma autografa segun Decreto 2242 de 2015.) Tj ET');
 
-  // 11. Línea Final de Pie de Página
-  lines.push('0.8 0.8 0.8 RG 36 290 540 0 m 576 290 l s');
+  // 12. Pie de Página
+  lines.push('0.85 0.85 0.85 rg 36 280 540 1 re f');
   lines.push('0.4 0.4 0.4 rg');
-  lines.push('BT /F2 8 Tf 150 275 Td (RENTAMAQ INDUSTRIAL - Potencia y Seguridad Certificada para tus Obras) Tj ET');
-  lines.push('BT /F1 7 Tf 205 263 Td (Bogota D.C., Colombia | portal.rentamaq.com.co) Tj ET');
+  lines.push('BT /F2 8 Tf 135 265 Td (RENTAMAQ INDUSTRIAL - Potencia, Maquinaria Pesada y Seguridad Certificada) Tj ET');
+  lines.push('BT /F1 7 Tf 190 252 Td (Bogota D.C., Colombia | PBX: +57 (601) 745-9000 | portal.rentamaq.com.co) Tj ET');
 
   const pdfBytes = compilePdfDocument(lines.join('\n'));
   triggerBrowserDownload(pdfBytes, `Factura_DIAN_${invoiceNumber}.pdf`);
@@ -268,15 +301,32 @@ export function downloadDianInvoicePdf(reservation: Reservation): void {
 
 /**
  * Genera y descarga el Comprobante de Pago & Liquidación Bancaria en PDF
+ * Incluye todos los datos de la transacción financiera, pasarela, adquiriente y rubros
  */
 export function downloadPaymentReceiptPdf(reservation: Reservation, paymentRecord?: PaymentRecord | null): void {
   const total = Number(reservation.totalPrice ?? (reservation as any).totalAmount ?? 0);
   const subtotal = Number(reservation.subtotalPrice ?? (reservation as any).subtotal ?? 0);
   const deposit = Number(reservation.depositAmount ?? (reservation as any).depositTotal ?? 0);
   const tax = Number(reservation.taxAmount ?? Math.round(subtotal * 0.19) ?? 0);
+  const days = Math.max(1, Number(reservation.totalDays || 1));
+  const daily = Number(reservation.dailyPrice ?? (days > 0 ? Math.round(subtotal / days) : 0));
+
   const txnRef = paymentRecord?.transactionReference || `TXN-RES-${reservation.id}-CONF`;
-  const gwRef = paymentRecord?.gatewayReference || `GW-${reservation.id}-AUT`;
-  const paymentMethod = paymentRecord?.paymentMethod || reservation.paymentMethod || 'TARJETA_CREDITO';
+  const gwRef = paymentRecord?.gatewayReference || `GW-AUT-${reservation.id}-982`;
+  const rawMethod = paymentRecord?.paymentMethod || reservation.paymentMethod || 'TARJETA_CREDITO';
+  const paymentMethodLabel = 
+    rawMethod === 'TARJETA_CREDITO' ? 'Tarjeta de Credito (Visa / Mastercard)' :
+    rawMethod === 'PSE' ? 'Debito Bancario PSE (Bancolombia)' :
+    rawMethod === 'TRANSFERENCIA' ? 'Billetera Digital Nequi / Daviplata' :
+    rawMethod === 'EN_CUOTAS' ? 'Tarjeta de Credito en Cuotas' : rawMethod;
+
+  const installmentLabel = (reservation as any).installmentCount && (reservation as any).installmentCount > 1
+    ? `${(reservation as any).installmentCount} cuotas mensuales diferidas`
+    : '1 cuota (Pago Total Inmediato)';
+
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
 
   const lines: string[] = [];
 
@@ -285,74 +335,109 @@ export function downloadPaymentReceiptPdf(reservation: Reservation, paymentRecor
 
   // 2. Encabezado
   lines.push('0.1 0.1 0.1 rg');
-  lines.push('BT /F2 16 Tf 36 734 Td (RENTAMAQ INDUSTRIAL - COMPROBANTE DE PAGO) Tj ET');
-  lines.push('BT /F1 9 Tf 36 720 Td (Soporte Oficial de Liquidacion y Pago Seguro de Alquiler de Maquinaria) Tj ET');
-  lines.push('BT /F1 9 Tf 36 708 Td (Fondo en Custodia Fiduciaria Escrow amparado por Poliza SURA N 84920-B2B) Tj ET');
+  lines.push('BT /F2 15 Tf 36 734 Td (RENTAMAQ INDUSTRIAL - COMPROBANTE DE PAGO) Tj ET');
+  lines.push('BT /F1 8.5 Tf 36 720 Td (Soporte Oficial de Liquidacion y Pago Seguro de Alquiler de Maquinaria) Tj ET');
+  lines.push('BT /F1 8.5 Tf 36 708 Td (Fondo en Custodia Fiduciaria Escrow amparado por Poliza SURA N 84920-B2B) Tj ET');
 
   // 3. Recuadro Estado (Superior Derecho)
-  lines.push('0.92 0.98 0.94 rg 380 695 196 55 re f');
-  lines.push('0.2 0.6 0.3 RG 380 695 196 55 re s');
+  lines.push('0.92 0.98 0.94 rg 375 696 201 56 re f');
+  lines.push('0.2 0.6 0.3 RG 375 696 201 56 re s');
   lines.push('0.12 0.44 0.26 rg');
-  lines.push('BT /F2 11 Tf 390 735 Td (TRANSACCION APROBADA) Tj ET');
+  lines.push('BT /F2 10.5 Tf 385 736 Td (TRANSACCION APROBADA) Tj ET');
   lines.push('0.1 0.1 0.1 rg');
-  lines.push(`BT /F2 11 Tf 390 720 Td (Reserva: ${escapePdfText(reservation.reservationCode || `RES-${reservation.id}`)}) Tj ET`);
-  lines.push('BT /F1 8 Tf 390 705 Td (Pasarela de Pagos Conectada y Verificada) Tj ET');
+  lines.push(`BT /F2 11 Tf 385 722 Td (Reserva: ${escapePdfText(reservation.reservationCode || `RES-${reservation.id}`)}) Tj ET`);
+  lines.push('BT /F1 7.5 Tf 385 710 Td (Pasarela de Pagos Conectada y Verificada) Tj ET');
+  lines.push('BT /F1 7 Tf 385 700 Td (Fondos Acreditados en Cuenta Escrow) Tj ET');
 
-  // Separador
-  lines.push('0.8 0.8 0.8 RG 36 685 540 0 m 576 685 l s');
+  // Separador 1
+  lines.push('0.85 0.85 0.85 rg 36 688 540 1 re f');
 
-  // 4. Datos de la Transacción Bancaria
-  lines.push('0.98 0.98 0.98 rg 36 605 540 70 re f');
-  lines.push('0.85 0.85 0.85 RG 36 605 540 70 re s');
+  // 4. Datos Completos de la Transacción Bancaria
+  lines.push('0.98 0.98 0.98 rg 36 618 540 64 re f');
+  lines.push('0.85 0.85 0.85 RG 36 618 540 64 re s');
   lines.push('0.1 0.1 0.1 rg');
-  lines.push('BT /F2 10 Tf 46 660 Td (DATOS DE LA TRANSACCION BANCARIA) Tj ET');
-  lines.push(`BT /F1 9 Tf 46 644 Td (Referencia TXN: ${escapePdfText(txnRef)}) Tj ET`);
-  lines.push(`BT /F1 9 Tf 46 630 Td (Autorizacion Pasarela: ${escapePdfText(gwRef)}) Tj ET`);
-  lines.push(`BT /F1 9 Tf 46 616 Td (Metodo: ${escapePdfText(paymentMethod)}) Tj ET`);
+  lines.push('BT /F2 9.5 Tf 46 667 Td (DATOS DE LA TRANSACCION BANCARIA & PASARELA) Tj ET');
+  lines.push('BT /F2 8.5 Tf 360 667 Td (LIQUIDADO Y ACREDITADO) Tj ET');
 
-  lines.push(`BT /F1 9 Tf 360 644 Td (Cliente: ${escapePdfText(reservation.clientName || 'Cliente Constructora')}) Tj ET`);
-  lines.push(`BT /F1 9 Tf 360 630 Td (Fecha Transaccion: ${escapePdfText(new Date().toLocaleDateString('es-CO'))}) Tj ET`);
-  lines.push('BT /F1 9 Tf 360 616 Td (Estado: LIQUIDADO Y ACREDITADO) Tj ET');
+  lines.push('0.15 0.15 0.15 rg');
+  lines.push(`BT /F1 8.5 Tf 46 652 Td (Referencia TXN: ${escapePdfText(txnRef)}) Tj ET`);
+  lines.push(`BT /F1 8.5 Tf 46 639 Td (Autorizacion Pasarela: ${escapePdfText(gwRef)}) Tj ET`);
+  lines.push(`BT /F1 8.5 Tf 46 626 Td (Fecha y Hora Pago: ${escapePdfText(dateStr)} ${escapePdfText(timeStr)} COT) Tj ET`);
 
-  // 5. Tabla de Liquidación
-  lines.push('0.12 0.15 0.20 rg 36 565 540 22 re f');
+  lines.push(`BT /F1 8.5 Tf 310 652 Td (Medio de Pago: ${escapePdfText(paymentMethodLabel)}) Tj ET`);
+  lines.push(`BT /F1 8.5 Tf 310 639 Td (Plan de Pago: ${escapePdfText(installmentLabel)}) Tj ET`);
+  lines.push('BT /F1 8.5 Tf 310 626 Td (Custodia Fiduciaria: Poliza SURA N 84920-B2B) Tj ET');
+
+  // 5. Panel: Datos del Cliente y Contrato
+  lines.push('0.98 0.98 0.98 rg 36 546 540 64 re f');
+  lines.push('0.85 0.85 0.85 RG 36 546 540 64 re s');
+  lines.push('0.1 0.1 0.1 rg');
+  lines.push('BT /F2 9.5 Tf 46 595 Td (DATOS DEL CLIENTE ADQUIRIENTE & CONTRATO) Tj ET');
+
+  lines.push(`BT /F1 8.5 Tf 46 580 Td (Cliente: ${escapePdfText(reservation.clientName || 'Cliente Constructora')}) Tj ET`);
+  lines.push('BT /F1 8.5 Tf 46 567 Td (Documento / NIT: 900.548.120-1 | Responsable de IVA) Tj ET');
+  lines.push('BT /F1 8.5 Tf 46 554 Td (Frente de Obra: Proyecto Construccion Bogota D.C.) Tj ET');
+
+  lines.push(`BT /F1 8.5 Tf 310 580 Td (Contrato / Codigo: ${escapePdfText(reservation.reservationCode || `RES-${reservation.id}`)}) Tj ET`);
+  lines.push('BT /F1 8.5 Tf 310 567 Td (Patio Despacho: Patio Suba Bogota Central) Tj ET');
+  lines.push(`BT /F1 8.5 Tf 310 554 Td (Vigencia: ${escapePdfText(reservation.startDate)} al ${escapePdfText(reservation.endDate)} [${days} dias]) Tj ET`);
+
+  // 6. Encabezado de la Tabla de Liquidación
+  lines.push('0.12 0.15 0.20 rg 36 514 540 20 re f');
   lines.push('1 1 1 rg');
-  lines.push('BT /F2 9 Tf 46 572 Td (CONCEPTO / RUBRO LIQUIDADO) Tj ET');
-  lines.push('BT /F2 9 Tf 480 572 Td (MONTO TOTAL) Tj ET');
+  lines.push('BT /F2 8.5 Tf 46 520 Td (CONCEPTO / RUBRO LIQUIDADO) Tj ET');
+  lines.push('BT /F2 8.5 Tf 290 520 Td (CANTIDAD) Tj ET');
+  lines.push('BT /F2 8.5 Tf 370 520 Td (VR. UNITARIO) Tj ET');
+  lines.push('BT /F2 8.5 Tf 480 520 Td (TOTAL LIQUIDADO) Tj ET');
 
+  // 7. Fila 1: Arrendamiento
   lines.push('0.1 0.1 0.1 rg');
-  lines.push(`BT /F2 9 Tf 46 540 Td (Arrendamiento: ${escapePdfText(reservation.toolName)}) Tj ET`);
-  lines.push(`BT /F1 8 Tf 46 528 Td (Duracion: ${reservation.totalDays} dias | Periodo: ${escapePdfText(reservation.startDate)} a ${escapePdfText(reservation.endDate)}) Tj ET`);
-  lines.push(`BT /F1 9 Tf 480 540 Td (${escapePdfText(formatCOP(subtotal))}) Tj ET`);
+  lines.push(`BT /F2 9 Tf 46 498 Td (Arrendamiento: ${escapePdfText(reservation.toolName)}) Tj ET`);
+  lines.push(`BT /F1 7.5 Tf 46 486 Td (Vigencia: ${escapePdfText(reservation.startDate)} a ${escapePdfText(reservation.endDate)} | Reserva: ${escapePdfText(reservation.reservationCode || `RES-${reservation.id}`)}) Tj ET`);
+  lines.push(`BT /F1 8.5 Tf 290 498 Td (${days} dias) Tj ET`);
+  lines.push(`BT /F1 8.5 Tf 370 498 Td (${escapePdfText(formatCOP(daily))}) Tj ET`);
+  lines.push(`BT /F1 8.5 Tf 480 498 Td (${escapePdfText(formatCOP(subtotal))}) Tj ET`);
 
-  lines.push('0.85 0.85 0.85 RG 36 515 540 0 m 576 515 l s');
+  lines.push('0.88 0.88 0.88 rg 36 476 540 1 re f');
 
-  lines.push('BT /F1 9 Tf 46 498 Td (Impuesto sobre las Ventas - IVA 19%) Tj ET');
-  lines.push(`BT /F1 9 Tf 480 498 Td (${escapePdfText(formatCOP(tax))}) Tj ET`);
+  // 8. Fila 2: IVA
+  lines.push('0.1 0.1 0.1 rg');
+  lines.push('BT /F1 8.5 Tf 46 460 Td (Impuesto sobre las Ventas - IVA General 19%) Tj ET');
+  lines.push('BT /F1 8.5 Tf 290 460 Td (19%) Tj ET');
+  lines.push(`BT /F1 8.5 Tf 370 460 Td (${escapePdfText(formatCOP(subtotal))}) Tj ET`);
+  lines.push(`BT /F1 8.5 Tf 480 460 Td (${escapePdfText(formatCOP(tax))}) Tj ET`);
 
-  lines.push('0.85 0.85 0.85 RG 36 485 540 0 m 576 485 l s');
+  lines.push('0.88 0.88 0.88 rg 36 448 540 1 re f');
 
-  lines.push('BT /F1 9 Tf 46 468 Td (Garantia en Custodia Escrow - Reembolsable) Tj ET');
-  lines.push(`BT /F1 9 Tf 480 468 Td (${escapePdfText(formatCOP(deposit))}) Tj ET`);
+  // 9. Fila 3: Garantía Escrow
+  lines.push('0.1 0.1 0.1 rg');
+  lines.push('BT /F2 9 Tf 46 432 Td (Garantia en Custodia Escrow - Reembolsable) Tj ET');
+  lines.push('BT /F1 7.5 Tf 46 420 Td (Custodia Fiduciaria respaldada con Poliza SURA N 84920-B2B) Tj ET');
+  lines.push('BT /F1 8.5 Tf 290 432 Td (1 deposito) Tj ET');
+  lines.push(`BT /F1 8.5 Tf 370 432 Td (${escapePdfText(formatCOP(deposit))}) Tj ET`);
+  lines.push(`BT /F1 8.5 Tf 480 432 Td (${escapePdfText(formatCOP(deposit))}) Tj ET`);
 
-  lines.push('0.85 0.85 0.85 RG 36 455 540 0 m 576 455 l s');
+  lines.push('0.88 0.88 0.88 rg 36 410 540 1 re f');
 
-  // 6. Recuadro Total
-  lines.push('0.12 0.44 0.26 rg 340 395 236 45 re f');
+  // 10. Recuadro Total (Inferior Derecha)
+  lines.push('0.12 0.44 0.26 rg 335 320 241 78 re f');
   lines.push('1 1 1 rg');
-  lines.push('BT /F2 11 Tf 355 422 Td (TOTAL PAGADO:) Tj ET');
-  lines.push(`BT /F2 13 Tf 475 422 Td (${escapePdfText(formatCOP(total))}) Tj ET`);
-  lines.push('BT /F1 8 Tf 355 405 Td (Fondos recibidos y certificados) Tj ET');
+  lines.push('BT /F2 11 Tf 348 375 Td (TOTAL PAGADO & LIQUIDADO:) Tj ET');
+  lines.push(`BT /F2 14 Tf 348 355 Td (${escapePdfText(formatCOP(total))}) Tj ET`);
+  lines.push('BT /F1 8 Tf 348 335 Td (Fondos acreditados satisfactoriamente) Tj ET');
 
-  // Nota legal
-  lines.push('0.4 0.4 0.4 rg');
-  lines.push('BT /F1 8 Tf 36 415 Td (Este comprobante certifica la recepcion conforme de los fondos para el contrato.) Tj ET');
-  lines.push('BT /F1 8 Tf 36 400 Td (Los fondos de garantia se reintegran al cliente al retornar la maquinaria.) Tj ET');
+  // Notas legales (Inferior Izquierda)
+  lines.push('0.3 0.3 0.3 rg');
+  lines.push('BT /F1 7.5 Tf 36 386 Td (Este comprobante certifica la recepcion conforme de los fondos para el contrato de alquiler.) Tj ET');
+  lines.push('BT /F1 7.5 Tf 36 372 Td (Los fondos del deposito de garantia en custodia se reintegran una vez finalizada la inspeccion.) Tj ET');
+  lines.push('BT /F1 7.5 Tf 36 358 Td (La transaccion cuenta con certificacion de pasarela bancaria cifrada TLS 1.3.) Tj ET');
+  lines.push('BT /F1 7.5 Tf 36 344 Td (Para efectos tributarios, consulte la Factura Electronica de Venta DIAN asociada.) Tj ET');
 
-  // Pie
-  lines.push('0.8 0.8 0.8 RG 36 350 540 0 m 576 350 l s');
+  // 11. Pie de página
+  lines.push('0.85 0.85 0.85 rg 36 295 540 1 re f');
   lines.push('0.4 0.4 0.4 rg');
-  lines.push('BT /F1 8 Tf 180 335 Td (RENTAMAQ INDUSTRIAL S.A.S. - Bogota D.C., Colombia) Tj ET');
+  lines.push('BT /F2 8 Tf 150 280 Td (RENTAMAQ INDUSTRIAL S.A.S. - Bogota D.C., Colombia) Tj ET');
+  lines.push('BT /F1 7 Tf 190 268 Td (portal.rentamaq.com.co | PBX: +57 (601) 745-9000) Tj ET');
 
   const pdfBytes = compilePdfDocument(lines.join('\n'));
   triggerBrowserDownload(pdfBytes, `Comprobante_Pago_${reservation.reservationCode || `RES-${reservation.id}`}.pdf`);

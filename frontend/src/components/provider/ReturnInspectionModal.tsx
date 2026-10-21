@@ -31,6 +31,21 @@ export const ReturnInspectionModal: React.FC<ReturnInspectionModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const depositLimit = Number(reservation.depositAmount ?? (reservation as any).depositTotal ?? 0);
+    if (damageCost < 0) {
+      showToast('El cobro por averías no puede ser un valor negativo.', 'error');
+      return;
+    }
+    if (damageCost > depositLimit) {
+      showToast(`El cobro por averías ($ ${damageCost.toLocaleString('es-CO')}) excede el valor de la garantía en custodia ($ ${depositLimit.toLocaleString('es-CO')}).`, 'error');
+      return;
+    }
+    if (finalHours < 0) {
+      showToast('El horómetro final debe ser mayor o igual a 0.', 'error');
+      return;
+    }
+
     setLoading(true);
     try {
       await rentaService.logistics.returnDelivery(reservation.id, finalHours, damageCost, damageReport);

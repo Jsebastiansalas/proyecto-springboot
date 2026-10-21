@@ -22,7 +22,7 @@ import {
   QrCode,
   Zap
 } from 'lucide-react';
-import { downloadPaymentReceiptPdf } from '../../utils/pdfGenerator';
+import { downloadPaymentReceiptPdf, downloadDianInvoicePdf } from '../../utils/pdfGenerator';
 
 interface PaymentModalProps {
   reservation: Reservation;
@@ -57,7 +57,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   );
 
   // Inputs según método
-  const [cardNumber, setCardNumber] = useState('4532 •••• •••• 4242');
+  const [cardNumber, setCardNumber] = useState('4532 8901 2345 6789');
   const [cardHolder, setCardHolder] = useState(reservation.clientName || 'Cliente Constructora');
   const [cardExpiry, setCardExpiry] = useState('12/28');
   const [cardCvv, setCardCvv] = useState('982');
@@ -69,6 +69,98 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   const [walletType, setWalletType] = useState<'Nequi' | 'Daviplata'>('Nequi');
   const [walletPhone, setWalletPhone] = useState('310 492 8172');
+
+  // Detección de franquicia de tarjeta
+  const getCardBrand = (num: string) => {
+    const clean = num.replace(/\D/g, '');
+    if (clean.startsWith('4')) return { brand: 'VISA', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' };
+    if (clean.startsWith('5') || clean.startsWith('2')) return { brand: 'MASTERCARD', color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' };
+    if (clean.startsWith('34') || clean.startsWith('37')) return { brand: 'AMEX', color: 'text-sky-400 bg-sky-500/10 border-sky-500/30' };
+    return { brand: 'TARJETA', color: 'text-[#A8A69E] bg-[#242422] border-[#363632]' };
+  };
+
+  // Bloqueo directo en teclado para campos que SOLO aceptan números (0-9)
+  const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (['Backspace', 'Tab', 'Delete', 'ArrowLeft', 'ArrowRight', 'Enter', 'Home', 'End'].includes(e.key)) {
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) {
+      return;
+    }
+    // Si la tecla no es un dígito entre 0 y 9, rechazarla inmediatamente
+    if (!/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  // Handler para Número de Tarjeta: SOLO números, agrupados de a 4 dígitos
+  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawDigits = e.target.value.replace(/\D/g, '').slice(0, 16);
+    const formatted = rawDigits.replace(/(\d{4})(?=\d)/g, '$1 ');
+    setCardNumber(formatted);
+  };
+
+  // Bloqueo y filtrado para Titular: SOLO letras y espacios (no números ni símbolos)
+  const handleCardHolderKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (['Backspace', 'Tab', 'Delete', 'ArrowLeft', 'ArrowRight', 'Enter', 'Home', 'End'].includes(e.key)) {
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) {
+      return;
+    }
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'.-]$/.test(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const handleCardHolderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const lettersOnly = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'.-]/g, '').slice(0, 40);
+    setCardHolder(lettersOnly);
+  };
+
+  // Handler para Vencimiento: SOLO números, formato MM/AA
+  const handleCardExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let digits = e.target.value.replace(/\D/g, '').slice(0, 4);
+    if (digits.length >= 3) {
+      let mm = parseInt(digits.slice(0, 2), 10);
+      if (mm > 12) mm = 12;
+      if (mm === 0) mm = 1;
+      const mmStr = String(mm).padStart(2, '0');
+      setCardExpiry(`${mmStr}/${digits.slice(2)}`);
+    } else if (digits.length === 2 && !e.target.value.includes('/')) {
+      let mm = parseInt(digits, 10);
+      if (mm > 12) mm = 12;
+      if (mm === 0) mm = 1;
+      const mmStr = String(mm).padStart(2, '0');
+      setCardExpiry(`${mmStr}/`);
+    } else {
+      setCardExpiry(digits);
+    }
+  };
+
+  // Handler para CVV: SOLO números, máximo 4 dígitos
+  const handleCardCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 4);
+    setCardCvv(digits);
+  };
+
+  // Handler para Documento PSE: SOLO números
+  const handlePseDocNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 12);
+    setPseDocNumber(digits);
+  };
+
+  // Handler para Teléfono Billetera: SOLO números
+  const handleWalletPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+    if (digits.length > 6) {
+      setWalletPhone(`${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`);
+    } else if (digits.length > 3) {
+      setWalletPhone(`${digits.slice(0, 3)} ${digits.slice(3)}`);
+    } else {
+      setWalletPhone(digits);
+    }
+  };
 
   // Cargar registro de pago y cuotas desde el backend
   useEffect(() => {
@@ -123,10 +215,68 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       return;
     }
 
+    // ==========================================
+    // VALIDACIONES RIGUROSAS SEGÚN MÉTODO DE PAGO
+    // ==========================================
+    if (selectedMethod === 'TARJETA_CREDITO' || selectedMethod === 'EN_CUOTAS') {
+      const cleanCard = cardNumber.replace(/\D/g, '');
+      if (cleanCard.length < 15 || cleanCard.length > 16) {
+        showToast('El número de tarjeta es inválido. Debe contener entre 15 y 16 dígitos numéricos.', 'error');
+        return;
+      }
+      if (!cardHolder.trim() || cardHolder.trim().length < 3) {
+        showToast('Ingresa el nombre completo del titular de la cuenta como figura en el plástico.', 'error');
+        return;
+      }
+      const cleanExp = cardExpiry.replace(/\D/g, '');
+      if (cleanExp.length < 4) {
+        showToast('Ingresa la fecha de vencimiento completa en formato MM/AA (ej: 12/28).', 'error');
+        return;
+      }
+      const expMonth = parseInt(cleanExp.slice(0, 2), 10);
+      const expYear = parseInt('20' + cleanExp.slice(2, 4), 10);
+      const now = new Date();
+      const currentMonth = now.getMonth() + 1;
+      const currentYear = now.getFullYear();
+
+      if (expMonth < 1 || expMonth > 12) {
+        showToast('El mes de vencimiento debe estar entre 01 y 12.', 'error');
+        return;
+      }
+      if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
+        showToast('La tarjeta ingresada se encuentra vencida. Por favor utiliza una tarjeta vigente.', 'error');
+        return;
+      }
+      if (expYear > currentYear + 15) {
+        showToast('El año de expiración no puede superar 15 años en el futuro.', 'error');
+        return;
+      }
+      if (cardCvv.length < 3) {
+        showToast('El código de seguridad CVC/CVV debe tener al menos 3 dígitos numéricos.', 'error');
+        return;
+      }
+    } else if (selectedMethod === 'PSE') {
+      const cleanDoc = pseDocNumber.replace(/\D/g, '');
+      if (cleanDoc.length < 6) {
+        showToast('Ingresa un número de documento de identificación válido (mínimo 6 dígitos numéricos).', 'error');
+        return;
+      }
+    } else if (selectedMethod === 'TRANSFERENCIA') {
+      const cleanPhone = walletPhone.replace(/\D/g, '');
+      if (cleanPhone.length !== 10) {
+        showToast(`Ingresa un número celular de 10 dígitos registrado en ${walletType}.`, 'error');
+        return;
+      }
+      if (!cleanPhone.startsWith('3')) {
+        showToast('El número celular en Colombia debe iniciar por el dígito 3 (ej: 310 492 8172).', 'error');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       const finalMethod = selectedMethod === 'EN_CUOTAS' ? 'TARJETA_CREDITO' : selectedMethod;
-      const finalInstallments = selectedMethod === 'EN_CUOTAS' ? installmentChoice : 1;
+      const finalInstallments = (selectedMethod === 'EN_CUOTAS' || selectedMethod === 'TARJETA_CREDITO') ? installmentChoice : 1;
       
       await rentaService.payments.process(
         reservation.id, 
@@ -431,49 +581,99 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 </button>
               </div>
 
-              {/* Formulario 1: Tarjeta de Crédito */}
-              {selectedMethod === 'TARJETA_CREDITO' && (
+              {/* Formulario 1: Tarjeta de Crédito & Financiación en Cuotas */}
+              {(selectedMethod === 'TARJETA_CREDITO' || selectedMethod === 'EN_CUOTAS') && (
                 <div className="p-3.5 rounded-xl bg-[#181816] border border-[#363632] space-y-2.5 animate-in fade-in">
+                  {selectedMethod === 'EN_CUOTAS' && (
+                    <div className="pb-2.5 border-b border-[#2a2a26] space-y-2">
+                      <label className="text-[10px] text-[#A8A69E] block">Selecciona el Plazo de Financiación</label>
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {[1, 3, 6, 12].map(num => (
+                          <button
+                            key={num}
+                            type="button"
+                            onClick={() => setInstallmentChoice(num)}
+                            className={`py-1.5 rounded-lg border text-xs font-mono font-bold transition-all ${
+                              installmentChoice === num
+                                ? 'bg-[#D94E1F] border-[#D94E1F] text-white'
+                                : 'bg-[#121210] border-[#363632] text-[#A8A69E] hover:text-white'
+                            }`}
+                          >
+                            {num} {num === 1 ? 'Cuota' : 'Cuotas'}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="text-[11px] font-mono text-[#4ade80]">
+                        Valor aproximado: {formatCOP(Math.round(Number(reservation.totalPrice ?? (reservation as any).totalAmount ?? 0) / installmentChoice))} / mes
+                      </div>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[10px] text-[#A8A69E] block mb-1">Número de Tarjeta</label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-[10px] text-[#A8A69E] block">Número de Tarjeta *</label>
+                        <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${getCardBrand(cardNumber).color}`}>
+                          {getCardBrand(cardNumber).brand}
+                        </span>
+                      </div>
                       <input
                         type="text"
+                        inputMode="numeric"
+                        autoComplete="cc-number"
                         value={cardNumber}
-                        onChange={(e) => setCardNumber(e.target.value)}
-                        className="w-full bg-[#121210] border border-[#363632] rounded-lg px-2.5 py-1.5 text-xs text-[#F5F4F0] font-mono"
-                        placeholder="•••• •••• •••• ••••"
+                        onChange={handleCardNumberChange}
+                        onKeyDown={handleNumericKeyDown}
+                        maxLength={19}
+                        className="w-full bg-[#121210] border border-[#363632] rounded-lg px-2.5 py-1.5 text-xs text-[#F5F4F0] font-mono tracking-wider focus:outline-none focus:border-[#D94E1F]"
+                        placeholder="4532 0000 0000 0000"
                       />
+                      <span className="text-[9px] text-[#706E66] block mt-0.5">Solo números (15 o 16 dígitos)</span>
                     </div>
                     <div>
-                      <label className="text-[10px] text-[#A8A69E] block mb-1">Titular de la Cuenta</label>
+                      <label className="text-[10px] text-[#A8A69E] block mb-1">Titular de la Cuenta *</label>
                       <input
                         type="text"
+                        autoComplete="cc-name"
                         value={cardHolder}
-                        onChange={(e) => setCardHolder(e.target.value)}
-                        className="w-full bg-[#121210] border border-[#363632] rounded-lg px-2.5 py-1.5 text-xs text-[#F5F4F0]"
+                        onChange={handleCardHolderChange}
+                        onKeyDown={handleCardHolderKeyDown}
+                        maxLength={40}
+                        className="w-full bg-[#121210] border border-[#363632] rounded-lg px-2.5 py-1.5 text-xs text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F]"
+                        placeholder="Como figura en el plástico"
                       />
+                      <span className="text-[9px] text-[#706E66] block mt-0.5">Solo letras y apellidos</span>
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <label className="text-[10px] text-[#A8A69E] block mb-1">Vencimiento</label>
+                      <label className="text-[10px] text-[#A8A69E] block mb-1">Vencimiento *</label>
                       <input
                         type="text"
+                        inputMode="numeric"
                         value={cardExpiry}
-                        onChange={(e) => setCardExpiry(e.target.value)}
-                        className="w-full bg-[#121210] border border-[#363632] rounded-lg px-2.5 py-1.5 text-xs text-[#F5F4F0] font-mono text-center"
+                        onChange={handleCardExpiryChange}
+                        onKeyDown={handleNumericKeyDown}
+                        maxLength={5}
+                        className="w-full bg-[#121210] border border-[#363632] rounded-lg px-2.5 py-1.5 text-xs text-[#F5F4F0] font-mono text-center focus:outline-none focus:border-[#D94E1F]"
+                        placeholder="MM/AA"
                       />
+                      <span className="text-[9px] text-[#706E66] block mt-0.5 text-center">MM/AA</span>
                     </div>
                     <div>
-                      <label className="text-[10px] text-[#A8A69E] block mb-1">CVC / CVV</label>
+                      <label className="text-[10px] text-[#A8A69E] block mb-1">CVC / CVV *</label>
                       <input
                         type="password"
+                        inputMode="numeric"
+                        autoComplete="cc-csc"
                         value={cardCvv}
-                        onChange={(e) => setCardCvv(e.target.value)}
+                        onChange={handleCardCvvChange}
+                        onKeyDown={handleNumericKeyDown}
                         maxLength={4}
-                        className="w-full bg-[#121210] border border-[#363632] rounded-lg px-2.5 py-1.5 text-xs text-[#F5F4F0] font-mono text-center"
+                        className="w-full bg-[#121210] border border-[#363632] rounded-lg px-2.5 py-1.5 text-xs text-[#F5F4F0] font-mono text-center focus:outline-none focus:border-[#D94E1F]"
+                        placeholder="•••"
                       />
+                      <span className="text-[9px] text-[#706E66] block mt-0.5 text-center">3 o 4 dígitos</span>
                     </div>
                     <div>
                       <label className="text-[10px] text-[#A8A69E] block mb-1">Diferir Cuotas</label>
@@ -537,13 +737,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                       </select>
                     </div>
                     <div>
-                      <label className="text-[10px] text-[#A8A69E] block mb-1">N° Identificación</label>
+                      <label className="text-[10px] text-[#A8A69E] block mb-1">N° Identificación *</label>
                       <input
                         type="text"
+                        inputMode="numeric"
                         value={pseDocNumber}
-                        onChange={(e) => setPseDocNumber(e.target.value)}
-                        className="w-full bg-[#121210] border border-[#363632] rounded-lg px-2.5 py-1.5 text-xs text-[#F5F4F0] font-mono"
+                        onChange={handlePseDocNumberChange}
+                        onKeyDown={handleNumericKeyDown}
+                        maxLength={12}
+                        className="w-full bg-[#121210] border border-[#363632] rounded-lg px-2.5 py-1.5 text-xs text-[#F5F4F0] font-mono focus:outline-none focus:border-[#D94E1F]"
+                        placeholder="Solo números"
                       />
+                      <span className="text-[9px] text-[#706E66] block mt-0.5">Solo números (6-12 dígitos)</span>
                     </div>
                   </div>
                 </div>
@@ -577,14 +782,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     </button>
                   </div>
                   <div>
-                    <label className="text-[10px] text-[#A8A69E] block mb-1">Número de Celular Registrado</label>
+                    <label className="text-[10px] text-[#A8A69E] block mb-1">Número de Celular Registrado *</label>
                     <input
                       type="tel"
+                      inputMode="numeric"
                       value={walletPhone}
-                      onChange={(e) => setWalletPhone(e.target.value)}
-                      className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-xs text-[#F5F4F0] font-mono"
+                      onChange={handleWalletPhoneChange}
+                      onKeyDown={handleNumericKeyDown}
+                      maxLength={12}
+                      className="w-full bg-[#121210] border border-[#363632] rounded-lg px-3 py-2 text-xs text-[#F5F4F0] font-mono focus:outline-none focus:border-[#D94E1F]"
                       placeholder="300 000 0000"
                     />
+                    <span className="text-[9px] text-[#706E66] block mt-0.5">10 dígitos comenzando en 3</span>
                   </div>
                   <p className="text-[10px] text-[#706E66] italic">
                     Al presionar pagar, se enviará una notificación push a tu app de {walletType} para autorizar el cobro instantáneamente.
@@ -713,6 +922,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 >
                   <Printer className="w-3.5 h-3.5 text-[#A8A69E]" />
                   <span>Imprimir</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    downloadDianInvoicePdf(reservation, paymentRecord);
+                    showToast('Factura Electrónica de Venta DIAN descargada con éxito', 'success');
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-[#242422] hover:bg-[#30302c] text-sky-400 hover:text-sky-300 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-[#363632]"
+                >
+                  <FileText className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Factura DIAN PDF</span>
                 </button>
 
                 {onOpenDianModal && (

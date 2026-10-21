@@ -48,6 +48,14 @@ export const CreateToolModal: React.FC<CreateToolModalProps> = ({
       showToast('Por favor completa todos los campos obligatorios.', 'error');
       return;
     }
+    if (Number(formData.baseDailyPrice) <= 0) {
+      showToast('El precio diario de alquiler debe ser mayor a 0 COP.', 'error');
+      return;
+    }
+    if (Number(formData.depositAmount) < 0) {
+      showToast('El depósito de garantía no puede ser negativo.', 'error');
+      return;
+    }
 
     setLoading(true);
     try {

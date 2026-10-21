@@ -18,6 +18,8 @@ import {
   Building
 } from 'lucide-react';
 import { formatImageUrl, handleImageError } from '../../utils/imageUtils';
+import { PaymentModal } from '../client/PaymentModal';
+import { Reservation } from '../../types';
 
 export const QuoteCartDrawer: React.FC = () => {
   const { 
@@ -41,8 +43,9 @@ export const QuoteCartDrawer: React.FC = () => {
     return d.toISOString().split('T')[0];
   });
   const [submitting, setSubmitting] = useState(false);
+  const [pendingPaymentReservation, setPendingPaymentReservation] = useState<Reservation | null>(null);
 
-  if (!isQuoteDrawerOpen) return null;
+  if (!isQuoteDrawerOpen && !pendingPaymentReservation) return null;
 
   // Cálculos consolidados
   let subtotalSinDescuento = 0;
@@ -71,8 +74,15 @@ export const QuoteCartDrawer: React.FC = () => {
 
     if (cart.length === 0) return;
 
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (!startDate || startDate < todayStr) {
+      showToast('La fecha de entrega en obra no puede ser anterior al día de hoy.', 'error');
+      return;
+    }
+
     setSubmitting(true);
     try {
+      let firstCreatedRes: Reservation | null = null;
       // Crear reservaciones en paralelo o secuencial
       for (const item of cart) {
         const [y, m, d] = startDate.split('-').map(Number);
@@ -82,7 +92,7 @@ export const QuoteCartDrawer: React.FC = () => {
         const endDay = String(endDateObj.getDate()).padStart(2, '0');
         const endDateStr = `${endYear}-${endMonth}-${endDay}`;
 
-        await rentaService.reservations.create({
+        const created = await rentaService.reservations.create({
           clientId: user.clientId || user.id || 1,
           toolId: item.tool.id,
           startDate: startDate,
@@ -91,12 +101,21 @@ export const QuoteCartDrawer: React.FC = () => {
           installmentCount: paymentMethod === 'EN_CUOTAS' ? installmentCount : 1,
           notes: 'Reserva emitida desde Cotizador Web'
         });
+
+        if (!firstCreatedRes) {
+          firstCreatedRes = created;
+        }
       }
 
       clearCart();
       setIsQuoteDrawerOpen(false);
-      setActiveView('client');
-      showToast('¡Contratos de alquiler generados exitosamente! Revisa el estado de despacho.', 'success');
+
+      if (firstCreatedRes) {
+        setPendingPaymentReservation(firstCreatedRes);
+        showToast('¡Cotización aceptada! Procediendo a la ventana de pago...', 'success');
+      } else {
+        setActiveView('client');
+      }
     } catch (err: any) {
       showToast(`Error al procesar reserva: ${err.message}`, 'error');
     } finally {
@@ -105,8 +124,10 @@ export const QuoteCartDrawer: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-xs animate-in fade-in">
-      <div className="absolute inset-0" onClick={() => setIsQuoteDrawerOpen(false)} />
+    <>
+      {isQuoteDrawerOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-xs animate-in fade-in">
+          <div className="absolute inset-0" onClick={() => setIsQuoteDrawerOpen(false)} />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
         <div className="w-screen max-w-md bg-[#181816] border-l border-[#363632] flex flex-col shadow-2xl text-[#F5F4F0]">
@@ -253,6 +274,7 @@ export const QuoteCartDrawer: React.FC = () => {
                   </div>
                   <input
                     type="date"
+                    min={new Date().toISOString().split('T')[0]}
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                     className="w-full bg-[#141412] border border-[#363632] rounded-lg px-3 py-2 text-xs text-[#F5F4F0] focus:outline-none focus:border-[#D94E1F] font-mono"
@@ -381,11 +403,11 @@ export const QuoteCartDrawer: React.FC = () => {
                 className="w-full py-3.5 px-4 rounded-lg bg-[#D94E1F] hover:bg-[#B83D14] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md"
               >
                 {submitting ? (
-                  <span>Generando Contratos...</span>
+                  <span>Generando Contratos y Pasarela...</span>
                 ) : (
                   <>
-                    <Lock className="w-3.5 h-3.5 text-white" />
-                    <span>Confirmar y Emitir Contrato</span>
+                    <CreditCard className="w-3.5 h-3.5 text-white" />
+                    <span>Aceptar Cotización y Pagar Inmediatamente</span>
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </>
                 )}
@@ -396,5 +418,21 @@ export const QuoteCartDrawer: React.FC = () => {
         </div>
       </div>
     </div>
+  )}
+
+  {/* Ventana de Pago después de aceptar la cotización */}
+  {pendingPaymentReservation && (
+    <PaymentModal
+      reservation={pendingPaymentReservation}
+      onClose={() => {
+        setPendingPaymentReservation(null);
+        setActiveView('client');
+      }}
+      onPaymentSuccess={() => {
+        showToast('¡Pago efectuado con éxito de inmediato! Factura DIAN disponible.', 'success');
+      }}
+    />
+  )}
+</>
   );
 };

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { rentaService } from '../../services/rentaService';
 import { Reservation } from '../../types';
-import { ReservationTimeline } from './ReservationTimeline';
 import { PaymentModal } from './PaymentModal';
 import { 
   FileText, 
@@ -216,17 +215,20 @@ export const ClientPortal: React.FC = () => {
                     </span>
 
                     {/* Payment Status Badge */}
-                    <span className={`text-xs font-mono font-semibold px-2.5 py-1 rounded-full border ${
-                      res.paymentStatus === 'PAGADO'
-                        ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                        : 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                    }`}>
-                      {res.paymentStatus || 'PENDIENTE'}
-                    </span>
+                    {(() => {
+                      const isPaid = res.paymentStatus === 'PAGADO' || res.paymentStatus === 'COMPLETADO' || res.hasPayment;
+                      return (
+                        <span className={`text-xs font-mono font-semibold px-2.5 py-1 rounded-full border ${
+                          isPaid
+                            ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                            : 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                        }`}>
+                          {isPaid ? 'PAGADO' : (res.paymentStatus || 'PENDIENTE')}
+                        </span>
+                      );
+                    })()}
                   </div>
                 </div>
-
-
 
                 {/* Financial Summary & Actions */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
@@ -277,17 +279,22 @@ export const ClientPortal: React.FC = () => {
                       <span>Factura DIAN</span>
                     </button>
 
-                    <button
-                      onClick={() => setSelectedForPayment(res)}
-                      className={`px-4 py-2 rounded-xl text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md ${
-                        res.paymentStatus === 'PAGADO'
-                          ? 'bg-[#1E6F43] hover:bg-[#258552]'
-                          : 'bg-[#D94E1F] hover:bg-[#E05A2B] animate-pulse-subtle'
-                      }`}
-                    >
-                      <CreditCard className="w-3.5 h-3.5" />
-                      <span>{res.paymentStatus === 'PAGADO' ? 'Comprobante / Liquidación' : 'Pagar Inmediatamente'}</span>
-                    </button>
+                    {(() => {
+                      const isPaid = res.paymentStatus === 'PAGADO' || res.paymentStatus === 'COMPLETADO' || res.hasPayment;
+                      return (
+                        <button
+                          onClick={() => setSelectedForPayment(res)}
+                          className={`px-4 py-2 rounded-xl text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md ${
+                            isPaid
+                              ? 'bg-[#1E6F43] hover:bg-[#258552]'
+                              : 'bg-[#D94E1F] hover:bg-[#E05A2B] animate-pulse-subtle'
+                          }`}
+                        >
+                          <CreditCard className="w-3.5 h-3.5" />
+                          <span>{isPaid ? 'Comprobante / Liquidación' : 'Pagar Inmediatamente'}</span>
+                        </button>
+                      );
+                    })()}
                   </div>
                 </div>
 

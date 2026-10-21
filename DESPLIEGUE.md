@@ -1,6 +1,6 @@
 # Guía de Despliegue en Servidores y Contenedores
 
-Esta guía documenta los tres métodos admitidos para desplegar la plataforma **RentaMaq**: ejecución embebida, despliegue en servidor de aplicaciones externo **Apache Tomcat 10.1** (Jakarta EE 10), y orquestación con **Docker Compose**.
+Esta guía documenta los métodos completos para desplegar la plataforma **RentaMaq**: ejecución embebida, despliegue nativo en servidores **Linux (Ubuntu/Debian con systemd y Nginx)**, despliegue en servidor de aplicaciones externo **Apache Tomcat 10.1** (Jakarta EE 10), y orquestación con **Docker Compose**.
 
 ---
 
@@ -82,7 +82,234 @@ java -Dserver.port=8080 \
 
 ---
 
-## 3. Método 2: Despliegue en Apache Tomcat 10.1 (Externo)
+## 3. Método 2: Despliegue Nativo en Servidores Linux (Ubuntu / Debian / systemd)
+
+Este método es el estándar para servidores de producción en la nube (VPS, AWS EC2, DigitalOcean, Hetzner, etc.) o servidores on-premise con Linux. Proporciona administración formal del proceso como servicio de sistema con **`systemd`** (reinicio automático ante fallos o reinicio del servidor) y un reverse proxy **Nginx** con soporte para certificados SSL/TLS y compresión HTTP.
+
+### Paso 1: Instalar Paquetes y Dependencias del Sistema
+Actualiza los repositorios e instala OpenJDK 21, Maven, PostgreSQL, Nginx y Node.js:
+
+```bash
+# 1. Actualizar el gestor de paquetes de la distribución
+sudo apt update && sudo apt upgrade -y
+
+# 2. Instalar OpenJDK 21 LTS, Maven, PostgreSQL, Nginx y utilidades
+sudo apt install -y openjdk-21-jdk maven postgresql postgresql-contrib nginx git curl
+
+# 3. Instalar Node.js 20 LTS (requerido para compilar el bundle frontend)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+```
+
+Verificar que las versiones estén correctamente instaladas:
+```bash
+java -version    # Debe indicar OpenJDK 21
+mvn -v           # Apache Maven 3.8+ o 3.9+
+node -v          # v20.x
+psql --version   # PostgreSQL 16+
+```
+
+---
+
+### Paso 2: Configurar PostgreSQL en Linux
+Inicia el servicio de base de datos y crea el usuario y la base de datos de producción:
+
+```bash
+# Habilitar e iniciar el servicio PostgreSQL
+sudo systemctl enable postgresql
+sudo systemctl start postgresql
+
+# Configurar contraseña de usuario postgres y crear la base de datos
+sudo -u postgres psql << 'EOF'
+CREATE USER postgres WITH PASSWORD 'Renta2026';
+ALTER USER postgres WITH SUPERUSER;
+CREATE DATABASE renta_db OWNER postgres ENCODING 'UTF8';
+EOF
+```
+
+Poblar el esquema y los datos iniciales desde el directorio del proyecto:
+```bash
+cd /opt/rentamaq
+PGPASSWORD=Renta2026 psql -h localhost -p 5432 -U postgres -d renta_db -f sql/schema.sql
+PGPASSWORD=Renta2026 psql -h localhost -p 5432 -U postgres -d renta_db -f sql/data.sql
+```
+
+---
+
+### Paso 3: Crear el Usuario de Sistema y Permisos de Seguridad
+Por estándares de endurecimiento y seguridad (OWASP / CIS Benchmarks), **nunca** se debe ejecutar un servidor web o backend Java como usuario `root`. Crea un usuario de sistema dedicado sin login interactivo:
+
+```bash
+# Crear usuario de sistema dedicado 'rentamaq'
+sudo useradd -r -m -U -d /opt/rentamaq -s /bin/bash rentamaq
+
+# Clonar el proyecto al directorio de despliegue /opt/rentamaq
+sudo git clone https://github.com/Jsebastiansalas/proyecto-springboot.git /opt/rentamaq
+
+# Asignar la propiedad total del directorio al usuario rentamaq
+sudo chown -R rentamaq:rentamaq /opt/rentamaq
+```
+
+---
+
+### Paso 4: Compilar el Frontend y el Backend en Linux
+Ejecuta la compilación con el usuario del sistema:
+
+```bash
+sudo -u rentamaq bash << 'EOF'
+cd /opt/rentamaq/frontend
+npm ci
+npm run build
+
+cd /opt/rentamaq
+mvn clean package -DskipTests
+EOF
+```
+
+El artefacto WAR compilado y empaquetado quedará ubicado en:  
+`/opt/rentamaq/renta-boot/target/renta-api.war`
+
+---
+
+### Paso 5: Configurar el Servicio del Sistema (`systemd`)
+Crea el archivo unitario de servicio para que Linux administre el ciclo de vida del backend (arranque al encender el servidor y reinicio automático en caso de caída):
+
+```bash
+sudo nano /etc/systemd/system/rentamaq.service
+```
+
+Pega la siguiente configuración de producción:
+
+```ini
+[Unit]
+Description=RentaMaq Industrial Platform API & Web
+After=syslog.target network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=rentamaq
+Group=rentamaq
+WorkingDirectory=/opt/rentamaq
+
+# Variables de entorno para producción
+Environment="PORT=8080"
+Environment="SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/renta_db"
+Environment="SPRING_DATASOURCE_USERNAME=postgres"
+Environment="SPRING_DATASOURCE_PASSWORD=Renta2026"
+Environment="JWT_SECRET=RentaHerramientasClaveSuperSeguraJWT2026ConMasDe256BitsParaHS256Firmado!"
+Environment="JAVA_OPTS=-Xms512m -Xmx1024m -XX:+UseG1GC -Dfile.encoding=UTF-8"
+
+# Comando de ejecución
+ExecStart=/usr/bin/java $JAVA_OPTS -jar /opt/rentamaq/renta-boot/target/renta-api.war
+
+# Políticas de reinicio y estabilidad
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=rentamaq
+
+# Límites de recursos y seguridad
+LimitNOFILE=65536
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Habilitar e iniciar el servicio en el sistema operativo:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable rentamaq
+sudo systemctl start rentamaq
+```
+
+Verificar que el servicio se encuentre activo (`active (running)`):
+```bash
+sudo systemctl status rentamaq
+```
+
+Para inspeccionar los logs en vivo:
+```bash
+sudo journalctl -u rentamaq -f
+```
+
+---
+
+### Paso 6: Configurar Nginx como Reverse Proxy
+Nginx recibirá las conexiones entrantes en los puertos estándar 80 (HTTP) y 443 (HTTPS), gestionará la compresión gzip y reenviará el tráfico internamente a Spring Boot en el puerto 8080:
+
+Crea la configuración del virtual host:
+```bash
+sudo nano /etc/nginx/sites-available/rentamaq
+```
+
+Pega la siguiente configuración:
+
+```nginx
+server {
+    listen 80;
+    server_name tu-dominio.com www.tu-dominio.com o-ip-del-servidor;
+
+    client_max_body_size 50M;
+
+    # Compresión gzip para máxima velocidad de entrega de assets
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        
+        # Cabeceras requeridas para WebSockets y trazabilidad de IP del cliente
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # Tiempos de espera
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+}
+```
+
+Habilitar el sitio y reiniciar Nginx:
+```bash
+sudo ln -s /etc/nginx/sites-available/rentamaq /etc/nginx/sites-enabled/
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+*(Opcional) Activar Certificado SSL Gratuito con Let's Encrypt (Certbot):*
+```bash
+sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d tu-dominio.com -d www.tu-dominio.com
+```
+
+---
+
+### Paso 7: Configuración del Cortafuegos (UFW)
+Asegura los puertos de la máquina permitiendo únicamente el acceso a SSH, HTTP y HTTPS:
+
+```bash
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow 22/tcp    # Acceso administrativo SSH
+sudo ufw allow 80/tcp    # Tráfico web HTTP
+sudo ufw allow 443/tcp   # Tráfico web seguro HTTPS
+sudo ufw enable
+sudo ufw status
+```
+
+---
+
+## 4. Método 3: Despliegue en Apache Tomcat 10.1 (Externo)
 
 La aplicación implementa `SpringBootServletInitializer` y declara el starter de Tomcat con alcance `provided`, lo cual la habilita para ser desplegada como una aplicación web nativa en un servidor de aplicaciones externo compatible con **Jakarta EE 10** (Servlet Spec 6.0).
 
@@ -129,7 +356,7 @@ La aplicación implementa `SpringBootServletInitializer` y declara el starter de
 
 ---
 
-## 4. Método 3: Despliegue con Docker y Docker Compose
+## 5. Método 4: Despliegue con Docker y Docker Compose
 
 Si tu entorno cuenta con Docker Desktop o Docker Engine, puedes desplegar la arquitectura completa (Base de datos PostgreSQL + Servidor Tomcat con la aplicación) en un solo comando:
 
@@ -155,7 +382,7 @@ docker-compose down
 
 ---
 
-## 5. Tabla de Variables de Entorno en Producción
+## 6. Tabla de Variables de Entorno en Producción
 
 | Variable de Entorno | Valor por Defecto | Descripción |
 | :--- | :--- | :--- |
@@ -168,9 +395,7 @@ docker-compose down
 
 ---
 
----
-
-## 6. Credenciales de Prueba y Seguridad del Sistema
+## 7. Credenciales de Prueba y Seguridad del Sistema
 
 Las contraseñas de las cuentas demo están configuradas con hash **BCrypt (costo 12 / 4096 iteraciones)** y alta entropía:
 
@@ -188,7 +413,7 @@ Las contraseñas de las cuentas demo están configuradas con hash **BCrypt (cost
 
 ---
 
-## 7. Verificación Post-Despliegue (Smoke Test)
+## 8. Verificación Post-Despliegue (Smoke Test)
 
 Ejecuta estas pruebas en terminal para confirmar que la aplicación está 100% operativa:
 

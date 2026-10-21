@@ -29,6 +29,12 @@ export const DispatchModal: React.FC<DispatchModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (initialHours < 0) {
+      showToast('La lectura del horómetro inicial debe ser mayor o igual a 0.', 'error');
+      return;
+    }
+
     setLoading(true);
     try {
       await rentaService.logistics.dispatch(reservation.id, initialHours, observations);
