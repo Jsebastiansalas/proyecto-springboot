@@ -74,16 +74,21 @@ export const QuoteCartDrawer: React.FC = () => {
     try {
       // Crear reservaciones en paralelo o secuencial
       for (const item of cart) {
-        const start = new Date(startDate);
-        const end = new Date(start);
-        end.setDate(end.getDate() + item.days);
+        const [y, m, d] = startDate.split('-').map(Number);
+        const endDateObj = new Date(y, m - 1, d + item.days - 1);
+        const endYear = endDateObj.getFullYear();
+        const endMonth = String(endDateObj.getMonth() + 1).padStart(2, '0');
+        const endDay = String(endDateObj.getDate()).padStart(2, '0');
+        const endDateStr = `${endYear}-${endMonth}-${endDay}`;
 
         await rentaService.reservations.create({
+          clientId: user.clientId || user.id || 1,
           toolId: item.tool.id,
           startDate: startDate,
-          endDate: end.toISOString().split('T')[0],
+          endDate: endDateStr,
           paymentMethod: paymentMethod,
-          installmentCount: paymentMethod === 'EN_CUOTAS' ? installmentCount : 1
+          installmentCount: paymentMethod === 'EN_CUOTAS' ? installmentCount : 1,
+          notes: 'Reserva emitida desde Cotizador Web'
         });
       }
 

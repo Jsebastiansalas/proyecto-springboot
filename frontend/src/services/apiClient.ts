@@ -49,7 +49,15 @@ class ApiClient {
 
     if (!response.ok) {
       const errorBody = await response.json().catch(() => ({}));
-      const message = errorBody.detail || errorBody.message || `Error del servidor (${response.status})`;
+      let message = errorBody.detail || errorBody.message || `Error del servidor (${response.status})`;
+      if (errorBody.errors && typeof errorBody.errors === 'object') {
+        const errorList = Object.entries(errorBody.errors)
+          .map(([_, msg]) => `${msg}`)
+          .join('. ');
+        if (errorList) {
+          message = `${message} — ${errorList}`;
+        }
+      }
       throw new Error(message);
     }
 

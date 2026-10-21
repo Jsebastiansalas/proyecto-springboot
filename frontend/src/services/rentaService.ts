@@ -221,8 +221,10 @@ export const rentaService = {
       toolId: number;
       startDate: string;
       endDate: string;
-      paymentMethod: string;
+      clientId?: number;
+      paymentMethod?: string;
       installmentCount?: number;
+      notes?: string;
     }): Promise<Reservation> => {
       return apiClient.post<Reservation>('/reservations', data);
     },

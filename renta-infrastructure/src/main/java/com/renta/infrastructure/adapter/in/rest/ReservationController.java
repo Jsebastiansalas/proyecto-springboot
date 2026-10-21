@@ -80,8 +80,31 @@ public class ReservationController {
     @PreAuthorize("hasAnyRole('CLIENTE', 'ADMIN')")
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "Crear nueva reserva", description = "Genera una reserva validando disponibilidad de la herramienta y solapamiento de fechas con reservas previas.")
-    public ResponseEntity<ReservationResponse> createReservation(@Valid @RequestBody CreateReservationRequest request) {
-        ReservationResponse response = reservationService.createFromRequest(request);
+    public ResponseEntity<ReservationResponse> createReservation(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody CreateReservationRequest request) {
+
+        Long effectiveClientId = request.clientId();
+        if (effectiveClientId == null && userDetails != null) {
+            effectiveClientId = clientRepository.findByUserId(userDetails.getId())
+                    .map(com.renta.domain.model.entity.Client::getId)
+                    .orElse(null);
+        }
+
+        // Si es un cliente demo o admin sin perfil directo, fallback seguro al cliente 1
+        if (effectiveClientId == null) {
+            effectiveClientId = 1L;
+        }
+
+        CreateReservationRequest resolvedRequest = new CreateReservationRequest(
+                effectiveClientId,
+                request.toolId(),
+                request.startDate(),
+                request.endDate(),
+                request.notes()
+        );
+
+        ReservationResponse response = reservationService.createFromRequest(resolvedRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 public record CreateReservationRequest(
-        @NotNull(message = "El ID del cliente es obligatorio")
         Long clientId,
 
         @NotNull(message = "El ID de la herramienta es obligatorio")
