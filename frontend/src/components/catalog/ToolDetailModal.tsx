@@ -22,6 +22,7 @@ import {
   Shield,
   FileCheck2
 } from 'lucide-react';
+import { formatImageUrl, handleImageError } from '../../utils/imageUtils';
 
 export const ToolDetailModal: React.FC = () => {
   const { selectedToolDetail, setSelectedToolDetail, addToCart, user, showToast } = useApp();
@@ -172,15 +173,12 @@ export const ToolDetailModal: React.FC = () => {
               {/* Tool Image and Quick Meta */}
               <div className="space-y-4">
                 <div className="aspect-[4/3] rounded-xl bg-slate-900 border border-slate-800 overflow-hidden flex items-center justify-center">
-                  {selectedToolDetail.mainImageUrl ? (
-                    <img 
-                      src={selectedToolDetail.mainImageUrl} 
-                      alt={selectedToolDetail.name}
-                      className="w-full h-full object-cover" 
-                    />
-                  ) : (
-                    <Wrench className="w-16 h-16 text-slate-700" />
-                  )}
+                  <img 
+                    src={formatImageUrl(selectedToolDetail.mainImageUrl)} 
+                    alt={selectedToolDetail.name}
+                    className="w-full h-full object-cover" 
+                    onError={handleImageError}
+                  />
                 </div>
 
                 <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">

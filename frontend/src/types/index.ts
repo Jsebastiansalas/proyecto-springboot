@@ -94,6 +94,22 @@ export interface PaymentInstallment {
   transactionRef?: string;
 }
 
+export interface PaymentRecord {
+  id: number;
+  transactionReference: string;
+  reservationId: number;
+  reservationCode: string;
+  clientId: number;
+  paymentMethod: PaymentMethod | string;
+  amount: number;
+  paymentStatus: PaymentStatus | string;
+  paymentDate: string;
+  gatewayReference?: string;
+  installmentCount?: number;
+  paidInstallments?: number;
+  monthlyInterestRate?: number;
+}
+
 export interface Reservation {
   id: number;
   reservationCode: string;
@@ -113,9 +129,12 @@ export interface Reservation {
   status: ReservationStatus;
   paymentStatus: PaymentStatus;
   paymentMethod: PaymentMethod;
+  hasPayment?: boolean;
   installmentCount?: number;
   paidInstallments?: number;
   totalInstallments?: number;
+  paidAmount?: number;
+  pendingAmount?: number;
   createdAt: string;
   invoiceId?: number;
   invoiceNumber?: string;

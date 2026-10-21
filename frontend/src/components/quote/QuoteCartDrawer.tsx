@@ -17,6 +17,7 @@ import {
   Lock,
   Building
 } from 'lucide-react';
+import { formatImageUrl, handleImageError } from '../../utils/imageUtils';
 
 export const QuoteCartDrawer: React.FC = () => {
   const { 
@@ -162,11 +163,12 @@ export const QuoteCartDrawer: React.FC = () => {
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3">
                             <div className="w-12 h-12 rounded-lg bg-[#141412] border border-[#363632] overflow-hidden shrink-0 flex items-center justify-center">
-                              {item.tool.mainImageUrl ? (
-                                <img src={item.tool.mainImageUrl} alt={item.tool.name} className="w-full h-full object-cover" />
-                              ) : (
-                                <Wrench className="w-5 h-5 text-[#706E66]" />
-                              )}
+                              <img 
+                                src={formatImageUrl(item.tool.mainImageUrl)} 
+                                alt={item.tool.name} 
+                                className="w-full h-full object-cover" 
+                                onError={handleImageError}
+                              />
                             </div>
                             <div>
                               <h4 className="text-xs font-bold text-[#F5F4F0] line-clamp-1">{item.tool.name}</h4>

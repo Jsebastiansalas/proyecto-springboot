@@ -14,6 +14,7 @@ import {
   Wrench,
   AlertTriangle
 } from 'lucide-react';
+import { formatImageUrl, handleImageError } from '../../utils/imageUtils';
 
 interface ToolCardProps {
   tool: Tool;
@@ -64,16 +65,13 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
       
       {/* Top Image & Overlays */}
       <div className="relative aspect-[16/10] bg-[#141412] overflow-hidden flex items-center justify-center border-b border-[#363632]">
-        {tool.mainImageUrl ? (
-          <img
-            src={tool.mainImageUrl}
-            alt={tool.name}
-            className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
-            loading="lazy"
-          />
-        ) : (
-          <Wrench className="w-12 h-12 text-[#706E66]" />
-        )}
+        <img
+          src={formatImageUrl(tool.mainImageUrl)}
+          alt={tool.name}
+          className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
+          loading="lazy"
+          onError={handleImageError}
+        />
 
         {/* Status Badge Overlay */}
         <div className="absolute top-3 left-3 z-10">

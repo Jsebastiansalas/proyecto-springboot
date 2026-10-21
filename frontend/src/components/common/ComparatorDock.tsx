@@ -13,6 +13,7 @@ import {
   Gauge, 
   SlidersHorizontal 
 } from 'lucide-react';
+import { formatImageUrl, handleImageError } from '../../utils/imageUtils';
 
 export const ComparatorDock: React.FC = () => {
   const { compareList, removeFromCompare, clearCompare, addToCart } = useApp();
@@ -48,11 +49,12 @@ export const ComparatorDock: React.FC = () => {
             {compareList.map(tool => (
               <div key={tool.id} className="relative group">
                 <div className="w-11 h-11 rounded-lg bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center">
-                  {tool.mainImageUrl ? (
-                    <img src={tool.mainImageUrl} alt={tool.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <Wrench className="w-5 h-5 text-slate-400" />
-                  )}
+                  <img 
+                    src={formatImageUrl(tool.mainImageUrl)} 
+                    alt={tool.name} 
+                    className="w-full h-full object-cover" 
+                    onError={handleImageError}
+                  />
                 </div>
                 <button
                   onClick={() => removeFromCompare(tool.id)}

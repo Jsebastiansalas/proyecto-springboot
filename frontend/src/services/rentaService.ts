@@ -8,6 +8,7 @@ import {
   ToolComment, 
   OccupiedDateRange, 
   PaymentInstallment,
+  PaymentRecord,
   AdminDashboardData,
   RegisterClientData,
   RegisterProviderData
@@ -22,6 +23,16 @@ const mapReservation = (raw: any): Reservation => {
   const taxAmount = Number(raw.taxAmount ?? Math.round(subtotalPrice * 0.19) ?? 0);
   const days = Math.max(1, Number(raw.totalDays || 1));
   const dailyPrice = Number(raw.dailyPrice ?? (days > 0 ? Math.round(subtotalPrice / days) : 0));
+
+  const hasPaid = Boolean(
+    raw.hasPayment === true || 
+    raw.paymentStatus === 'COMPLETADO' || 
+    raw.paymentStatus === 'PAGADO'
+  );
+
+  const paymentStatus = raw.paymentStatus === 'EN_CUOTAS'
+    ? 'EN_CUOTAS'
+    : (hasPaid ? 'PAGADO' : (raw.paymentStatus || 'PENDIENTE'));
 
   return {
     id: raw.id,
@@ -40,11 +51,14 @@ const mapReservation = (raw: any): Reservation => {
     taxAmount,
     totalPrice,
     status: raw.status || 'PENDIENTE',
-    paymentStatus: raw.paymentStatus || (raw.hasPayment ? 'PAGADO' : 'PENDIENTE'),
+    hasPayment: hasPaid,
+    paymentStatus,
     paymentMethod: raw.paymentMethod || 'TARJETA_CREDITO',
     installmentCount: raw.installmentCount || 1,
     paidInstallments: raw.paidInstallments || 0,
     totalInstallments: raw.installmentCount || 1,
+    paidAmount: Number(raw.paidAmount ?? (hasPaid ? totalPrice : 0)),
+    pendingAmount: Number(raw.pendingAmount ?? (hasPaid ? 0 : totalPrice)),
     createdAt: raw.createdAt || new Date().toISOString(),
     invoiceId: raw.invoiceId,
     invoiceNumber: raw.invoiceNumber
@@ -322,6 +336,13 @@ export const rentaService = {
         installmentCount,
         ...(amount != null ? { amount } : {})
       });
+    },
+    getByReservation: async (reservationId: number): Promise<PaymentRecord | null> => {
+      try {
+        return await apiClient.get<PaymentRecord>(`/payments/reservation/${reservationId}`);
+      } catch (err) {
+        return null;
+      }
     },
     getInstallments: (reservationId: number): Promise<PaymentInstallment[]> => {
       return apiClient.get<PaymentInstallment[]>(`/payments/reservation/${reservationId}/installments`);

@@ -17,8 +17,14 @@ import {
   HardHat,
   ArrowRight,
   ExternalLink,
-  DollarSign
+  DollarSign,
+  Printer,
+  QrCode,
+  Copy,
+  Check,
+  Download
 } from 'lucide-react';
+import { downloadDianInvoicePdf } from '../../utils/pdfGenerator';
 
 export const ClientPortal: React.FC = () => {
   const { user, quickDemoLogin, showToast } = useApp();
@@ -26,6 +32,7 @@ export const ClientPortal: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedForPayment, setSelectedForPayment] = useState<Reservation | null>(null);
   const [activeDianModal, setActiveDianModal] = useState<Reservation | null>(null);
+  const [copiedCufe, setCopiedCufe] = useState(false);
 
   const fetchReservations = async () => {
     if (!user || (user.role !== 'ROLE_CLIENTE' && user.role !== 'ROLE_ADMIN')) {
@@ -71,8 +78,8 @@ export const ClientPortal: React.FC = () => {
     );
   }
 
-  // Formateador seguro de pesos colombianos (nunca falla ante valores nulos o indefinidos)
-  const formatCOP = (val?: number | null) => '$ ' + Number(val || 0).toLocaleString('es-CO');
+  // Formateador seguro de pesos colombianos sin decimales residuales
+  const formatCOP = (val?: number | null) => '$ ' + Math.round(Number(val || 0)).toLocaleString('es-CO');
 
   // Métricas rápidas del cliente calculadas defensivamente
   const totalInvertido = reservations.reduce((acc, r) => acc + Number(r.totalPrice ?? (r as any).totalAmount ?? 0), 0);
@@ -219,10 +226,7 @@ export const ClientPortal: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Operations Timeline Component */}
-                <div className="bg-[#090d16] p-4 rounded-xl border border-slate-800/80">
-                  <ReservationTimeline status={res.status} />
-                </div>
+
 
                 {/* Financial Summary & Actions */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
@@ -275,10 +279,14 @@ export const ClientPortal: React.FC = () => {
 
                     <button
                       onClick={() => setSelectedForPayment(res)}
-                      className="px-4 py-2 rounded-xl bg-[#D94E1F] hover:bg-[#E05A2B] text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md shadow-sm"
+                      className={`px-4 py-2 rounded-xl text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md ${
+                        res.paymentStatus === 'PAGADO'
+                          ? 'bg-[#1E6F43] hover:bg-[#258552]'
+                          : 'bg-[#D94E1F] hover:bg-[#E05A2B] animate-pulse-subtle'
+                      }`}
                     >
                       <CreditCard className="w-3.5 h-3.5" />
-                      <span>{res.paymentStatus === 'PAGADO' ? 'Detalles de Pago' : 'Gestionar Pago'}</span>
+                      <span>{res.paymentStatus === 'PAGADO' ? 'Comprobante / Liquidación' : 'Pagar Inmediatamente'}</span>
                     </button>
                   </div>
                 </div>
@@ -295,80 +303,186 @@ export const ClientPortal: React.FC = () => {
           reservation={selectedForPayment}
           onClose={() => setSelectedForPayment(null)}
           onPaymentSuccess={fetchReservations}
+          onOpenDianModal={(r) => {
+            setSelectedForPayment(null);
+            setActiveDianModal(r);
+          }}
         />
       )}
 
-      {/* DIAN Invoice Modal */}
+      {/* DIAN Invoice Modal (Factura Electrónica de Venta Completa) */}
       {activeDianModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-          <div className="bg-[#0f172a] border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-5 glass-modal">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-              <div className="flex items-center gap-2 text-white font-bold text-base">
-                <Receipt className="w-5 h-5 text-[#D94E1F]" />
-                <span>Factura Electrónica de Venta</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
+          <div 
+            className="bg-[#121210] border border-[#363632] rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden glass-modal max-h-[92vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header DIAN */}
+            <div className="p-4 sm:p-5 border-b border-[#363632] bg-[#1a1a18] flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#1E6F43]/20 border border-[#1E6F43] flex items-center justify-center text-[#4ade80]">
+                  <Receipt className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-black text-[#F5F4F0] tracking-tight">
+                      Factura Electrónica de Venta
+                    </h3>
+                    <span className="text-[10px] font-mono font-bold bg-[#1E6F43]/20 text-[#4ade80] border border-[#1E6F43]/40 px-2 py-0.5 rounded-full">
+                      TIMBRADO DIAN VÁLIDO
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#A8A69E] font-mono mt-0.5">
+                    N° FE-2026-{String(activeDianModal.id).padStart(6, '0')} · Res. DIAN 18764000001
+                  </p>
+                </div>
               </div>
               <button
                 onClick={() => setActiveDianModal(null)}
-                className="text-slate-400 hover:text-white"
+                aria-label="Cerrar modal de factura"
+                className="w-8 h-8 rounded-lg bg-[#242422] hover:bg-[#30302c] text-[#A8A69E] hover:text-[#F5F4F0] flex items-center justify-center transition-colors"
               >
                 ✕
               </button>
             </div>
 
-            <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1 font-mono">
-                <div className="text-slate-400 text-[10px] uppercase">Código Único de Factura Electrónica (CUFE)</div>
-                <div className="text-[#D94E1F] break-all text-[11px]">
-                  fe80::1ff:fe00:3a60:8b9c:5421:9a8f:c712:44bb:92e1:810f
+            {/* Scrollable Content */}
+            <div className="p-5 space-y-4 text-xs overflow-y-auto custom-scrollbar flex-1">
+              {/* CUFE Box */}
+              <div className="p-3.5 rounded-xl bg-[#181816] border border-[#363632] space-y-1.5 font-mono">
+                <div className="flex items-center justify-between">
+                  <span className="text-[#A8A69E] text-[10px] font-bold uppercase tracking-wider">
+                    Código Único de Factura Electrónica (CUFE)
+                  </span>
+                  <button
+                    onClick={() => {
+                      const cufeStr = `fe80::1ff:fe00:3a60:8b9c:${activeDianModal.id}a8f:c712:44bb:92e1:810f`;
+                      navigator.clipboard?.writeText(cufeStr);
+                      setCopiedCufe(true);
+                      showToast('CUFE copiado al portapapeles', 'info');
+                      setTimeout(() => setCopiedCufe(false), 2000);
+                    }}
+                    className="flex items-center gap-1 text-[10px] text-[#A8A69E] hover:text-[#F5F4F0] transition-colors"
+                  >
+                    {copiedCufe ? <Check className="w-3 h-3 text-[#4ade80]" /> : <Copy className="w-3 h-3" />}
+                    <span>{copiedCufe ? 'Copiado' : 'Copiar'}</span>
+                  </button>
+                </div>
+                <div className="text-[#D94E1F] break-all text-[11px] bg-[#121210] p-2 rounded-lg border border-[#2a2a26]">
+                  fe80::1ff:fe00:3a60:8b9c:{activeDianModal.id}a8f:c712:44bb:92e1:810f
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800">
-                  <div className="text-slate-400">Emisor:</div>
-                  <div className="font-semibold text-white">RENTAMAQ INDUSTRIAL S.A.S.</div>
-                  <div className="text-slate-400 font-mono">NIT: 901.442.189-4</div>
+              {/* Emisor y Adquiriente */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3.5 rounded-xl bg-[#181816] border border-[#363632] space-y-1">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#706E66]">Emisor / Proveedor</div>
+                  <div className="font-bold text-[#F5F4F0]">RENTAMAQ INDUSTRIAL S.A.S.</div>
+                  <div className="text-[#A8A69E] font-mono text-[11px]">NIT: 901.442.189-4</div>
+                  <div className="text-[#706E66] text-[10px]">Régimen Común · Bogotá D.C., Colombia</div>
                 </div>
 
-                <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800">
-                  <div className="text-slate-400">Adquiriente:</div>
-                  <div className="font-semibold text-white">{activeDianModal.clientName}</div>
-                  <div className="text-slate-400 font-mono">NIT: 900.548.120-1</div>
+                <div className="p-3.5 rounded-xl bg-[#181816] border border-[#363632] space-y-1">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#706E66]">Adquiriente / Cliente</div>
+                  <div className="font-bold text-[#F5F4F0]">{activeDianModal.clientName || 'Constructora B2B'}</div>
+                  <div className="text-[#A8A69E] font-mono text-[11px]">NIT: 900.548.120-1</div>
+                  <div className="text-[#706E66] text-[10px]">Responsable de IVA · Frente de Obra</div>
                 </div>
               </div>
 
-              <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800 space-y-1">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Subtotal Operativo:</span>
-                  <span className="font-mono text-slate-200">{formatCOP(activeDianModal.subtotalPrice ?? (activeDianModal as any).subtotal)}</span>
+              {/* Tabla de Conceptos */}
+              <div className="p-4 rounded-xl bg-[#181816] border border-[#363632] space-y-2.5">
+                <div className="flex items-center justify-between pb-2 border-b border-[#2a2a26]">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#A8A69E]">
+                    Detalle de Rubros Facturados
+                  </span>
+                  <span className="text-[11px] font-mono text-[#4ade80] font-semibold">
+                    Tarifa General IVA 19%
+                  </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">IVA 19%:</span>
-                  <span className="font-mono text-slate-200">
+
+                <div className="flex justify-between py-1">
+                  <div>
+                    <span className="text-[#F5F4F0] font-bold block">
+                      Arrendamiento: {activeDianModal.toolName}
+                    </span>
+                    <span className="text-[10px] text-[#706E66] font-mono">
+                      {activeDianModal.totalDays} {Number(activeDianModal.totalDays) === 1 ? 'día' : 'días'} ({activeDianModal.startDate} a {activeDianModal.endDate})
+                    </span>
+                  </div>
+                  <span className="font-mono text-[#F5F4F0]">
+                    {formatCOP(activeDianModal.subtotalPrice ?? (activeDianModal as any).subtotal)}
+                  </span>
+                </div>
+
+                <div className="flex justify-between py-1 border-t border-[#2a2a26]">
+                  <span className="text-[#A8A69E]">IVA Discriminado (19%):</span>
+                  <span className="font-mono text-[#F5F4F0]">
                     {formatCOP(activeDianModal.taxAmount ?? Math.round(Number(activeDianModal.subtotalPrice ?? (activeDianModal as any).subtotal ?? 0) * 0.19))}
                   </span>
                 </div>
-                <div className="flex justify-between pt-1 border-t border-slate-800 font-bold text-white">
-                  <span>Total Timbrado DIAN:</span>
-                  <span className="font-mono text-[#D94E1F]">{formatCOP(activeDianModal.totalPrice ?? (activeDianModal as any).totalAmount)}</span>
+
+                <div className="flex justify-between py-1 border-t border-[#2a2a26]">
+                  <div>
+                    <span className="text-[#A8A69E] block">Garantía Escrow en Custodia:</span>
+                    <span className="text-[10px] text-[#706E66]">No genera IVA · Retornable</span>
+                  </div>
+                  <span className="font-mono text-sky-400">
+                    {formatCOP(activeDianModal.depositAmount ?? (activeDianModal as any).depositTotal)}
+                  </span>
+                </div>
+
+                <div className="flex justify-between pt-2.5 border-t border-[#363632] font-black text-sm">
+                  <span className="text-[#F5F4F0]">Total Liquidado DIAN:</span>
+                  <span className="font-mono text-[#D94E1F] text-base">
+                    {formatCOP(activeDianModal.totalPrice ?? (activeDianModal as any).totalAmount)}
+                  </span>
+                </div>
+              </div>
+
+              {/* QR Mock y Verificación */}
+              <div className="p-3 rounded-xl bg-[#181816] border border-[#363632] flex items-center gap-3">
+                <div className="w-12 h-12 bg-white p-1 rounded-lg flex items-center justify-center shrink-0">
+                  <QrCode className="w-10 h-10 text-black" />
+                </div>
+                <div className="text-[11px] text-[#A8A69E] space-y-0.5">
+                  <div className="font-bold text-[#F5F4F0]">Validación Previa DIAN Aprobada</div>
+                  <div>Documento electrónico timbrado según Anexo Técnico 1.8 DIAN. Representación gráfica válida para deducción fiscal de costos y gastos.</div>
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2">
+            {/* Footer */}
+            <div className="p-4 border-t border-[#363632] bg-[#1a1a18] flex items-center justify-between shrink-0">
               <button
                 onClick={() => setActiveDianModal(null)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold"
+                className="px-4 py-2 bg-[#242422] hover:bg-[#30302c] text-[#A8A69E] hover:text-[#F5F4F0] rounded-xl text-xs font-semibold transition-colors"
               >
                 Cerrar
               </button>
-              <button
-                onClick={() => showToast('Generando representación gráfica PDF timbrada por la DIAN...', 'info')}
-                className="px-4 py-2 bg-[#D94E1F] hover:bg-[#E05A2B] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>Descargar PDF Oficial</span>
-              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-3.5 py-2 bg-[#242422] hover:bg-[#30302c] text-[#F5F4F0] rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors border border-[#363632]"
+                >
+                  <Printer className="w-3.5 h-3.5 text-[#A8A69E]" />
+                  <span>Imprimir Factura</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    downloadDianInvoicePdf(activeDianModal);
+                    showToast('Factura Electrónica de Venta PDF descargada con éxito', 'success');
+                  }}
+                  className="px-4 py-2 bg-[#D94E1F] hover:bg-[#E05A2B] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-lg shadow-[#D94E1F]/20"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Descargar PDF Oficial</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
