@@ -220,11 +220,17 @@ public class PaymentApplicationService implements ProcessPaymentUseCase, Registe
                     .map(Reservation::getClientId)
                     .orElse(1L);
         }
+        java.math.BigDecimal amount = req.amount();
+        if (amount == null) {
+            amount = reservationRepository.findById(req.reservationId())
+                    .map(r -> r.getTotalAmount().amount())
+                    .orElse(java.math.BigDecimal.ZERO);
+        }
         ProcessPaymentCommand cmd = new ProcessPaymentCommand(
                 req.reservationId(),
                 clientId,
                 req.paymentMethod(),
-                Money.cop(req.amount()),
+                Money.cop(amount),
                 req.gatewayReference(),
                 req.installmentCount() != null ? req.installmentCount() : 1
         );

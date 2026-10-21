@@ -66,7 +66,7 @@ public class ToolCommentController {
             authorName = email.split("@")[0];
         }
 
-        ToolCommentResponse resp = commentService.postComment(toolId, userId, authorName, authorRole, request.commentText());
+        ToolCommentResponse resp = commentService.postComment(toolId, userId, authorName, authorRole, request.effectiveCommentText());
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
 
@@ -77,6 +77,6 @@ public class ToolCommentController {
     public ResponseEntity<ToolCommentResponse> replyComment(
             @PathVariable Long commentId,
             @Valid @RequestBody ReplyToolCommentRequest request) {
-        return ResponseEntity.ok(commentService.replyComment(commentId, request.providerReply()));
+        return ResponseEntity.ok(commentService.replyComment(commentId, request.effectiveReply()));
     }
 }

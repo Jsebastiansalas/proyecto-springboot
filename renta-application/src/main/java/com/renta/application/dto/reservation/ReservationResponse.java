@@ -40,4 +40,34 @@ public record ReservationResponse(
                 startDate, endDate, totalDays, subtotal, depositTotal, totalAmount,
                 status, notes, createdAt, updatedAt, false, null, 1, 0, BigDecimal.ZERO, totalAmount);
     }
+
+    public BigDecimal getTotalPrice() {
+        return totalAmount != null ? totalAmount : BigDecimal.ZERO;
+    }
+
+    public BigDecimal getDepositAmount() {
+        return depositTotal != null ? depositTotal : BigDecimal.ZERO;
+    }
+
+    public BigDecimal getSubtotalPrice() {
+        return subtotal != null ? subtotal : BigDecimal.ZERO;
+    }
+
+    public BigDecimal getTaxAmount() {
+        if (subtotal != null) {
+            return subtotal.multiply(new BigDecimal("0.19")).setScale(2, java.math.RoundingMode.HALF_UP);
+        }
+        return BigDecimal.ZERO;
+    }
+
+    public String getToolImage() {
+        return toolImageUrl;
+    }
+
+    public BigDecimal getDailyPrice() {
+        if (subtotal != null && totalDays > 0) {
+            return subtotal.divide(BigDecimal.valueOf(totalDays), 2, java.math.RoundingMode.HALF_UP);
+        }
+        return BigDecimal.ZERO;
+    }
 }

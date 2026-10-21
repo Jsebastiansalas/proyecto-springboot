@@ -91,4 +91,64 @@ public class DeliveryReturnController {
     public ResponseEntity<DepositSettlementResponse> getDepositSettlement(@PathVariable Long reservationId) {
         return ResponseEntity.ok(deliveryReturnService.getSettlementResponse(reservationId));
     }
+
+    @PostMapping("/logistics/dispatch/{reservationId}")
+    @PreAuthorize("hasAnyRole('PROVEEDOR', 'ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Despachar reserva (alias logístico)")
+    public ResponseEntity<RentalDeliveryResponse> dispatchRental(
+            @PathVariable Long reservationId,
+            @RequestBody(required = false) java.util.Map<String, Object> body) {
+        String obs = body != null && body.containsKey("observations") && body.get("observations") != null
+                ? String.valueOf(body.get("observations")) : "Despacho autorizado por patio central";
+        Integer initialHours = body != null && body.containsKey("initialHours") && body.get("initialHours") != null
+                ? ((Number) body.get("initialHours")).intValue() : 0;
+        StartRentalRequest req = new StartRentalRequest(
+                reservationId,
+                "Patio Central RentaMaq",
+                obs,
+                true,
+                initialHours,
+                initialHours,
+                obs
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(deliveryReturnService.startRentalFromRequest(req));
+    }
+
+    @PostMapping("/logistics/return/{reservationId}")
+    @PreAuthorize("hasAnyRole('PROVEEDOR', 'ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Recepción de devolución (alias logístico)")
+    public ResponseEntity<RentalReturnResponse> returnRental(
+            @PathVariable Long reservationId,
+            @RequestBody(required = false) java.util.Map<String, Object> body) {
+        java.math.BigDecimal damageCost = java.math.BigDecimal.ZERO;
+        if (body != null && body.containsKey("damageCost") && body.get("damageCost") != null) {
+            try {
+                damageCost = new java.math.BigDecimal(body.get("damageCost").toString());
+            } catch (Exception ignored) {}
+        }
+        String report = body != null && body.containsKey("damageReport") && body.get("damageReport") != null
+                ? String.valueOf(body.get("damageReport")) : "Reingreso a patio sin novedades.";
+        Integer finalHours = body != null && body.containsKey("finalHours") && body.get("finalHours") != null
+                ? ((Number) body.get("finalHours")).intValue() : 0;
+        com.renta.domain.model.enums.ToolConditionStatus status = damageCost.compareTo(java.math.BigDecimal.ZERO) > 0
+                ? com.renta.domain.model.enums.ToolConditionStatus.DANADO
+                : com.renta.domain.model.enums.ToolConditionStatus.BUENO;
+        FinishRentalRequest req = new FinishRentalRequest(
+                reservationId,
+                "Inspector Técnico RentaMaq",
+                status,
+                report,
+                damageCost.compareTo(java.math.BigDecimal.ZERO) == 0,
+                damageCost,
+                damageCost,
+                com.renta.domain.model.enums.DamageType.ESTRUCTURA,
+                damageCost.compareTo(java.math.BigDecimal.ZERO) > 0 ? report : null,
+                finalHours,
+                damageCost,
+                report
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(deliveryReturnService.finishRentalFromRequest(req));
+    }
 }

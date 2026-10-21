@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -68,10 +69,13 @@ public class ReservationController {
     @PostMapping("/calculate-price")
     @Operation(summary = "Cotizador dinámico de alquiler", description = "Calcula el costo total del alquiler aplicando tarifa diaria o semanal (descuento 15% para 7+ días), IVA del 19% y depósito de garantía requerido.")
     public ResponseEntity<PriceCalculationResponse> calculatePrice(@Valid @RequestBody CalculatePriceRequest request) {
+        LocalDate start = request.startDate() != null ? request.startDate() : LocalDate.now();
+        LocalDate end = request.endDate() != null ? request.endDate()
+                : start.plusDays(request.days() != null && request.days() > 0 ? request.days() : 1);
         PriceCalculationResponse response = reservationService.calculatePriceDetailed(
                 request.toolId(),
-                request.startDate(),
-                request.endDate()
+                start,
+                end
         );
         return ResponseEntity.ok(response);
     }
@@ -195,8 +199,17 @@ public class ReservationController {
     @Operation(summary = "Cancelar reserva", description = "Cancela una reserva registrando el motivo. Restringido al cliente titular o ADMIN.")
     public ResponseEntity<ReservationResponse> cancelReservation(
             @PathVariable Long id,
-            @RequestParam(defaultValue = "Cancelada por el usuario") String reason) {
-        Reservation res = reservationService.cancelReservation(id, reason);
+            @RequestParam(required = false) String reason,
+            @RequestBody(required = false) java.util.Map<String, Object> body) {
+        String effectiveReason = reason;
+        if (effectiveReason == null || effectiveReason.isBlank()) {
+            if (body != null && body.containsKey("reason") && body.get("reason") != null) {
+                effectiveReason = body.get("reason").toString();
+            } else {
+                effectiveReason = "Cancelada por el usuario";
+            }
+        }
+        Reservation res = reservationService.cancelReservation(id, effectiveReason);
         return ResponseEntity.ok(reservationService.getReservationById(res.getId()));
     }
 
@@ -206,8 +219,17 @@ public class ReservationController {
     @Operation(summary = "Rechazar reserva", description = "Rechaza una reserva registrando el motivo.")
     public ResponseEntity<ReservationResponse> rejectReservation(
             @PathVariable Long id,
-            @RequestParam(defaultValue = "Rechazada por el proveedor") String reason) {
-        Reservation res = reservationService.rejectReservation(id, reason);
+            @RequestParam(required = false) String reason,
+            @RequestBody(required = false) java.util.Map<String, Object> body) {
+        String effectiveReason = reason;
+        if (effectiveReason == null || effectiveReason.isBlank()) {
+            if (body != null && body.containsKey("reason") && body.get("reason") != null) {
+                effectiveReason = body.get("reason").toString();
+            } else {
+                effectiveReason = "Rechazada por el proveedor";
+            }
+        }
+        Reservation res = reservationService.rejectReservation(id, effectiveReason);
         return ResponseEntity.ok(reservationService.getReservationById(res.getId()));
     }
 }

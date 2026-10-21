@@ -19,9 +19,15 @@ public record CreateReviewRequest(
         @Size(min = 3, max = 1000, message = "El comentario debe tener entre 3 y 1000 caracteres")
         String comment,
 
-        Long clientId
+        Long clientId,
+        Long toolId
 ) {
     public CreateReviewRequest(Long reservationId, Integer rating, String comment) {
-        this(reservationId, rating, comment, null);
+        this(reservationId, rating, comment, null, null);
+    }
+
+    public CreateReviewRequest(Long reservationId, Integer rating, String comment, Long clientId) {
+        this(reservationId, rating, comment, clientId, null);
     }
 }
+

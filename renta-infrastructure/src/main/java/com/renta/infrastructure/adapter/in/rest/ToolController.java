@@ -51,9 +51,11 @@ import java.util.List;
 public class ToolController {
 
     private final ToolApplicationService toolService;
+    private final com.renta.domain.port.out.ProviderRepositoryPort providerRepository;
 
-    public ToolController(ToolApplicationService toolService) {
+    public ToolController(ToolApplicationService toolService, com.renta.domain.port.out.ProviderRepositoryPort providerRepository) {
         this.toolService = toolService;
+        this.providerRepository = providerRepository;
     }
 
     @GetMapping
@@ -89,8 +91,41 @@ public class ToolController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROVEEDOR')")
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "Registrar nueva herramienta", description = "Crea una herramienta con todas sus relaciones normalizadas 4FN (imágenes, especificaciones, precios y seguridad). Requiere rol PROVEEDOR o ADMIN.")
-    public ResponseEntity<ToolDetailResponse> createTool(@Valid @RequestBody CreateToolRequest request) {
-        ToolDetailResponse created = toolService.createTool(request);
+    public ResponseEntity<ToolDetailResponse> createTool(
+            @Valid @RequestBody CreateToolRequest request,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.renta.infrastructure.adapter.out.security.CustomUserDetails userDetails) {
+        
+        Long providerId = request.providerId();
+        if (providerId == null && userDetails != null && userDetails.getId() != null) {
+            providerId = providerRepository.findByUserId(userDetails.getId())
+                    .map(com.renta.domain.model.entity.Provider::getId)
+                    .orElse(1L);
+        } else if (providerId == null) {
+            providerId = 1L;
+        }
+
+        String sku = (request.codeSku() != null && !request.codeSku().isBlank())
+                ? request.codeSku()
+                : "HERR-" + (System.currentTimeMillis() % 100000);
+
+        CreateToolRequest finalReq = new CreateToolRequest(
+                providerId,
+                request.categoryId(),
+                sku,
+                request.name(),
+                request.brand(),
+                request.model(),
+                request.description(),
+                request.baseDailyPrice(),
+                request.depositAmount(),
+                request.mainImageUrl(),
+                request.images(),
+                request.specifications(),
+                request.pricingTiers(),
+                request.safetyRequirements()
+        );
+
+        ToolDetailResponse created = toolService.createTool(finalReq);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 

@@ -8,9 +8,14 @@ public record CalculatePriceRequest(
         @NotNull(message = "El ID de la herramienta es obligatorio")
         Long toolId,
 
-        @NotNull(message = "La fecha de inicio es obligatoria")
         LocalDate startDate,
 
-        @NotNull(message = "La fecha de fin es obligatoria")
-        LocalDate endDate
-) {}
+        LocalDate endDate,
+
+        Integer days
+) {
+    public CalculatePriceRequest(Long toolId, LocalDate startDate, LocalDate endDate) {
+        this(toolId, startDate, endDate, null);
+    }
+}
+

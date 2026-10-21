@@ -121,10 +121,15 @@ public class DeliveryReturnApplicationService implements
     }
 
     public RentalDeliveryResponse startRentalFromRequest(StartRentalRequest req) {
+        String delivered = (req.deliveredBy() != null && !req.deliveredBy().isBlank())
+                ? req.deliveredBy() : "Patio Central RentaMaq (Operador)";
+        String notes = (req.initialConditionNotes() != null && !req.initialConditionNotes().isBlank())
+                ? req.initialConditionNotes()
+                : (req.observations() != null && !req.observations().isBlank() ? req.observations() : "Equipo inspeccionado y despachado según protocolo 4FN.");
         StartRentalCommand cmd = new StartRentalCommand(
                 req.reservationId(),
-                req.deliveredBy(),
-                req.initialConditionNotes(),
+                delivered,
+                notes,
                 req.clientSignatureAck()
         );
         RentalDelivery d = startRental(cmd);
@@ -187,9 +192,22 @@ public class DeliveryReturnApplicationService implements
         Reservation res = reservationRepository.findById(req.reservationId())
                 .orElseThrow(() -> new ResourceNotFoundException("Reserva no encontrada con ID: " + req.reservationId()));
 
+        String received = (req.receivedBy() != null && !req.receivedBy().isBlank())
+                ? req.receivedBy() : "Inspector Técnico RentaMaq";
+
+        java.math.BigDecimal extraFeeVal = req.extraDamageFee() != null ? req.extraDamageFee()
+                : (req.damageCost() != null ? req.damageCost() : java.math.BigDecimal.ZERO);
+
+        ToolConditionStatus status = req.conditionStatus() != null ? req.conditionStatus()
+                : (extraFeeVal.compareTo(java.math.BigDecimal.ZERO) > 0 ? ToolConditionStatus.DANADO : ToolConditionStatus.BUENO);
+
+        String notes = (req.inspectionNotes() != null && !req.inspectionNotes().isBlank())
+                ? req.inspectionNotes()
+                : (req.damageReport() != null && !req.damageReport().isBlank() ? req.damageReport() : "Inspección técnica de retorno completada sin novedades.");
+
         Money deposit = res.getDepositTotal();
         Money damageCost = req.repairCostEstimate() != null ? Money.cop(req.repairCostEstimate())
-                : (req.extraDamageFee() != null ? Money.cop(req.extraDamageFee()) : Money.zero());
+                : (extraFeeVal.compareTo(java.math.BigDecimal.ZERO) > 0 ? Money.cop(extraFeeVal) : Money.zero());
 
         // Calcular automáticamente la liquidación de fianza
         DepositSettlement settlement = DepositSettlement.calculate(deposit, damageCost);
@@ -198,32 +216,32 @@ public class DeliveryReturnApplicationService implements
 
         FinishRentalCommand cmd = new FinishRentalCommand(
                 req.reservationId(),
-                req.receivedBy(),
-                req.conditionStatus(),
-                req.inspectionNotes(),
+                received,
+                status,
+                notes,
                 refunded,
                 extraFee
         );
         RentalReturn r = finishRental(cmd);
 
         // HU-04: Registrar automáticamente el reporte en damage_reports (4FN) si hay avería o cargo por daños
-        boolean hasDamage = req.conditionStatus() == ToolConditionStatus.DANADO
-                || req.conditionStatus() == ToolConditionStatus.INOPERATIVO
+        boolean hasDamage = status == ToolConditionStatus.DANADO
+                || status == ToolConditionStatus.INOPERATIVO
                 || (req.repairCostEstimate() != null && req.repairCostEstimate().compareTo(java.math.BigDecimal.ZERO) > 0)
-                || (req.extraDamageFee() != null && req.extraDamageFee().compareTo(java.math.BigDecimal.ZERO) > 0);
+                || extraFeeVal.compareTo(java.math.BigDecimal.ZERO) > 0;
 
         if (hasDamage) {
             com.renta.domain.model.enums.DamageType dtype = req.damageType() != null ? req.damageType() : com.renta.domain.model.enums.DamageType.ESTRUCTURA;
             String ddesc = (req.damageDescription() != null && !req.damageDescription().isBlank())
                     ? req.damageDescription()
-                    : req.inspectionNotes();
+                    : (req.damageReport() != null && !req.damageReport().isBlank() ? req.damageReport() : notes);
             Money damageAmount = req.repairCostEstimate() != null ? Money.cop(req.repairCostEstimate())
-                    : (req.extraDamageFee() != null ? Money.cop(req.extraDamageFee()) : Money.zero());
+                    : (extraFeeVal.compareTo(java.math.BigDecimal.ZERO) > 0 ? Money.cop(extraFeeVal) : Money.zero());
 
             DamageReport damageReport = new DamageReport(
                     null,
                     r.getId(),
-                    req.receivedBy(),
+                    received,
                     dtype,
                     ddesc,
                     damageAmount,
@@ -260,15 +278,20 @@ public class DeliveryReturnApplicationService implements
 
     public DamageReportResponse registerDamageFromRequest(DamageReportRequest req) {
         DamageReportStatus status = req.status() != null ? req.status() : DamageReportStatus.EVALUANDO;
-        Money cost = Money.cop(req.repairCostEstimate());
-        RentalReturn ret = returnRepository.findById(req.returnId())
-                .orElseThrow(() -> new ResourceNotFoundException("Devolución no encontrada con ID: " + req.returnId()));
+        java.math.BigDecimal costVal = req.effectiveCost();
+        Money cost = Money.cop(costVal);
+        RentalReturn ret = returnRepository.findById(req.effectiveReturnId())
+                .orElseThrow(() -> new ResourceNotFoundException("Devolución no encontrada con ID: " + req.effectiveReturnId()));
+
+        String reporter = (req.reportedBy() != null && !req.reportedBy().isBlank())
+                ? req.reportedBy() : "Inspector Técnico RentaMaq";
+        com.renta.domain.model.enums.DamageType dtype = req.damageType() != null ? req.damageType() : com.renta.domain.model.enums.DamageType.ESTRUCTURA;
 
         DamageReport rep = new DamageReport(
                 null,
                 ret.getId(),
-                req.reportedBy(),
-                req.damageType(),
+                reporter,
+                dtype,
                 req.description(),
                 cost,
                 status,

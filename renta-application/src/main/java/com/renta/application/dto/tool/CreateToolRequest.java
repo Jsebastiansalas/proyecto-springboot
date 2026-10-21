@@ -8,13 +8,11 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public record CreateToolRequest(
-        @NotNull(message = "El ID del proveedor es obligatorio")
         Long providerId,
 
         @NotNull(message = "La categoría es obligatoria")
         Integer categoryId,
 
-        @NotBlank(message = "El código SKU es obligatorio")
         String codeSku,
 
         @NotBlank(message = "El nombre de la herramienta es obligatorio")

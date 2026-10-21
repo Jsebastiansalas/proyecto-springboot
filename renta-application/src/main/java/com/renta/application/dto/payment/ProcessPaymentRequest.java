@@ -15,7 +15,6 @@ public record ProcessPaymentRequest(
         @NotNull(message = "El método de pago es obligatorio")
         PaymentMethod paymentMethod,
 
-        @NotNull(message = "El monto es obligatorio")
         @DecimalMin(value = "0.01", message = "El monto debe ser positivo")
         BigDecimal amount,
 
@@ -27,3 +26,4 @@ public record ProcessPaymentRequest(
         this(reservationId, clientId, paymentMethod, amount, cardNumberMasked, gatewayReference, 1);
     }
 }
+
