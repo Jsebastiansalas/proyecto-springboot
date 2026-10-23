@@ -151,4 +151,17 @@ public class DeliveryReturnController {
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(deliveryReturnService.finishRentalFromRequest(req));
     }
+
+    /**
+     * EVALUAR LIQUIDACIÓN Y MORA POR DEVOLUCIÓN TARDÍA
+     */
+    @GetMapping("/returns/late-settlement/{reservationId}")
+    @PreAuthorize("hasAnyRole('CLIENTE', 'PROVEEDOR', 'ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Calcular liquidación por devolución tardía / mora", description = "Evalúa si la herramienta tiene retraso y calcula el cobro penalizable y el saldo de fianza a reintegrar.")
+    public ResponseEntity<com.renta.application.dto.delivery.LateReturnSettlementResponse> getLateReturnSettlement(
+            @PathVariable Long reservationId,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate returnDate) {
+        return ResponseEntity.ok(deliveryReturnService.calculateLateReturnSettlement(reservationId, returnDate));
+    }
 }

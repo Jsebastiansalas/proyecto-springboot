@@ -5,12 +5,28 @@ import com.renta.domain.model.vo.RentalPriceCalculation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@DisplayName("Pruebas Unitarias - RentalPricingCalculator")
+/**
+ * ============================================================================
+ * PRUEBAS UNITARIAS DE DOMINIO PURO: RentalPricingCalculatorTest
+ * ============================================================================
+ * Prueba las reglas matemáticas del negocio con JUnit 5 estándar (sin Spring):
+ * 1. Tarifa diaria estándar (1 a 6 días).
+ * 2. Descuento semanal del 15% (factor 0.85 para 7 o más días).
+ * 3. Impuesto legal de IVA colombiano (19%).
+ * 4. Suma del depósito de garantía y total a pagar.
+ * 5. Manejo de valores límite y excepciones de negocio.
+ */
 class RentalPricingCalculatorTest {
 
     private RentalPricingCalculator calculator;
@@ -21,70 +37,93 @@ class RentalPricingCalculatorTest {
     }
 
     @Test
-    @DisplayName("R37: 5 días de una herramienta a 45.000/día calcula subtotal 225.000 e IVA 42.750")
-    void shouldCalculateStandardDailyRateForFiveDaysRental() {
-        Money basePrice = Money.cop(45_000);
-        Money deposit = Money.cop(150_000);
-        int days = 5;
+    @DisplayName("Debe calcular correctamente el alquiler estándar de 3 días sin descuento")
+    void shouldCalculateStandardRentalWithoutDiscount() {
+        Money dailyPrice = Money.of(100000);
+        Money deposit = Money.of(200000);
+        int days = 3;
 
-        RentalPriceCalculation result = calculator.calculate(basePrice, deposit, days);
-
-        assertNotNull(result);
-        assertEquals(5, result.totalDays());
-        assertFalse(result.weeklyDiscountApplied(), "No debe aplicar tarifa semanal para menos de 7 días");
-        assertEquals(new BigDecimal("45000.00"), result.effectiveDailyPrice().amount());
-        assertEquals(new BigDecimal("225000.00"), result.subtotal().amount(), "El subtotal debe ser 225.000 COP");
-        assertEquals(new BigDecimal("42750.00"), result.taxAmount().amount(), "El IVA (19%) debe ser 42.750 COP");
-        assertEquals(new BigDecimal("267750.00"), result.totalWithTax().amount(), "Total con IVA debe ser 267.750 COP");
-        assertEquals(new BigDecimal("150000.00"), result.depositAmount().amount());
-        assertEquals(new BigDecimal("375000.00"), result.totalReservationAmount().amount());
-    }
-
-    @Test
-    @DisplayName("R38: 7+ días de renta aplica la tarifa semanal (85% del precio base)")
-    void shouldApplyWeeklyRateDiscountForSevenOrMoreDays() {
-        Money basePrice = Money.cop(45_000);
-        int days = 7;
-
-        RentalPriceCalculation result = calculator.calculate(basePrice, days);
+        RentalPriceCalculation result = calculator.calculate(dailyPrice, deposit, days);
 
         assertNotNull(result);
-        assertEquals(7, result.totalDays());
-        assertTrue(result.weeklyDiscountApplied(), "Debe aplicar tarifa semanal para 7 o más días");
-        // 45.000 * 0.85 = 38.250
-        assertEquals(new BigDecimal("38250.00"), result.effectiveDailyPrice().amount());
-        // 7 * 38.250 = 267.750
-        assertEquals(new BigDecimal("267750.00"), result.subtotal().amount());
-        // 267.750 * 0.19 = 50.872,50
-        assertEquals(new BigDecimal("50872.50"), result.taxAmount().amount());
-        // 267.750 + 50.872,50 = 318.622,50
-        assertEquals(new BigDecimal("318622.50"), result.totalWithTax().amount());
+        assertEquals(3, result.totalDays());
+        assertFalse(result.weeklyDiscountApplied());
+        assertEquals(0, new BigDecimal("100000.00").compareTo(result.effectiveDailyPrice().amount()));
+        assertEquals(0, new BigDecimal("300000.00").compareTo(result.subtotal().amount()));
+        assertEquals(0, new BigDecimal("57000.00").compareTo(result.taxAmount().amount()));
+        assertEquals(0, new BigDecimal("357000.00").compareTo(result.totalWithTax().amount()));
+        assertEquals(0, new BigDecimal("500000.00").compareTo(result.totalReservationAmount().amount()));
     }
 
-    @Test
-    @DisplayName("R38: 10 días de renta a 120.000/día aplica tarifa semanal de 102.000/día")
-    void shouldApplyWeeklyRateDiscountForTenDaysRental() {
-        Money basePrice = Money.cop(120_000);
-        int days = 10;
+    @ParameterizedTest
+    @ValueSource(ints = {7, 10, 14, 30})
+    @DisplayName("Debe aplicar 15% de descuento para alquileres de 7 o más días")
+    void shouldApplyWeeklyDiscountForSevenDaysOrMore(int days) {
+        Money dailyPrice = Money.of(100000);
+        Money deposit = Money.of(50000);
 
-        RentalPriceCalculation result = calculator.calculate(basePrice, days);
+        RentalPriceCalculation result = calculator.calculate(dailyPrice, deposit, days);
 
         assertTrue(result.weeklyDiscountApplied());
-        // 120.000 * 0.85 = 102.000
-        assertEquals(new BigDecimal("102000.00"), result.effectiveDailyPrice().amount());
-        // 10 * 102.000 = 1.020.000
-        assertEquals(new BigDecimal("1020000.00"), result.subtotal().amount());
-        // 1.020.000 * 0.19 = 193.800
-        assertEquals(new BigDecimal("193800.00"), result.taxAmount().amount());
-        assertEquals(new BigDecimal("1213800.00"), result.totalWithTax().amount());
+        assertEquals(0, new BigDecimal("85000.00").compareTo(result.effectiveDailyPrice().amount()));
+
+        BigDecimal expectedSubtotal = BigDecimal.valueOf(85000).multiply(BigDecimal.valueOf(days));
+        assertEquals(0, expectedSubtotal.compareTo(result.subtotal().amount()));
     }
 
     @Test
-    @DisplayName("Días menores o iguales a cero lanzan IllegalArgumentException")
-    void shouldThrowExceptionWhenDaysIsInvalid() {
-        Money basePrice = Money.cop(45_000);
+    @DisplayName("Debe lanzar IllegalArgumentException si los días son cero o negativos")
+    void shouldThrowExceptionWhenDaysAreZeroOrNegative() {
+        Money dailyPrice = Money.of(50000);
+        Money deposit = Money.of(10000);
 
-        assertThrows(IllegalArgumentException.class, () -> calculator.calculate(basePrice, 0));
-        assertThrows(IllegalArgumentException.class, () -> calculator.calculate(basePrice, -3));
+        assertThrows(IllegalArgumentException.class, () -> calculator.calculate(dailyPrice, deposit, 0));
+        assertThrows(IllegalArgumentException.class, () -> calculator.calculate(dailyPrice, deposit, -5));
+    }
+
+    @Test
+    @DisplayName("Debe lanzar NullPointerException si la tarifa diaria es nula")
+    void shouldThrowExceptionWhenDailyPriceIsNull() {
+        assertThrows(NullPointerException.class, () -> calculator.calculate(null, Money.zero(), 5));
+    }
+
+    @Test
+    @DisplayName("Debe aplicar seguro contra daños (8% subtotal) y reducir la fianza al 50%")
+    void shouldApplyDamageInsuranceAndReduceDepositByHalf() {
+        Money dailyPrice = Money.of(100000);
+        Money deposit = Money.of(400000);
+        int days = 5; // Subtotal: 500.000 COP
+
+        RentalPriceCalculation result = calculator.calculate(dailyPrice, deposit, days, true);
+
+        assertTrue(result.damageInsuranceApplied());
+        // Seguro: 8% de 500.000 = 40.000 COP
+        assertEquals(0, BigDecimal.valueOf(40000).compareTo(result.insuranceCost().amount()));
+        // Fianza reducida al 50%: 400.000 * 0.5 = 200.000 COP
+        assertEquals(0, BigDecimal.valueOf(200000).compareTo(result.depositAmount().amount()));
+        // Total reserva: 500.000 subtotal + 200.000 fianza + 40.000 seguro = 740.000 COP
+        assertEquals(0, BigDecimal.valueOf(740000).compareTo(result.totalReservationAmount().amount()));
+    }
+
+    @Test
+    @DisplayName("Debe aplicar recargo del 20% en días de fin de semana (Sábado y Domingo)")
+    void shouldApplyWeekendSurchargeCorrectly() {
+        Money dailyPrice = Money.of(100000);
+        Money deposit = Money.of(200000);
+        // Rango de Viernes (2026-11-06) a Lunes (2026-11-09): 4 días (Viernes, Sábado, Domingo, Lunes)
+        // 2 días regulares (100k c/u = 200k) + 2 días fin de semana (120k c/u = 240k) = Subtotal 440.000 COP
+        com.renta.domain.model.vo.DateRange dateRange = new com.renta.domain.model.vo.DateRange(
+                java.time.LocalDate.of(2026, 11, 6),
+                java.time.LocalDate.of(2026, 11, 9)
+        );
+
+        RentalPriceCalculation result = calculator.calculateWithWeekendSurcharge(
+                dailyPrice, deposit, dateRange, true, false
+        );
+
+        assertEquals(4, result.totalDays());
+        assertEquals(0, BigDecimal.valueOf(440000).compareTo(result.subtotal().amount()));
+        // Recargo extra respecto al precio estándar (400.000 vs 440.000 = 40.000 COP)
+        assertEquals(0, BigDecimal.valueOf(40000).compareTo(result.weekendSurchargeAmount().amount()));
     }
 }

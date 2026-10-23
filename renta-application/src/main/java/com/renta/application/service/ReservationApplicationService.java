@@ -17,23 +17,34 @@ import com.renta.domain.model.enums.ReservationStatus;
 import com.renta.domain.model.enums.ToolStatus;
 import com.renta.domain.model.vo.DateRange;
 import com.renta.domain.model.vo.Money;
+import com.renta.application.dto.reservation.CancellationPenaltyResponse;
+import com.renta.application.dto.reservation.ReservationExtensionResponse;
+import com.renta.domain.model.vo.CancellationSettlement;
 import com.renta.domain.model.vo.RentalPriceCalculation;
 import com.renta.domain.port.in.ApproveReservationUseCase;
 import com.renta.domain.port.in.CalculateRentalPriceUseCase;
 import com.renta.domain.port.in.CancelReservationUseCase;
 import com.renta.domain.port.in.CreateReservationUseCase;
+import com.renta.domain.port.in.ExtendReservationUseCase;
 import com.renta.domain.port.in.RejectReservationUseCase;
+import com.renta.application.dto.reservation.ReservationAuditLogResponse;
+import com.renta.domain.model.entity.ReservationStatusAuditLog;
+import com.renta.domain.port.out.ReservationAuditLogRepositoryPort;
 import com.renta.domain.port.out.ClientRepositoryPort;
 import com.renta.domain.port.out.NotificationServicePort;
 import com.renta.domain.port.out.PaymentRepositoryPort;
 import com.renta.domain.port.out.ReservationRepositoryPort;
 import com.renta.domain.port.out.ToolRepositoryPort;
+import com.renta.domain.service.CancellationPolicy;
 import com.renta.domain.service.RentalPricingCalculator;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -42,13 +53,6 @@ import java.util.UUID;
  * ============================================================================
  * SERVICIO DE GESTIÓN DE RESERVAS Y COTIZACIÓN DE ALQUILERES
  * ============================================================================
- * 
- * ¿QUÉ HACE ESTE SERVICIO?
- * Es el núcleo del negocio de alquileres. Gestiona todo el proceso:
- * 1. Cotizar precios antes de alquilar (aplica descuento semanal e IVA 19%).
- * 2. Crear una reserva validando que no choque con otras en el calendario.
- * 3. Aprobar, rechazar o cancelar contratos de reserva.
- * 4. Consultar el historial de alquileres por cliente, proveedor o máquina.
  */
 public class ReservationApplicationService implements
         CreateReservationUseCase,
@@ -56,20 +60,22 @@ public class ReservationApplicationService implements
         CancelReservationUseCase,
         RejectReservationUseCase,
         CalculateRentalPriceUseCase,
-        ReservationQueryUseCase {
+        ReservationQueryUseCase,
+        ExtendReservationUseCase {
 
     private final ReservationRepositoryPort reservationRepository;
     private final ToolRepositoryPort toolRepository;
     private final ClientRepositoryPort clientRepository;
     private final NotificationServicePort notificationService;
     private final PaymentRepositoryPort paymentRepository;
+    private final ReservationAuditLogRepositoryPort auditLogRepository;
 
     public ReservationApplicationService(
             ReservationRepositoryPort reservationRepository,
             ToolRepositoryPort toolRepository,
             ClientRepositoryPort clientRepository,
             NotificationServicePort notificationService) {
-        this(reservationRepository, toolRepository, clientRepository, notificationService, null);
+        this(reservationRepository, toolRepository, clientRepository, notificationService, null, null);
     }
 
     public ReservationApplicationService(
@@ -78,11 +84,31 @@ public class ReservationApplicationService implements
             ClientRepositoryPort clientRepository,
             NotificationServicePort notificationService,
             PaymentRepositoryPort paymentRepository) {
+        this(reservationRepository, toolRepository, clientRepository, notificationService, paymentRepository, null);
+    }
+
+    public ReservationApplicationService(
+            ReservationRepositoryPort reservationRepository,
+            ToolRepositoryPort toolRepository,
+            ClientRepositoryPort clientRepository,
+            NotificationServicePort notificationService,
+            PaymentRepositoryPort paymentRepository,
+            ReservationAuditLogRepositoryPort auditLogRepository) {
         this.reservationRepository = Objects.requireNonNull(reservationRepository, "reservationRepository es obligatorio");
         this.toolRepository = Objects.requireNonNull(toolRepository, "toolRepository es obligatorio");
         this.clientRepository = Objects.requireNonNull(clientRepository, "clientRepository es obligatorio");
         this.notificationService = Objects.requireNonNull(notificationService, "notificationService es obligatorio");
         this.paymentRepository = paymentRepository;
+        this.auditLogRepository = auditLogRepository;
+    }
+
+    private void recordAudit(Long reservationId, ReservationStatus prevStatus, ReservationStatus newStatus, String changedBy, String reason) {
+        if (auditLogRepository != null && reservationId != null) {
+            try {
+                auditLogRepository.save(ReservationStatusAuditLog.create(reservationId, prevStatus, newStatus, changedBy, reason));
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     /**
@@ -119,19 +145,39 @@ public class ReservationApplicationService implements
         if (dateRange.totalDays() > 30) {
             throw new IllegalArgumentException("El periodo de alquiler no puede exceder los 30 días calendario (1 mes) por contrato");
         }
-        if (reservationRepository.existsOverlapping(command.toolId(), dateRange)) {
-            throw new ReservationConflictException(command.toolId(),
-                    "La herramienta ya tiene una reserva activa que se solapa con las fechas solicitadas: " + dateRange);
+
+        int maxStock = tool.getStockQuantity() != null ? tool.getStockQuantity() : 1;
+        if (maxStock <= 1) {
+            if (reservationRepository.existsOverlapping(command.toolId(), dateRange)) {
+                throw new ReservationConflictException(command.toolId(),
+                        "La herramienta ya tiene una reserva activa que se solapa con las fechas solicitadas: " + dateRange);
+            }
+        } else {
+            List<Reservation> activeOverlapping = reservationRepository.findOverlappingReservations(
+                    command.toolId(),
+                    dateRange,
+                    List.of(ReservationStatus.APROBADA, ReservationStatus.EN_CURSO)
+            );
+            if (activeOverlapping.size() >= maxStock) {
+                throw new ReservationConflictException(command.toolId(),
+                        String.format("La herramienta ya tiene %d de %d unidades reservadas en esas fechas",
+                                activeOverlapping.size(), maxStock));
+            }
         }
 
-        // PASO 5: Calcular costos financieros
+        // PASO 5: Calcular costos financieros (incluye Seguro Todo Riesgo)
         int totalDays = dateRange.totalDays();
         RentalPricingCalculator calculator = new RentalPricingCalculator();
-        RentalPriceCalculation calc = calculator.calculate(tool.getBaseDailyPrice(), totalDays);
+        RentalPriceCalculation calc = calculator.calculate(
+                tool.getBaseDailyPrice(),
+                tool.getDepositAmount(),
+                totalDays,
+                command.includeDamageWaiver()
+        );
 
         Money subtotal = calc.subtotal();
-        Money deposit = tool.getDepositAmount();
-        Money total = subtotal.plus(deposit);
+        Money deposit = calc.depositAmount();
+        Money total = calc.totalReservationAmount();
 
         // PASO 6: Generar código de reserva único
         String code = "RES-" + LocalDate.now().getYear() + "-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
@@ -153,8 +199,12 @@ public class ReservationApplicationService implements
                 now,
                 now
         );
+        reservation.setHasDamageInsurance(calc.damageInsuranceApplied());
+        reservation.setInsuranceCost(calc.insuranceCost());
 
-        return reservationRepository.save(reservation);
+        Reservation saved = reservationRepository.save(reservation);
+        recordAudit(saved.getId(), null, ReservationStatus.PENDIENTE, "CLIENTE #" + command.clientId(), "Creación de reserva inicial");
+        return saved;
     }
 
     public ReservationResponse createFromRequest(CreateReservationRequest req) {
@@ -163,7 +213,8 @@ public class ReservationApplicationService implements
                 req.toolId(),
                 req.startDate(),
                 req.endDate(),
-                req.notes()
+                req.notes(),
+                Boolean.TRUE.equals(req.includeDamageWaiver())
         );
         Reservation saved = createReservation(cmd);
         return enrichReservationResponse(saved);
@@ -312,5 +363,164 @@ public class ReservationApplicationService implements
             payment = paymentRepository.findByReservationId(res.getId()).orElse(null);
         }
         return ReservationDtoMapper.toResponse(res, clientName, toolName, toolImageUrl, payment);
+    }
+
+    /**
+     * EXTENSIÓN / PRÓRROGA DE CONTRATO DE ALQUILER
+     */
+    @Override
+    public Reservation extendReservation(Long reservationId, LocalDate newEndDate, String reason) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reserva no encontrada con ID: " + reservationId));
+
+        if (reservation.getStatus() != ReservationStatus.APROBADA && reservation.getStatus() != ReservationStatus.EN_CURSO) {
+            throw new BusinessRuleViolationException(
+                    "Solo se pueden prorrogar reservas en estado APROBADA o EN_CURSO. Estado actual: " + reservation.getStatus()
+            );
+        }
+
+        LocalDate currentEndDate = reservation.getDateRange().endDate();
+        if (!newEndDate.isAfter(currentEndDate)) {
+            throw new BusinessRuleViolationException(
+                    String.format("La nueva fecha (%s) debe ser estrictamente posterior a la fecha actual de finalización (%s)",
+                            newEndDate, currentEndDate)
+            );
+        }
+
+        Long toolId = reservation.getToolId();
+        LocalDate extensionStartDate = currentEndDate.plusDays(1);
+        DateRange extensionRange = new DateRange(extensionStartDate, newEndDate);
+        List<Reservation> overlapping = reservationRepository.findOverlappingReservations(
+                toolId,
+                extensionRange,
+                List.of(ReservationStatus.APROBADA, ReservationStatus.EN_CURSO)
+        );
+
+        boolean hasConflict = overlapping.stream()
+                .anyMatch(r -> !r.getId().equals(reservationId));
+
+        if (hasConflict) {
+            throw new ReservationConflictException(
+                    "No es posible extender el alquiler: la maquinaria ya tiene otra reserva confirmada en las fechas solicitadas."
+            );
+        }
+
+        Tool tool = toolRepository.findById(toolId)
+                .orElseThrow(() -> new ResourceNotFoundException("Herramienta no encontrada"));
+
+        int additionalDays = (int) ChronoUnit.DAYS.between(currentEndDate, newEndDate);
+        Money dailyPrice = tool.getBaseDailyPrice();
+        Money additionalSubtotal = dailyPrice.multiply(additionalDays);
+
+        BigDecimal ivaRate = RentalPricingCalculator.IVA_RATE.divide(BigDecimal.valueOf(100));
+        Money additionalTax = Money.of(additionalSubtotal.amount().multiply(ivaRate));
+        Money additionalTotal = additionalSubtotal.plus(additionalTax);
+
+        DateRange newRange = new DateRange(reservation.getDateRange().startDate(), newEndDate);
+        reservation.setDateRange(newRange);
+        reservation.setTotalDays(newRange.durationInDays());
+        reservation.setSubtotal(reservation.getSubtotal().plus(additionalSubtotal));
+        reservation.setTotalAmount(reservation.getTotalAmount().plus(additionalTotal));
+
+        String logNote = String.format("[Prórroga concedida: +%d días hasta %s. Motivo: %s]",
+                additionalDays, newEndDate, reason != null ? reason : "Sin especificar");
+        reservation.setNotes((reservation.getNotes() != null ? reservation.getNotes() + " | " : "") + logNote);
+
+        Reservation saved = reservationRepository.save(reservation);
+
+        if (notificationService != null) {
+            notificationService.notifyReservationApproved(saved);
+        }
+
+        recordAudit(saved.getId(), saved.getStatus(), saved.getStatus(), "USUARIO", logNote);
+
+        return saved;
+    }
+
+    public ReservationExtensionResponse extendReservationAndGetResponse(Long reservationId, LocalDate newEndDate, String reason) {
+        Reservation before = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reserva no encontrada"));
+        LocalDate oldEnd = before.getDateRange().endDate();
+        BigDecimal oldSubtotal = before.getSubtotal().amount();
+
+        Reservation updated = extendReservation(reservationId, newEndDate, reason);
+
+        int additionalDays = (int) ChronoUnit.DAYS.between(oldEnd, newEndDate);
+        BigDecimal additionalCost = updated.getSubtotal().amount().subtract(oldSubtotal);
+        BigDecimal additionalIva = additionalCost.multiply(BigDecimal.valueOf(0.19));
+
+        return new ReservationExtensionResponse(
+                updated.getId(),
+                updated.getReservationCode(),
+                oldEnd,
+                updated.getDateRange().endDate(),
+                additionalDays,
+                updated.getTotalDays(),
+                additionalCost,
+                additionalIva,
+                updated.getSubtotal().amount(),
+                updated.getTotalAmount().amount(),
+                updated.getStatus().name(),
+                reason,
+                "Prórroga de alquiler procesada exitosamente."
+        );
+    }
+
+    /**
+     * CANCELACIÓN CON LIQUIDACIÓN Y PENALIZACIÓN FINANCIERA
+     */
+    public CancellationPenaltyResponse cancelWithFinancialSettlement(Long reservationId, String reason) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reserva no encontrada con ID: " + reservationId));
+
+        String oldStatus = reservation.getStatus().name();
+
+        CancellationSettlement settlement = CancellationPolicy.evaluate(reservation, LocalDateTime.now());
+
+        String effectiveReason = (reason != null && !reason.isBlank()) ? reason : "Cancelación por solicitud del usuario";
+        reservation.cancel(String.format("%s. Penalización aplicada: %s%% ($%s)",
+                effectiveReason, settlement.penaltyPercentage(), settlement.penaltyFeeAmount().amount()));
+
+        Reservation updated = reservationRepository.save(reservation);
+
+        if (notificationService != null) {
+            notificationService.notifyReservationCancelled(updated, effectiveReason);
+        }
+
+        recordAudit(updated.getId(), ReservationStatus.valueOf(oldStatus), ReservationStatus.CANCELADA, "USUARIO", effectiveReason);
+
+        return new CancellationPenaltyResponse(
+                updated.getId(),
+                updated.getReservationCode(),
+                oldStatus,
+                updated.getStatus().name(),
+                settlement.originalTotalAmount().amount(),
+                settlement.penaltyPercentage(),
+                settlement.penaltyFeeAmount().amount(),
+                settlement.refundedDepositAmount().amount(),
+                settlement.totalRefundedToClient().amount(),
+                settlement.policyExplanation(),
+                effectiveReason
+        );
+    }
+
+    /**
+     * Consulta el historial cronológico de auditoría de estados de la reserva.
+     */
+    public List<ReservationAuditLogResponse> getAuditTrail(Long reservationId) {
+        if (auditLogRepository == null) {
+            return Collections.emptyList();
+        }
+        return auditLogRepository.findByReservationIdOrderByChangedAtDesc(reservationId).stream()
+                .map(log -> new ReservationAuditLogResponse(
+                        log.getId(),
+                        log.getReservationId(),
+                        log.getPreviousStatus() != null ? log.getPreviousStatus().name() : null,
+                        log.getNewStatus().name(),
+                        log.getChangedBy(),
+                        log.getChangedAt(),
+                        log.getReason()
+                ))
+                .toList();
     }
 }

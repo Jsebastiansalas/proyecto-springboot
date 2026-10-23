@@ -16,6 +16,11 @@ public interface CreateReservationUseCase {
             Long toolId,
             LocalDate startDate,
             LocalDate endDate,
-            String notes
-    ) {}
+            String notes,
+            boolean includeDamageWaiver
+    ) {
+        public CreateReservationCommand(Long clientId, Long toolId, LocalDate startDate, LocalDate endDate, String notes) {
+            this(clientId, toolId, startDate, endDate, notes, false);
+        }
+    }
 }

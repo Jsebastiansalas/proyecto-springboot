@@ -30,6 +30,8 @@ public class User {
     private Integer roleId;
     private UserRole role;
     private boolean active = true;
+    private boolean locked = false;
+    private String lockReason;
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -111,6 +113,34 @@ public class User {
 
     public void deactivate() {
         this.active = false;
+        this.updatedAt = Instant.now();
+    }
+
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+    }
+
+    public String getLockReason() {
+        return lockReason;
+    }
+
+    public void setLockReason(String lockReason) {
+        this.lockReason = lockReason;
+    }
+
+    public void lock(String reason) {
+        this.locked = true;
+        this.lockReason = reason;
+        this.updatedAt = Instant.now();
+    }
+
+    public void unlock() {
+        this.locked = false;
+        this.lockReason = null;
         this.updatedAt = Instant.now();
     }
 

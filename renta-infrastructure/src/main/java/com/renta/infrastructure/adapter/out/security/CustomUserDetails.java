@@ -30,6 +30,7 @@ public class CustomUserDetails implements UserDetails {
     private final String email;
     private final String password;
     private final boolean active;
+    private final boolean locked;
     private final String roleName;
 
     public CustomUserDetails(UserJpaEntity user, String roleName) {
@@ -37,6 +38,7 @@ public class CustomUserDetails implements UserDetails {
         this.email = user.getEmail();
         this.password = user.getPasswordHash();
         this.active = user.isActive();
+        this.locked = user.isLocked();
         this.roleName = roleName;
     }
 
@@ -69,21 +71,21 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; // La cuenta nunca expira por tiempo
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return active; // Si active == false, Spring Security bloqueará el acceso automáticamente
+        return !locked;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; // La contraseña no caduca
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return active; // Cuenta habilitada
+        return active && !locked;
     }
 }

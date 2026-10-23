@@ -1,8 +1,12 @@
 package com.renta.infrastructure.adapter.in.rest;
 
 import com.renta.application.dto.reservation.CalculatePriceRequest;
+import com.renta.application.dto.reservation.CancelWithPenaltyRequest;
+import com.renta.application.dto.reservation.CancellationPenaltyResponse;
 import com.renta.application.dto.reservation.CreateReservationRequest;
+import com.renta.application.dto.reservation.ExtendReservationRequest;
 import com.renta.application.dto.reservation.PriceCalculationResponse;
+import com.renta.application.dto.reservation.ReservationExtensionResponse;
 import com.renta.application.dto.reservation.ReservationResponse;
 import com.renta.application.service.ReservationApplicationService;
 import com.renta.domain.model.entity.Reservation;
@@ -231,5 +235,52 @@ public class ReservationController {
         }
         Reservation res = reservationService.rejectReservation(id, effectiveReason);
         return ResponseEntity.ok(reservationService.getReservationById(res.getId()));
+    }
+
+    @PatchMapping("/{id:[0-9]+}/extend")
+    @PreAuthorize("hasAnyRole('CLIENTE', 'ADMIN', 'PROVEEDOR') and @authz.canAccessReservation(principal, #id)")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(
+            summary = "Solicitar prórroga / extensión de alquiler",
+            description = "Extiende la fecha final de una reserva activa en obra (EN_CURSO o APROBADA). " +
+                    "Valida que la herramienta no tenga reservas conflictivas, recalcula los días adicionales con IVA (19%) y actualiza el contrato."
+    )
+    public ResponseEntity<ReservationExtensionResponse> extendReservation(
+            @PathVariable Long id,
+            @Valid @RequestBody ExtendReservationRequest request) {
+
+        ReservationExtensionResponse response = reservationService.extendReservationAndGetResponse(
+                id,
+                request.newEndDate(),
+                request.reason()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{id:[0-9]+}/cancel-with-penalty")
+    @PreAuthorize("hasAnyRole('CLIENTE', 'ADMIN') and @authz.canAccessReservation(principal, #id)")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(
+            summary = "Cancelar reserva con liquidación de penalización",
+            description = "Aplica la política de reembolso escalonado (>48h: 0% multa, 24-48h: 20% multa, <24h: 50% multa) y devuelve el desglose de fianza devuelta."
+    )
+    public ResponseEntity<CancellationPenaltyResponse> cancelWithPenalty(
+            @PathVariable Long id,
+            @Valid @RequestBody(required = false) CancelWithPenaltyRequest request) {
+
+        String reason = (request != null && request.reason() != null) ? request.reason() : "Cancelación voluntaria";
+        return ResponseEntity.ok(reservationService.cancelWithFinancialSettlement(id, reason));
+    }
+
+    @GetMapping("/{id:[0-9]+}/audit-trail")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROVEEDOR', 'CLIENTE') and @authz.canAccessReservation(principal, #id)")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(
+            summary = "Consultar pista de auditoría de la reserva",
+            description = "Retorna el historial cronológico completo de transiciones de estado de la reserva con fecha, usuario y motivo."
+    )
+    public ResponseEntity<List<com.renta.application.dto.reservation.ReservationAuditLogResponse>> getAuditTrail(@PathVariable Long id) {
+        return ResponseEntity.ok(reservationService.getAuditTrail(id));
     }
 }

@@ -41,6 +41,8 @@ public class Reservation {
     private Money depositTotal;
     private Money totalAmount;
     private ReservationStatus status = ReservationStatus.PENDIENTE;
+    private boolean hasDamageInsurance = false;
+    private Money insuranceCost = Money.zero();
     private String notes;
     private Instant createdAt;
     private Instant updatedAt;
@@ -339,6 +341,22 @@ public class Reservation {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public boolean isHasDamageInsurance() {
+        return hasDamageInsurance;
+    }
+
+    public void setHasDamageInsurance(boolean hasDamageInsurance) {
+        this.hasDamageInsurance = hasDamageInsurance;
+    }
+
+    public Money getInsuranceCost() {
+        return insuranceCost != null ? insuranceCost : Money.zero();
+    }
+
+    public void setInsuranceCost(Money insuranceCost) {
+        this.insuranceCost = insuranceCost != null ? insuranceCost : Money.zero();
     }
 
     public Instant getCreatedAt() {

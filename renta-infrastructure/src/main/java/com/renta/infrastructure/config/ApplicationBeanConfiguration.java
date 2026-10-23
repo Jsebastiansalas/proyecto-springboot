@@ -27,6 +27,13 @@ import com.renta.domain.port.out.ReviewRepositoryPort;
 import com.renta.domain.port.out.ToolCommentRepositoryPort;
 import com.renta.domain.port.out.ToolRepositoryPort;
 import com.renta.domain.port.out.UserRepositoryPort;
+import com.renta.application.service.CouponApplicationService;
+import com.renta.application.service.ToolMaintenanceApplicationService;
+import com.renta.application.service.ClientFavoriteApplicationService;
+import com.renta.domain.port.out.CouponRepositoryPort;
+import com.renta.domain.port.out.ToolMaintenanceRepositoryPort;
+import com.renta.domain.port.out.ClientFavoriteToolRepositoryPort;
+import com.renta.domain.port.out.ReservationAuditLogRepositoryPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -89,8 +96,9 @@ public class ApplicationBeanConfiguration {
             ToolRepositoryPort toolRepository,
             ClientRepositoryPort clientRepository,
             NotificationServicePort notificationService,
-            PaymentRepositoryPort paymentRepository) {
-        return new ReservationApplicationService(reservationRepository, toolRepository, clientRepository, notificationService, paymentRepository);
+            PaymentRepositoryPort paymentRepository,
+            ReservationAuditLogRepositoryPort auditLogRepository) {
+        return new ReservationApplicationService(reservationRepository, toolRepository, clientRepository, notificationService, paymentRepository, auditLogRepository);
     }
 
     /**
@@ -176,5 +184,34 @@ public class ApplicationBeanConfiguration {
             UserRepositoryPort userRepository,
             PaymentRepositoryPort paymentRepository) {
         return new ReportApplicationService(toolRepository, reservationRepository, providerRepository, clientRepository, userRepository, paymentRepository);
+    }
+
+    /**
+     * SERVICIO DE CUPONES DE DESCUENTO
+     */
+    @Bean
+    public CouponApplicationService couponApplicationService(CouponRepositoryPort couponRepository) {
+        return new CouponApplicationService(couponRepository);
+    }
+
+    /**
+     * SERVICIO DE MANTENIMIENTO DE MAQUINARIA
+     */
+    @Bean
+    public ToolMaintenanceApplicationService toolMaintenanceApplicationService(
+            ToolMaintenanceRepositoryPort maintenanceRepository,
+            ToolRepositoryPort toolRepository) {
+        return new ToolMaintenanceApplicationService(maintenanceRepository, toolRepository);
+    }
+
+    /**
+     * SERVICIO DE HERRAMIENTAS FAVORITAS / WISHLIST DEL CLIENTE
+     */
+    @Bean
+    public ClientFavoriteApplicationService clientFavoriteApplicationService(
+            ClientFavoriteToolRepositoryPort favoriteRepository,
+            ToolRepositoryPort toolRepository,
+            ClientRepositoryPort clientRepository) {
+        return new ClientFavoriteApplicationService(favoriteRepository, toolRepository, clientRepository);
     }
 }

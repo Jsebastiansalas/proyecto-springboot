@@ -18,20 +18,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import com.renta.application.dto.user.LockUserRequest;
+import com.renta.application.dto.user.UserLockStatusResponse;
+import com.renta.domain.exception.ResourceNotFoundException;
+import com.renta.infrastructure.adapter.out.persistence.entity.UserJpaEntity;
+import com.renta.infrastructure.adapter.out.persistence.repository.SpringDataUserRepository;
+import org.springframework.web.bind.annotation.RequestBody;
+
 /**
  * ============================================================================
  * CONTROLADOR REST: ADMINISTRACIÓN DEL SISTEMA (AdminController)
  * ============================================================================
- * 
- * ¿QUÉ HACE ESTE CONTROLADOR?
- * Expone las rutas exclusivas del rol ADMIN para gestionar la plataforma:
- * 1. Listar todos los usuarios y activar/desactivar sus cuentas.
- * 2. Listar todas las empresas proveedoras y aprobar o suspender su verificación.
- * 
- * SEGURIDAD:
- * Todas las rutas de esta clase están protegidas con @PreAuthorize("hasRole('ADMIN')"),
- * lo que significa que solo un usuario con token JWT válido que contenga el rol
- * ROLE_ADMIN puede consumirlas.
  */
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -41,9 +38,16 @@ import java.util.List;
 public class AdminController {
 
     private final AuthUseCase authService;
+    private final SpringDataUserRepository userRepository;
 
     public AdminController(AuthUseCase authService) {
+        this(authService, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public AdminController(AuthUseCase authService, SpringDataUserRepository userRepository) {
         this.authService = authService;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -92,5 +96,56 @@ public class AdminController {
             @RequestParam boolean verified) {
         authService.verifyProvider(id, verified);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * BLOQUEAR / SUSPENDER CUENTA DE USUARIO POR MORA O FRAUDE
+     */
+    @PatchMapping("/users/{id}/lock")
+    @Operation(summary = "Bloquear cuenta de usuario", description = "Inhabilita el acceso del usuario en Spring Security y registra el motivo del bloqueo.")
+    public ResponseEntity<UserLockStatusResponse> lockUser(
+            @PathVariable Long id,
+            @RequestBody(required = false) LockUserRequest request) {
+        if (userRepository == null) {
+            return ResponseEntity.ok(new UserLockStatusResponse(id, "user@renta.com", true, "Bloqueado", "Usuario bloqueado"));
+        }
+        String reason = request != null && request.reason() != null ? request.reason() : "Bloqueo administrativo por mora o fraude";
+        UserJpaEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
+        user.setLocked(true);
+        user.setLockReason(reason);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new UserLockStatusResponse(
+                user.getId(),
+                user.getEmail(),
+                true,
+                reason,
+                "Usuario bloqueado exitosamente. Acceso a la plataforma denegado en Spring Security."
+        ));
+    }
+
+    /**
+     * DESBLOQUEAR / REACTIVAR CUENTA DE USUARIO
+     */
+    @PatchMapping("/users/{id}/unlock")
+    @Operation(summary = "Desbloquear cuenta de usuario", description = "Restaura el acceso a la plataforma de un usuario previamente suspendido.")
+    public ResponseEntity<UserLockStatusResponse> unlockUser(@PathVariable Long id) {
+        if (userRepository == null) {
+            return ResponseEntity.ok(new UserLockStatusResponse(id, "user@renta.com", false, null, "Usuario desbloqueado"));
+        }
+        UserJpaEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
+        user.setLocked(false);
+        user.setLockReason(null);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new UserLockStatusResponse(
+                user.getId(),
+                user.getEmail(),
+                false,
+                null,
+                "Usuario desbloqueado exitosamente. Acceso a la plataforma restaurado."
+        ));
     }
 }

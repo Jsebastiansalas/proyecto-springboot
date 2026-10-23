@@ -43,6 +43,7 @@ public class Tool {
     private Money baseDailyPrice;
     private Money depositAmount;
     private ToolStatus status = ToolStatus.DISPONIBLE;
+    private Integer stockQuantity = 1;
     private String mainImageUrl;
     private Instant createdAt;
     private Instant updatedAt;
@@ -235,6 +236,14 @@ public class Tool {
 
     public void setProviderId(Long providerId) {
         this.providerId = providerId;
+    }
+
+    public Integer getStockQuantity() {
+        return stockQuantity != null ? stockQuantity : 1;
+    }
+
+    public void setStockQuantity(Integer stockQuantity) {
+        this.stockQuantity = stockQuantity != null && stockQuantity > 0 ? stockQuantity : 1;
     }
 
     public Integer getCategoryId() {

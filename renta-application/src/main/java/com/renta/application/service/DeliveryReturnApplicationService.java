@@ -33,7 +33,12 @@ import com.renta.domain.port.out.RentalReturnRepositoryPort;
 import com.renta.domain.port.out.ReservationRepositoryPort;
 import com.renta.domain.port.out.ToolRepositoryPort;
 
+import com.renta.application.dto.delivery.LateReturnSettlementResponse;
+import com.renta.domain.model.vo.LateReturnSettlement;
+import com.renta.domain.service.LateReturnPolicy;
+
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -385,6 +390,39 @@ public class DeliveryReturnApplicationService implements
                 ret.getToolConditionStatus(),
                 ret.getInspectionNotes(),
                 ret.getReturnDate()
+        );
+    }
+
+    /**
+     * Calcula la liquidación por mora si la herramienta se entrega extemporáneamente.
+     */
+    public LateReturnSettlementResponse calculateLateReturnSettlement(Long reservationId, LocalDate actualReturnDate) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reserva no encontrada con ID: " + reservationId));
+        Tool tool = toolRepository.findById(reservation.getToolId())
+                .orElseThrow(() -> new ResourceNotFoundException("Herramienta no encontrada con ID: " + reservation.getToolId()));
+
+        LocalDate returnDate = actualReturnDate != null ? actualReturnDate : LocalDate.now();
+        LateReturnSettlement settlement = LateReturnPolicy.evaluate(
+                reservation.getDateRange().endDate(),
+                returnDate,
+                tool.getBaseDailyPrice(),
+                reservation.getDepositTotal()
+        );
+
+        return new LateReturnSettlementResponse(
+                reservation.getId(),
+                reservation.getReservationCode(),
+                reservation.getDateRange().endDate(),
+                returnDate,
+                settlement.daysLate(),
+                settlement.dailyRate().amount(),
+                settlement.penaltyMultiplier(),
+                settlement.latePenaltyAmount().amount(),
+                settlement.initialDeposit().amount(),
+                settlement.refundAmount().amount(),
+                settlement.pendingDebt().amount(),
+                settlement.explanation()
         );
     }
 }

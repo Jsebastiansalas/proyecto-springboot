@@ -18,5 +18,11 @@ public record CreateReservationRequest(
         @NotNull(message = "La fecha de fin es obligatoria")
         LocalDate endDate,
 
-        String notes
-) {}
+        String notes,
+
+        Boolean includeDamageWaiver
+) {
+    public CreateReservationRequest(Long clientId, Long toolId, LocalDate startDate, LocalDate endDate, String notes) {
+        this(clientId, toolId, startDate, endDate, notes, false);
+    }
+}

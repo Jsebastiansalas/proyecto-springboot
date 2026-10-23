@@ -17,7 +17,7 @@ public final class UserJpaMapper {
             default -> UserRole.ROLE_CLIENTE;
         };
 
-        return new User(
+        User user = new User(
                 entity.getId(),
                 Email.of(entity.getEmail()),
                 entity.getPasswordHash(),
@@ -27,6 +27,9 @@ public final class UserJpaMapper {
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
+        user.setLocked(entity.isLocked());
+        user.setLockReason(entity.getLockReason());
+        return user;
     }
 
     public static UserJpaEntity toJpa(User domain) {
@@ -37,7 +40,7 @@ public final class UserJpaMapper {
             case ROLE_CLIENTE -> 3;
         };
 
-        return new UserJpaEntity(
+        UserJpaEntity entity = new UserJpaEntity(
                 domain.getId(),
                 domain.getEmail() != null ? domain.getEmail().value() : null,
                 domain.getPasswordHash(),
@@ -46,5 +49,8 @@ public final class UserJpaMapper {
                 domain.getCreatedAt(),
                 domain.getUpdatedAt()
         );
+        entity.setLocked(domain.isLocked());
+        entity.setLockReason(domain.getLockReason());
+        return entity;
     }
 }

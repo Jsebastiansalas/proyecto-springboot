@@ -48,6 +48,21 @@ public class RentalPricingCalculator {
     public static final int WEEKLY_THRESHOLD_DAYS = 7;
 
     /**
+     * Tasa de seguro de cobertura contra daños (8% del subtotal de alquiler).
+     */
+    public static final BigDecimal DAMAGE_INSURANCE_RATE = BigDecimal.valueOf(0.08);
+
+    /**
+     * Descuento en depósito de garantía si el cliente contrata seguro (fianza al 50%).
+     */
+    public static final BigDecimal INSURANCE_DEPOSIT_DISCOUNT_FACTOR = BigDecimal.valueOf(0.50);
+
+    /**
+     * Recargo por día de fin de semana (Sábado o Domingo): 20% adicional.
+     */
+    public static final BigDecimal WEEKEND_SURCHARGE_RATE = BigDecimal.valueOf(0.20);
+
+    /**
      * Calculates the full financial breakdown for a rental given daily price, deposit, and days.
      */
     public RentalPriceCalculation calculate(Money baseDailyPrice, Money depositAmount, int totalDays) {
@@ -78,6 +93,96 @@ public class RentalPricingCalculator {
                 totalWithTax,
                 deposit,
                 totalReservationAmount
+        );
+    }
+
+    public RentalPriceCalculation calculate(Money baseDailyPrice, Money depositAmount, int totalDays, boolean includeDamageInsurance) {
+        RentalPriceCalculation baseCalc = calculate(baseDailyPrice, depositAmount, totalDays);
+        if (!includeDamageInsurance) {
+            return baseCalc;
+        }
+
+        Money insuranceCost = Money.of(baseCalc.subtotal().amount().multiply(DAMAGE_INSURANCE_RATE));
+        Money discountedDeposit = baseCalc.depositAmount().multiply(INSURANCE_DEPOSIT_DISCOUNT_FACTOR);
+        Money totalReservationAmount = baseCalc.subtotal().plus(discountedDeposit).plus(insuranceCost);
+
+        return new RentalPriceCalculation(
+                baseCalc.baseDailyPrice(),
+                baseCalc.effectiveDailyPrice(),
+                baseCalc.totalDays(),
+                baseCalc.weeklyDiscountApplied(),
+                baseCalc.subtotal(),
+                baseCalc.taxAmount(),
+                baseCalc.totalWithTax(),
+                discountedDeposit,
+                totalReservationAmount,
+                true,
+                insuranceCost,
+                Money.zero()
+        );
+    }
+
+    public RentalPriceCalculation calculateWithWeekendSurcharge(
+            Money baseDailyPrice,
+            Money depositAmount,
+            DateRange dateRange,
+            boolean includeWeekendSurcharge,
+            boolean includeDamageInsurance) {
+
+        Objects.requireNonNull(baseDailyPrice, "El precio base diario no puede ser nulo");
+        Objects.requireNonNull(dateRange, "El rango de fechas no puede ser nulo");
+
+        int totalDays = dateRange.durationInDays();
+        if (!includeWeekendSurcharge) {
+            return calculate(baseDailyPrice, depositAmount, totalDays, includeDamageInsurance);
+        }
+
+        long weekendDays = dateRange.startDate().datesUntil(dateRange.endDate().plusDays(1))
+                .filter(d -> d.getDayOfWeek() == java.time.DayOfWeek.SATURDAY || d.getDayOfWeek() == java.time.DayOfWeek.SUNDAY)
+                .count();
+        long regularDays = totalDays - weekendDays;
+
+        boolean applyWeeklyDiscount = totalDays >= WEEKLY_THRESHOLD_DAYS;
+        Money effectiveDailyPrice = applyWeeklyDiscount
+                ? baseDailyPrice.multiply(WEEKLY_DISCOUNT_FACTOR)
+                : baseDailyPrice;
+
+        Money regularSubtotal = effectiveDailyPrice.multiply((int) regularDays);
+        Money weekendDailyPrice = Money.of(effectiveDailyPrice.amount().multiply(BigDecimal.ONE.add(WEEKEND_SURCHARGE_RATE)));
+        Money weekendSubtotal = weekendDailyPrice.multiply((int) weekendDays);
+        Money subtotal = regularSubtotal.plus(weekendSubtotal);
+
+        Money standardSubtotal = effectiveDailyPrice.multiply(totalDays);
+        Money weekendSurchargeAmount = subtotal.subtract(standardSubtotal);
+
+        Money taxAmount = subtotal.percentage(IVA_RATE);
+        Money totalWithTax = subtotal.plus(taxAmount);
+
+        Money deposit = depositAmount != null ? depositAmount : Money.zero(baseDailyPrice.currency());
+        Money insuranceCost = Money.zero();
+        boolean insuranceApplied = false;
+
+        if (includeDamageInsurance) {
+            insuranceCost = Money.of(subtotal.amount().multiply(DAMAGE_INSURANCE_RATE));
+            deposit = deposit.multiply(INSURANCE_DEPOSIT_DISCOUNT_FACTOR);
+            insuranceApplied = true;
+        }
+
+        Money totalReservationAmount = subtotal.plus(deposit).plus(insuranceCost);
+
+        return new RentalPriceCalculation(
+                baseDailyPrice,
+                effectiveDailyPrice,
+                totalDays,
+                applyWeeklyDiscount,
+                subtotal,
+                taxAmount,
+                totalWithTax,
+                deposit,
+                totalReservationAmount,
+                insuranceApplied,
+                insuranceCost,
+                weekendSurchargeAmount
         );
     }
 
