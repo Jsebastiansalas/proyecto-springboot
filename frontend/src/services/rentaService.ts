@@ -11,7 +11,17 @@ import {
   PaymentRecord,
   AdminDashboardData,
   RegisterClientData,
-  RegisterProviderData
+  RegisterProviderData,
+  CouponValidationResult,
+  ReservationAuditLog,
+  ReservationExtensionResult,
+  CancellationPenaltyResult,
+  LateReturnSettlementResult,
+  ToolMaintenanceOrder,
+  ScheduleMaintenanceRequest,
+  FinishMaintenanceRequest,
+  DeliveryTechnicalChecklist,
+  ClientTrustScore
 } from '../types';
 
 // Normalizador defensivo de reservas para conciliar modelos DTO del Backend con la UI
@@ -61,7 +71,9 @@ const mapReservation = (raw: any): Reservation => {
     pendingAmount: Number(raw.pendingAmount ?? (hasPaid ? 0 : totalPrice)),
     createdAt: raw.createdAt || new Date().toISOString(),
     invoiceId: raw.invoiceId,
-    invoiceNumber: raw.invoiceNumber
+    invoiceNumber: raw.invoiceNumber,
+    hasDamageInsurance: Boolean(raw.hasDamageInsurance ?? false),
+    insuranceCost: Number(raw.insuranceCost ?? 0)
   };
 };
 
@@ -291,6 +303,7 @@ export const rentaService = {
       paymentMethod?: string;
       installmentCount?: number;
       notes?: string;
+      includeDamageWaiver?: boolean;
     }): Promise<Reservation> => {
       const res = await apiClient.post<any>('/reservations', data);
       return mapReservation(res);
@@ -324,6 +337,20 @@ export const rentaService = {
       const cleanReason = reason || 'Cancelada por el usuario';
       const res = await apiClient.patch<any>(`/reservations/${id}/cancel?reason=${encodeURIComponent(cleanReason)}`, { reason: cleanReason });
       return mapReservation(res);
+    },
+    extend: async (id: number, newEndDate: string, reason?: string): Promise<ReservationExtensionResult> => {
+      return apiClient.patch<ReservationExtensionResult>(`/reservations/${id}/extend`, {
+        newEndDate,
+        reason: reason || 'Prórroga de alquiler en obra'
+      });
+    },
+    cancelWithPenalty: async (id: number, reason?: string): Promise<CancellationPenaltyResult> => {
+      return apiClient.patch<CancellationPenaltyResult>(`/reservations/${id}/cancel-with-penalty`, {
+        reason: reason || 'Cancelación voluntaria del cliente'
+      });
+    },
+    getAuditTrail: async (id: number): Promise<ReservationAuditLog[]> => {
+      return apiClient.get<ReservationAuditLog[]>(`/reservations/${id}/audit-trail`);
     }
   },
 
@@ -411,6 +438,14 @@ export const rentaService = {
     },
     verifyProvider: (id: number, verified: boolean): Promise<void> => {
       return apiClient.patch(`/admin/providers/${id}/verify?verified=${verified}`);
+    },
+    lockUser: (userId: number, reason?: string): Promise<any> => {
+      return apiClient.patch(`/admin/users/${userId}/lock`, {
+        reason: reason || 'Suspensión administrativa preventiva'
+      });
+    },
+    unlockUser: (userId: number): Promise<any> => {
+      return apiClient.patch(`/admin/users/${userId}/unlock`);
     }
   },
 
@@ -458,16 +493,30 @@ export const rentaService = {
 
   // 9. LOGÍSTICA & LIQUIDACIÓN DE GARANTÍAS
   logistics: {
-    dispatch: (reservationId: number, initialHours: number, observations: string) => {
-      return apiClient.post('/deliveries', {
+    dispatch: (
+      reservationId: number, 
+      initialHours: number, 
+      observations: string,
+      checklist?: Partial<DeliveryTechnicalChecklist>
+    ) => {
+      return apiClient.post(`/logistics/dispatch/${reservationId}`, {
         reservationId,
         deliveredBy: 'Patio Central RentaMaq',
         initialConditionNotes: observations || `Horómetro inicial: ${initialHours} hrs. Equipo en óptimas condiciones.`,
         clientSignatureAck: true,
         initialOperatingHours: initialHours,
         initialHours,
-        observations
+        observations,
+        cablesInspected: checklist?.cablesInspected ?? true,
+        safetyGuardsOk: checklist?.safetyGuardsOk ?? true,
+        retieCertified: checklist?.retieCertified ?? true,
+        fluidsLevelOk: checklist?.fluidsLevelOk ?? true,
+        operatorPpeKitIncluded: checklist?.operatorPpeKitIncluded ?? true,
+        inspectorSignature: checklist?.inspectorSignature || 'Inspector Técnico de Patio'
       });
+    },
+    getChecklist: (deliveryId: number): Promise<DeliveryTechnicalChecklist> => {
+      return apiClient.get<DeliveryTechnicalChecklist>(`/deliveries/${deliveryId}/checklist`);
     },
     returnDelivery: (reservationId: number, finalHours: number, damageCost: number, damageReport: string) => {
       const condition = damageCost > 0 ? 'CON_DESGASTE' : 'OPTIMO';
@@ -487,6 +536,72 @@ export const rentaService = {
     },
     getSettlement: (reservationId: number) => {
       return apiClient.get(`/logistics/settlement/${reservationId}`);
+    },
+    getLateReturnSettlement: (reservationId: number, actualReturnDate?: string): Promise<LateReturnSettlementResult> => {
+      const q = actualReturnDate ? `?actualReturnDate=${actualReturnDate}` : '';
+      return apiClient.get<LateReturnSettlementResult>(`/returns/late-settlement/${reservationId}${q}`);
+    }
+  },
+
+  // 10. CUPONES PROMOCIONALES DE DESCUENTO
+  coupons: {
+    validate: (couponCode: string, subtotalAmount: number, rentalDays: number = 1, startDate?: string): Promise<CouponValidationResult> => {
+      return apiClient.post<CouponValidationResult>('/coupons/validate', {
+        couponCode: couponCode.trim().toUpperCase(),
+        subtotalAmount,
+        rentalDays,
+        startDate: startDate || new Date().toISOString().split('T')[0]
+      });
+    }
+  },
+
+  // 11. LISTA DE HERRAMIENTAS FAVORITAS (WISHLIST)
+  favorites: {
+    add: (toolId: number): Promise<{ message: string }> => {
+      return apiClient.post(`/tools/${toolId}/favorite`);
+    },
+    remove: (toolId: number): Promise<void> => {
+      return apiClient.delete(`/tools/${toolId}/favorite`);
+    },
+    isFavorite: async (toolId: number): Promise<boolean> => {
+      try {
+        const res = await apiClient.get<{ favorite: boolean }>(`/tools/${toolId}/favorite`);
+        return Boolean(res?.favorite);
+      } catch {
+        return false;
+      }
+    },
+    getMyFavorites: async (): Promise<any[]> => {
+      return apiClient.get<any[]>('/clients/my-favorites');
+    }
+  },
+
+  // 12. MANTENIMIENTO TÉCNICO, HOJA DE VIDA Y CONTROL DE TALLER
+  maintenance: {
+    schedule: (request: ScheduleMaintenanceRequest): Promise<ToolMaintenanceOrder> => {
+      return apiClient.post<ToolMaintenanceOrder>('/tools/maintenance', request);
+    },
+    finish: (maintenanceId: number, request: FinishMaintenanceRequest): Promise<ToolMaintenanceOrder> => {
+      return apiClient.patch<ToolMaintenanceOrder>(`/tools/maintenance/${maintenanceId}/finish`, request);
+    },
+    getByTool: (toolId: number): Promise<ToolMaintenanceOrder[]> => {
+      return apiClient.get<ToolMaintenanceOrder[]>(`/tools/maintenance/tool/${toolId}`);
+    },
+    getAllActive: (): Promise<ToolMaintenanceOrder[]> => {
+      return apiClient.get<ToolMaintenanceOrder[]>('/tools/maintenance/active');
+    },
+    getByProvider: (providerId: number): Promise<ToolMaintenanceOrder[]> => {
+      return apiClient.get<ToolMaintenanceOrder[]>(`/tools/maintenance/provider/${providerId}`);
+    }
+  },
+
+  // 13. SCORE DE CONFIABILIDAD DE CONTRATISTAS (TRUST SCORE)
+  clients: {
+    getTrustScore: (clientId: number): Promise<ClientTrustScore> => {
+      return apiClient.get<ClientTrustScore>(`/clients/${clientId}/trust-score`);
+    },
+    getMyTrustScore: (): Promise<ClientTrustScore> => {
+      return apiClient.get<ClientTrustScore>('/clients/my/trust-score');
     }
   }
 };

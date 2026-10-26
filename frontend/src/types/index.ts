@@ -53,6 +53,81 @@ export interface Tool {
   averageRating?: number;
   totalReviews?: number;
   telemetry?: TelemetryData;
+  stockQuantity?: number;
+  isFavorite?: boolean;
+}
+
+export interface CouponValidationResult {
+  couponCode?: string;
+  code?: string;
+  valid: boolean;
+  discountPercentage?: number;
+  fixedDiscountAmount?: number;
+  discountAmount?: number;
+  originalSubtotal?: number;
+  discountedSubtotal?: number;
+  taxAmount?: number;
+  finalTotal?: number;
+  message?: string;
+  description?: string;
+  minRentalDays?: number;
+}
+
+export interface ReservationAuditLog {
+  id: number;
+  reservationId: number;
+  previousStatus?: string;
+  newStatus: string;
+  changedBy: string;
+  changedAt: string;
+  reason?: string;
+}
+
+export interface ReservationExtensionResult {
+  reservationId: number;
+  reservationCode?: string;
+  originalEndDate?: string;
+  oldEndDate?: string;
+  newEndDate: string;
+  additionalDays: number;
+  totalDaysUpdated?: number;
+  additionalCost: number;
+  additionalTaxIva?: number;
+  additionalTax?: number;
+  additionalTotal?: number;
+  newSubtotal?: number;
+  newTotalAmount?: number;
+  newTotalReservationPrice?: number;
+  message: string;
+}
+
+export interface CancellationPenaltyResult {
+  reservationId: number;
+  reservationCode: string;
+  previousStatus: string;
+  currentStatus: string;
+  originalTotalAmount: number;
+  penaltyPercentage: number;
+  penaltyFeeAmount: number;
+  refundedDepositAmount: number;
+  totalRefundedToClient: number;
+  policyExplanation: string;
+  cancellationReason?: string;
+  reason?: string;
+}
+
+export interface LateReturnSettlementResult {
+  reservationId: number;
+  scheduledEndDate: string;
+  actualReturnDate: string;
+  lateDays: number;
+  dailyRate: number;
+  penaltyMultiplier: number;
+  totalPenaltyAmount: number;
+  originalDepositAmount: number;
+  refundedDepositAmount: number;
+  pendingClientDebt: number;
+  explanation: string;
 }
 
 export interface Category {
@@ -124,6 +199,7 @@ export interface Reservation {
   totalDays: number;
   dailyPrice: number;
   subtotalPrice: number;
+  subtotal?: number;
   depositAmount: number;
   taxAmount: number;
   totalPrice: number;
@@ -139,6 +215,8 @@ export interface Reservation {
   createdAt: string;
   invoiceId?: number;
   invoiceNumber?: string;
+  hasDamageInsurance?: boolean;
+  insuranceCost?: number;
 }
 
 export interface OccupiedDateRange {
@@ -227,4 +305,72 @@ export interface RegisterProviderData {
   phone: string;
   address: string;
   city: string;
+}
+
+// ============================================================================
+// FUNCIONALIDADES OPERATIVAS AVANZADAS: TALLER, CHECKLIST RETIE Y TRUST SCORE
+// ============================================================================
+
+export interface ToolMaintenanceOrder {
+  id: number;
+  toolId: number;
+  toolName: string;
+  toolCodeSku: string;
+  maintenanceType: 'PREVENTIVO' | 'CORRECTIVO' | 'CALIBRACION';
+  startDate: string;
+  endDate?: string;
+  cost: number;
+  technicianName: string;
+  description: string;
+  status: 'EN_PROCESO' | 'FINALIZADO' | 'COMPLETADO' | 'PROGRAMADO' | 'CANCELADO';
+  message?: string;
+}
+
+export interface ScheduleMaintenanceRequest {
+  toolId: number;
+  maintenanceType: 'PREVENTIVO' | 'CORRECTIVO' | 'CALIBRACION';
+  startDate: string;
+  estimatedEndDate?: string;
+  estimatedCost?: number;
+  technicianName: string;
+  description: string;
+}
+
+export interface FinishMaintenanceRequest {
+  completionDate: string;
+  finalCost: number;
+  resolutionNotes: string;
+}
+
+export interface DeliveryTechnicalChecklist {
+  id?: number;
+  deliveryId: number;
+  cablesInspected: boolean;
+  safetyGuardsOk: boolean;
+  retieCertified: boolean;
+  fluidsLevelOk: boolean;
+  operatorPpeKitIncluded: boolean;
+  inspectorSignature: string;
+  fullyCompliant?: boolean;
+  createdAt?: string;
+}
+
+export interface ClientTrustScore {
+  clientId: number;
+  clientName: string;
+  companyName: string;
+  documentNumber: string;
+  score: number;
+  tier: 'EXCELENTE' | 'CONFIABLE' | 'RIESGO_MODERADO' | 'ALTO_RIESGO';
+  tierBadgeColor: 'emerald' | 'blue' | 'amber' | 'red';
+  totalContracts: number;
+  completedContracts: number;
+  activeContracts: number;
+  lateReturns: number;
+  damageIncidents: number;
+  punctualityRate: number;
+  depositDiscountPercent: number;
+  benefitsDescription: string;
+  recommendation: string;
+  evaluatedAt: string;
 }

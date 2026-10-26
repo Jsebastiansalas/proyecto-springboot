@@ -7,6 +7,7 @@ import {
   Calendar, 
   CreditCard, 
   ShieldCheck, 
+  ShieldAlert,
   CheckCircle2, 
   SlidersHorizontal, 
   ArrowRight, 
@@ -15,11 +16,15 @@ import {
   Minus,
   Wrench,
   Lock,
-  Building
+  Building,
+  Tag,
+  Check,
+  RotateCcw,
+  Sparkles
 } from 'lucide-react';
 import { formatImageUrl, handleImageError } from '../../utils/imageUtils';
 import { PaymentModal } from '../client/PaymentModal';
-import { Reservation } from '../../types';
+import { Reservation, CouponValidationResult } from '../../types';
 
 export const QuoteCartDrawer: React.FC = () => {
   const { 
@@ -45,25 +50,104 @@ export const QuoteCartDrawer: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [pendingPaymentReservation, setPendingPaymentReservation] = useState<Reservation | null>(null);
 
+  // Estados examen: Seguro de daños y Cupón de descuento
+  const [includeDamageWaiver, setIncludeDamageWaiver] = useState<boolean>(false);
+  const [couponCode, setCouponCode] = useState<string>('');
+  const [appliedCoupon, setAppliedCoupon] = useState<CouponValidationResult | null>(null);
+  const [validatingCoupon, setValidatingCoupon] = useState<boolean>(false);
+  const [couponMessage, setCouponMessage] = useState<{ text: string; isError: boolean } | null>(null);
+
   if (!isQuoteDrawerOpen && !pendingPaymentReservation) return null;
 
-  // Cálculos consolidados
+  // Cálculos consolidados de cotización
   let subtotalSinDescuento = 0;
-  let totalDescuento = 0;
-  let totalDepositos = 0;
+  let totalDescuentoSemanal = 0;
+  let totalDescuentoCombo = 0;
+  let totalDepositosBase = 0;
 
-  cart.forEach(item => {
+  // Descuento Paquete Combo: 10% en herramientas adicionales cuando se cotizan 2 o más
+  const isMultiToolCombo = cart.length >= 2;
+
+  cart.forEach((item, index) => {
     const itemSubtotal = item.tool.baseDailyPrice * item.days;
     subtotalSinDescuento += itemSubtotal;
     if (item.days >= 7) {
-      totalDescuento += itemSubtotal * 0.15;
+      totalDescuentoSemanal += itemSubtotal * 0.15;
     }
-    totalDepositos += item.tool.depositAmount;
+    if (isMultiToolCombo && index > 0) {
+      totalDescuentoCombo += Math.round(itemSubtotal * 0.10);
+    }
+    totalDepositosBase += item.tool.depositAmount;
   });
 
-  const subtotalNeto = subtotalSinDescuento - totalDescuento;
-  const iva = subtotalNeto * 0.19;
-  const granTotal = subtotalNeto + iva + totalDepositos;
+  const subtotalNetoPrevio = Math.max(0, subtotalSinDescuento - totalDescuentoSemanal - totalDescuentoCombo);
+  const descuentoCupon = appliedCoupon?.valid ? (appliedCoupon.discountAmount ?? 0) : 0;
+  const subtotalNeto = Math.max(0, subtotalNetoPrevio - descuentoCupon);
+
+  // Seguro contra daños: 8% del subtotal neto de alquiler
+  const costoSeguro = includeDamageWaiver ? Math.round(subtotalNeto * 0.08) : 0;
+
+  // Base imponible para IVA (19%): subtotal neto + seguro
+  const baseGravable = subtotalNeto + costoSeguro;
+  const iva = Math.round(baseGravable * 0.19);
+
+  // Depósito en custodia Escrow: se reduce al 50% si adquiere seguro contra daños
+  const totalDepositos = includeDamageWaiver ? Math.round(totalDepositosBase * 0.5) : totalDepositosBase;
+
+  const granTotal = baseGravable + iva + totalDepositos;
+
+  // Manejador para aplicar y validar cupón promocional contra el backend
+  const handleApplyCoupon = async (codeToUse?: string) => {
+    const code = (codeToUse || couponCode).trim().toUpperCase();
+    if (!code) {
+      showToast('Por favor ingresa un código de cupón.', 'error');
+      return;
+    }
+    setValidatingCoupon(true);
+    setCouponMessage(null);
+    try {
+      const totalDays = cart.reduce((acc, it) => acc + it.days, 0);
+      const avgDays = Math.max(1, Math.round(totalDays / (cart.length || 1)));
+      const res = await rentaService.coupons.validate(
+        code,
+        subtotalNetoPrevio,
+        avgDays,
+        startDate
+      );
+      if (res.valid) {
+        setAppliedCoupon(res);
+        setCouponCode(code);
+        setCouponMessage({
+          text: res.message || `Cupón ${code} aplicado (-${res.discountPercentage || 0}%)`,
+          isError: false
+        });
+        showToast(res.message || `¡Cupón ${code} validado exitosamente!`, 'success');
+      } else {
+        setAppliedCoupon(null);
+        setCouponMessage({
+          text: res.message || 'Cupón no válido o requisitos no cumplidos',
+          isError: true
+        });
+        showToast(res.message || 'Cupón no válido', 'error');
+      }
+    } catch (err: any) {
+      setAppliedCoupon(null);
+      setCouponMessage({
+        text: err.message || 'Error al validar cupón',
+        isError: true
+      });
+      showToast(`Error al validar cupón: ${err.message}`, 'error');
+    } finally {
+      setValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponMessage(null);
+    showToast('Cupón promocional removido.', 'info');
+  };
 
   const handleCheckout = async () => {
     if (!user) {
@@ -92,6 +176,10 @@ export const QuoteCartDrawer: React.FC = () => {
         const endDay = String(endDateObj.getDate()).padStart(2, '0');
         const endDateStr = `${endYear}-${endMonth}-${endDay}`;
 
+        const noteText = appliedCoupon?.valid 
+          ? `Reserva con Cupón ${appliedCoupon.couponCode || couponCode} (-$${descuentoCupon.toLocaleString('es-CO')})`
+          : 'Reserva emitida desde Cotizador Web';
+
         const created = await rentaService.reservations.create({
           clientId: user.clientId || user.id || 1,
           toolId: item.tool.id,
@@ -99,7 +187,8 @@ export const QuoteCartDrawer: React.FC = () => {
           endDate: endDateStr,
           paymentMethod: paymentMethod,
           installmentCount: paymentMethod === 'EN_CUOTAS' ? installmentCount : 1,
-          notes: 'Reserva emitida desde Cotizador Web'
+          notes: noteText,
+          includeDamageWaiver: includeDamageWaiver
         });
 
         if (!firstCreatedRes) {
@@ -112,7 +201,7 @@ export const QuoteCartDrawer: React.FC = () => {
 
       if (firstCreatedRes) {
         setPendingPaymentReservation(firstCreatedRes);
-        showToast('¡Cotización aceptada! Procediendo a la ventana de pago...', 'success');
+        showToast('¡Cotización formalizada con éxito! Procediendo a la pasarela de pago...', 'success');
       } else {
         setActiveView('client');
       }
@@ -353,6 +442,124 @@ export const QuoteCartDrawer: React.FC = () => {
                   )}
                 </div>
 
+                {/* Seguro contra Daños Todo Riesgo */}
+                <div className={`p-4 rounded-xl border transition-all ${
+                  includeDamageWaiver 
+                    ? 'bg-amber-500/10 border-amber-500/40 shadow-xs' 
+                    : 'bg-[#1E1E1C] border-[#363632]'
+                }`}>
+                  <label className="flex items-start gap-3 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={includeDamageWaiver}
+                      onChange={(e) => setIncludeDamageWaiver(e.target.checked)}
+                      className="mt-1 h-4 w-4 rounded border-[#363632] bg-[#141412] text-[#D94E1F] focus:ring-0 focus:ring-offset-0 accent-[#D94E1F]"
+                    />
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <ShieldAlert className={`w-4 h-4 ${includeDamageWaiver ? 'text-amber-400' : 'text-[#A8A69E]'}`} />
+                        <span className="text-xs font-bold text-[#F5F4F0]">
+                          Seguro Todo Riesgo de Daños
+                        </span>
+                        <span className="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-mono font-bold">
+                          +8% Alquiler
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#A8A69E] leading-relaxed">
+                        Cubre averías operativas y desgaste accidental fortuito. <strong className="text-emerald-400 font-semibold">¡Reduce el depósito de garantía al 50%!</strong>
+                      </p>
+                      {includeDamageWaiver && (
+                        <div className="text-[11px] font-mono text-emerald-400 pt-1 flex items-center gap-1 font-semibold">
+                          <Check className="w-3.5 h-3.5" /> Depósito reducido: ${totalDepositos.toLocaleString('es-CO')} (Ahorro fiduciario 50%)
+                        </div>
+                      )}
+                    </div>
+                  </label>
+                </div>
+
+                {/* Cupón Promocional de Descuento */}
+                <div className="p-4 rounded-xl bg-[#1E1E1C] border border-[#363632] space-y-2.5 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#F5F4F0] font-mono">
+                      <Tag className="w-3.5 h-3.5 text-[#D94E1F]" />
+                      Cupón de Descuento
+                    </div>
+                    {appliedCoupon?.valid && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        className="text-[11px] text-[#A8A69E] hover:text-rose-400 flex items-center gap-1 transition-colors"
+                      >
+                        <RotateCcw className="w-3 h-3" /> Quitar
+                      </button>
+                    )}
+                  </div>
+
+                  {!appliedCoupon?.valid ? (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Ej: OBRAS2026, EXAMEN10"
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleApplyCoupon(); } }}
+                          className="flex-1 bg-[#141412] border border-[#363632] rounded-lg px-3 py-2 text-xs text-[#F5F4F0] uppercase font-mono tracking-wider focus:outline-none focus:border-[#D94E1F]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleApplyCoupon()}
+                          disabled={validatingCoupon || !couponCode.trim()}
+                          className="px-3.5 py-2 rounded-lg bg-[#282824] hover:bg-[#32322C] disabled:opacity-40 text-xs font-bold text-[#F5F4F0] border border-[#363632] transition-colors"
+                        >
+                          {validatingCoupon ? 'Validando...' : 'Aplicar'}
+                        </button>
+                      </div>
+
+                      {/* Chips sugeridos para prueba rápida en examen */}
+                      <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
+                        <span className="text-[#706E66]">Sugeridos:</span>
+                        {['OBRAS2026', 'EXAMEN10', 'PROMO20'].map(chip => (
+                          <button
+                            key={chip}
+                            type="button"
+                            onClick={() => {
+                              setCouponCode(chip);
+                              handleApplyCoupon(chip);
+                            }}
+                            className="px-2 py-0.5 rounded bg-[#141412] hover:bg-[#232320] text-[#A8A69E] hover:text-[#D94E1F] border border-[#363632] font-mono transition-colors"
+                          >
+                            {chip}
+                          </button>
+                        ))}
+                      </div>
+
+                      {couponMessage?.isError && (
+                        <p className="text-[11px] text-rose-400 font-mono">
+                          {couponMessage.text}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <div>
+                          <span className="font-mono font-bold text-emerald-300">
+                            {appliedCoupon.couponCode || couponCode}
+                          </span>
+                          <span className="text-[#A8A69E] ml-1.5 text-[11px]">
+                            (-{appliedCoupon.discountPercentage}%)
+                          </span>
+                        </div>
+                      </div>
+                      <span className="font-mono font-bold text-emerald-400">
+                        -${descuentoCupon.toLocaleString('es-CO')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
                 {/* Escrow Custody Assurance */}
                 <div className="p-3 rounded-xl bg-[#1E6F43]/15 border border-[#1E6F43]/30 text-xs text-[#4ade80] space-y-1">
                   <div className="font-semibold flex items-center gap-1.5">
@@ -375,10 +582,31 @@ export const QuoteCartDrawer: React.FC = () => {
                   <span>Subtotal Alquiler:</span>
                   <span className="font-mono text-[#F5F4F0] font-bold">${subtotalSinDescuento.toLocaleString('es-CO')}</span>
                 </div>
-                {totalDescuento > 0 && (
+                {totalDescuentoSemanal > 0 && (
                   <div className="flex justify-between text-[#4ade80] font-semibold">
                     <span>Ahorro Semanal (-15%):</span>
-                    <span className="font-mono">-${totalDescuento.toLocaleString('es-CO')}</span>
+                    <span className="font-mono">-${totalDescuentoSemanal.toLocaleString('es-CO')}</span>
+                  </div>
+                )}
+                {totalDescuentoCombo > 0 && (
+                  <div className="flex justify-between text-amber-400 font-semibold">
+                    <span className="flex items-center gap-1">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Descuento Paquete Multi-Equipo (-10%):</span>
+                    </span>
+                    <span className="font-mono">-${totalDescuentoCombo.toLocaleString('es-CO')}</span>
+                  </div>
+                )}
+                {descuentoCupon > 0 && (
+                  <div className="flex justify-between text-emerald-400 font-semibold">
+                    <span>Cupón {appliedCoupon?.couponCode || couponCode} (-{appliedCoupon?.discountPercentage}%):</span>
+                    <span className="font-mono">-${descuentoCupon.toLocaleString('es-CO')}</span>
+                  </div>
+                )}
+                {costoSeguro > 0 && (
+                  <div className="flex justify-between text-amber-400 font-semibold">
+                    <span>Seguro Daños Todo Riesgo (+8%):</span>
+                    <span className="font-mono">+${costoSeguro.toLocaleString('es-CO')}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-[#A8A69E]">
@@ -386,8 +614,20 @@ export const QuoteCartDrawer: React.FC = () => {
                   <span className="font-mono text-[#F5F4F0]">${iva.toLocaleString('es-CO')}</span>
                 </div>
                 <div className="flex justify-between text-[#A8A69E]">
-                  <span>Depósitos en Custodia (Escrow):</span>
-                  <span className="font-mono text-[#F5F4F0]">${totalDepositos.toLocaleString('es-CO')}</span>
+                  <span className="flex items-center gap-1">
+                    Depósitos en Custodia (Escrow):
+                    {includeDamageWaiver && (
+                      <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1 rounded">
+                        -50% OFF
+                      </span>
+                    )}
+                  </span>
+                  <span className="font-mono text-[#F5F4F0]">
+                    {includeDamageWaiver && (
+                      <span className="line-through text-[#706E66] mr-1.5">${totalDepositosBase.toLocaleString('es-CO')}</span>
+                    )}
+                    ${totalDepositos.toLocaleString('es-CO')}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm font-bold text-[#F5F4F0] pt-2 border-t border-[#363632]">
                   <span>Gran Total Liquidado:</span>

@@ -140,9 +140,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const exists = prev.includes(toolId);
       if (exists) {
         showToast('Equipo retirado de favoritos', 'info');
+        if (user && user.role === 'ROLE_CLIENTE') {
+          rentaService.favorites.remove(toolId).catch(err => console.warn('Sync favorite error:', err));
+        }
         return prev.filter(id => id !== toolId);
       } else {
         showToast('Equipo guardado en tus favoritos', 'success');
+        if (user && user.role === 'ROLE_CLIENTE') {
+          rentaService.favorites.add(toolId).catch(err => console.warn('Sync favorite error:', err));
+        }
         return [...prev, toolId];
       }
     });

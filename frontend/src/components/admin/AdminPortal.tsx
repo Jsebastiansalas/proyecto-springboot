@@ -29,6 +29,9 @@ interface UserItem {
   email: string;
   role: string;
   active: boolean;
+  locked?: boolean;
+  isLocked?: boolean;
+  lockReason?: string;
   createdAt: string;
   displayName?: string;
 }
@@ -128,6 +131,26 @@ export const AdminPortal: React.FC = () => {
       fetchUsersAndProviders();
     } catch (err: any) {
       showToast(`Error al cambiar estado de usuario: ${err.message}`, 'error');
+    }
+  };
+
+  const handleToggleUserLock = async (userId: number, currentLocked?: boolean) => {
+    try {
+      if (currentLocked) {
+        await rentaService.admin.unlockUser(userId);
+        showToast('Cuenta de usuario desbloqueada exitosamente en Spring Security.', 'success');
+      } else {
+        const reason = window.prompt(
+          'Motivo de bloqueo de cuenta (por mora, fianza no cubierta o fraude):',
+          'Mora reiterada en cuotas de alquiler o fianza'
+        );
+        if (!reason) return;
+        await rentaService.admin.lockUser(userId, reason);
+        showToast('Cuenta bloqueada. Acceso a la plataforma suspendido en Spring Security.', 'info');
+      }
+      fetchUsersAndProviders();
+    } catch (err: any) {
+      showToast(`Error al modificar bloqueo de usuario: ${err.message}`, 'error');
     }
   };
 
@@ -511,26 +534,51 @@ export const AdminPortal: React.FC = () => {
                             {u.role.replace('ROLE_', '')}
                           </span>
                         </td>
-                        <td className="py-3.5 px-4">
-                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold ${
-                            u.active 
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                              : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                          }`}>
-                            {u.active ? 'ACTIVO' : 'SUSPENDIDO'}
-                          </span>
+                        <td className="py-3.5 px-4 space-y-1">
+                          <div>
+                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-semibold ${
+                              u.active 
+                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                                : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                            }`}>
+                              {u.active ? 'ACTIVO' : 'SUSPENDIDO'}
+                            </span>
+                          </div>
+                          {(u.locked || u.isLocked) && (
+                            <div>
+                              <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-500/10 text-amber-300 border border-amber-500/30 flex items-center gap-1 w-max">
+                                <Lock className="w-2.5 h-2.5" />
+                                BLOQUEADO (SECOPS)
+                              </span>
+                            </div>
+                          )}
                         </td>
                         <td className="py-3.5 px-4 text-right">
-                          <button
-                            onClick={() => handleToggleUserStatus(u.id, u.active)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                              u.active 
-                                ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30' 
-                                : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                            }`}
-                          >
-                            {u.active ? 'Suspender' : 'Reactivar'}
-                          </button>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => handleToggleUserStatus(u.id, u.active)}
+                              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                                u.active 
+                                  ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30' 
+                                  : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                              }`}
+                            >
+                              {u.active ? 'Suspender' : 'Reactivar'}
+                            </button>
+
+                            <button
+                              onClick={() => handleToggleUserLock(u.id, Boolean(u.locked || u.isLocked))}
+                              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors ${
+                                (u.locked || u.isLocked)
+                                  ? 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/40'
+                                  : 'bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40'
+                              }`}
+                              title={(u.locked || u.isLocked) ? 'Desbloquear acceso en Spring Security' : 'Bloquear cuenta por mora o fraude'}
+                            >
+                              <Lock className="w-3 h-3" />
+                              <span>{(u.locked || u.isLocked) ? 'Desbloquear' : 'Bloquear'}</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

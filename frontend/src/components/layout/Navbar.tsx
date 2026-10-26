@@ -11,6 +11,7 @@ import {
   UserPlus
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { NotificationBell } from '../common/NotificationBell';
 
 export const Navbar: React.FC = () => {
   const { 
@@ -110,7 +111,8 @@ export const Navbar: React.FC = () => {
             )}
           </button>
 
-
+          {/* Campana de Notificaciones & Alertas Scheduler */}
+          <NotificationBell />
 
           {/* Estado de Sesión del Usuario */}
           {user ? (

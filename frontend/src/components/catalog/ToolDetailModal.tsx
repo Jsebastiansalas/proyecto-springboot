@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { rentaService } from '../../services/rentaService';
-import { ReviewSummary, ToolComment, OccupiedDateRange } from '../../types';
+import { ReviewSummary, ToolComment, OccupiedDateRange, ToolMaintenanceOrder } from '../../types';
 import { 
   X, 
   Wrench, 
@@ -20,19 +20,73 @@ import {
   Activity,
   CornerDownRight,
   Shield,
-  FileCheck2
+  FileCheck2,
+  Heart,
+  Boxes,
+  Hammer
 } from 'lucide-react';
 import { formatImageUrl, handleImageError } from '../../utils/imageUtils';
 
 export const ToolDetailModal: React.FC = () => {
-  const { selectedToolDetail, setSelectedToolDetail, addToCart, user, showToast } = useApp();
+  const { 
+    selectedToolDetail, 
+    setSelectedToolDetail, 
+    addToCart, 
+    user, 
+    showToast,
+    favorites,
+    toggleFavorite 
+  } = useApp();
   
-  const [activeTab, setActiveTab] = useState<'specs' | 'telemetry' | 'calendar' | 'qa'>('specs');
+  const [activeTab, setActiveTab] = useState<'specs' | 'telemetry' | 'calendar' | 'qa' | 'maintenance'>('specs');
   const [reviews, setReviews] = useState<ReviewSummary | null>(null);
   const [comments, setComments] = useState<ToolComment[]>([]);
   const [occupiedDates, setOccupiedDates] = useState<OccupiedDateRange[]>([]);
+  const [maintenanceHistory, setMaintenanceHistory] = useState<ToolMaintenanceOrder[]>([]);
   const [newQuestion, setNewQuestion] = useState('');
   const [submittingQuestion, setSubmittingQuestion] = useState(false);
+  const [testStartDate, setTestStartDate] = useState('');
+  const [testEndDate, setTestEndDate] = useState('');
+  const [checkResult, setCheckResult] = useState<{ available: boolean; message: string } | null>(null);
+
+  const handleCheckAvailability = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!testStartDate || !testEndDate) return;
+    if (testStartDate > testEndDate) {
+      setCheckResult({ available: false, message: 'La fecha de inicio debe ser anterior o igual a la fecha final.' });
+      return;
+    }
+
+    const conflictRental = occupiedDates.find(r => {
+      return (testStartDate <= r.endDate && testEndDate >= r.startDate);
+    });
+
+    if (conflictRental) {
+      setCheckResult({
+        available: false,
+        message: `Conflicto de fechas con reserva activa ${conflictRental.reservationCode} (${conflictRental.startDate} a ${conflictRental.endDate}). Por favor elige otro intervalo.`
+      });
+      return;
+    }
+
+    const conflictMaint = maintenanceHistory.find(m => {
+      const mEnd = m.endDate || m.startDate;
+      return (testStartDate <= mEnd && testEndDate >= m.startDate && m.status !== 'CANCELADO');
+    });
+
+    if (conflictMaint) {
+      setCheckResult({
+        available: false,
+        message: `Conflicto técnico: Maquinaria en orden de taller ${conflictMaint.maintenanceType} (${conflictMaint.startDate} a ${conflictMaint.endDate || 'en curso'}).`
+      });
+      return;
+    }
+
+    setCheckResult({
+      available: true,
+      message: `¡Equipo 100% disponible! Puedes solicitar el despacho en obra para las fechas del ${testStartDate} al ${testEndDate}.`
+    });
+  };
 
   useEffect(() => {
     if (!selectedToolDetail) return;
@@ -48,6 +102,10 @@ export const ToolDetailModal: React.FC = () => {
 
     rentaService.tools.getOccupiedDates(selectedToolDetail.id)
       .then(res => setOccupiedDates(res))
+      .catch(() => {});
+
+    rentaService.maintenance.getByTool(selectedToolDetail.id)
+      .then(res => setMaintenanceHistory(res))
       .catch(() => {});
   }, [selectedToolDetail]);
 
@@ -105,12 +163,26 @@ export const ToolDetailModal: React.FC = () => {
               </h2>
             </div>
           </div>
-          <button
-            onClick={() => setSelectedToolDetail(null)}
-            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => toggleFavorite(selectedToolDetail.id)}
+              className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all ${
+                favorites.includes(selectedToolDetail.id)
+                  ? 'bg-rose-500/20 border-rose-500/40 text-rose-400'
+                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-rose-400 hover:bg-slate-700'
+              }`}
+              title={favorites.includes(selectedToolDetail.id) ? 'Quitar de favoritos' : 'Guardar en favoritos'}
+              aria-label="Favorito"
+            >
+              <Heart className={`w-4 h-4 ${favorites.includes(selectedToolDetail.id) ? 'fill-rose-500' : ''}`} />
+            </button>
+            <button
+              onClick={() => setSelectedToolDetail(null)}
+              className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Tab Navigation */}
@@ -162,6 +234,18 @@ export const ToolDetailModal: React.FC = () => {
             <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
             <span>Consultas Técnicas & Reseñas ({comments.length})</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('maintenance')}
+            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${
+              activeTab === 'maintenance'
+                ? 'border-[#D94E1F] text-[#D94E1F]'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Hammer className="w-3.5 h-3.5 text-amber-400" />
+            <span>Hoja de Vida & Taller ({maintenanceHistory.length})</span>
+          </button>
         </div>
 
         {/* Modal Body */}
@@ -198,6 +282,14 @@ export const ToolDetailModal: React.FC = () => {
                     <span className="text-slate-400">Póliza Sura Todo Riesgo:</span>
                     <span className="text-emerald-400 font-mono font-semibold">Vigente (No. 98421)</span>
                   </div>
+                  {selectedToolDetail.stockQuantity != null && (
+                    <div className="flex justify-between text-xs pt-1 border-t border-slate-800">
+                      <span className="text-slate-400">Disponibilidad en Flota:</span>
+                      <span className="text-emerald-400 font-mono font-bold">
+                        {selectedToolDetail.stockQuantity} unidades en patio
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -331,26 +423,105 @@ export const ToolDetailModal: React.FC = () => {
             </div>
           )}
 
-          {/* TAB 3: CALENDARIO DE OCUPACIÓN */}
+          {/* TAB 3: CALENDARIO DE OCUPACIÓN Y VERIFICADOR DE FECHAS */}
           {activeTab === 'calendar' && (
-            <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300">
-                Consulta los turnos reservados en obra para planificar la fecha de entrega de tu cuadrilla.
+            <div className="space-y-6">
+              
+              {/* Verificador Interactivo de Disponibilidad */}
+              <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-700/80 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-sky-400" />
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">
+                      Verificador de Disponibilidad para tu Obra
+                    </h4>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-400">
+                    Validación algorítmica de no-solapamiento
+                  </span>
+                </div>
+
+                <form onSubmit={handleCheckAvailability} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                      Fecha Inicio Deseada
+                    </label>
+                    <input
+                      type="date"
+                      value={testStartDate}
+                      min={new Date().toISOString().split('T')[0]}
+                      onChange={(e) => {
+                        setTestStartDate(e.target.value);
+                        setCheckResult(null);
+                      }}
+                      className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-sky-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                      Fecha Fin Deseada
+                    </label>
+                    <input
+                      type="date"
+                      value={testEndDate}
+                      min={testStartDate || new Date().toISOString().split('T')[0]}
+                      onChange={(e) => {
+                        setTestEndDate(e.target.value);
+                        setCheckResult(null);
+                      }}
+                      className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-sky-500"
+                    />
+                  </div>
+
+                  <div className="flex items-end">
+                    <button
+                      type="submit"
+                      disabled={!testStartDate || !testEndDate}
+                      className="w-full py-2 px-4 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:bg-slate-800 disabled:text-slate-600 text-white text-xs font-bold transition-all shadow-md shadow-sky-600/20 flex items-center justify-center gap-2"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Comprobar Fechas</span>
+                    </button>
+                  </div>
+                </form>
+
+                {/* Banner de resultado */}
+                {checkResult && (
+                  <div className={`p-3.5 rounded-xl border text-xs flex items-start gap-2.5 animate-in fade-in ${
+                    checkResult.available 
+                      ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300' 
+                      : 'bg-rose-950/30 border-rose-500/40 text-rose-300'
+                  }`}>
+                    {checkResult.available ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    ) : (
+                      <Clock className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                    )}
+                    <div className="space-y-1">
+                      <div className="font-bold">
+                        {checkResult.available ? 'Fechas Disponibles sin Conflicto' : 'Conflicto de Disponibilidad'}
+                      </div>
+                      <p className="text-[11px] leading-relaxed">{checkResult.message}</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {occupiedDates.length === 0 ? (
-                <div className="p-8 rounded-xl bg-[#0a0f1d] border border-slate-800 text-center space-y-2">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
-                  <div className="text-white font-semibold text-sm">Disponibilidad Inmediata sin Bloqueos</div>
-                  <p className="text-xs text-slate-400 max-w-md mx-auto">
-                    Este equipo no tiene alquileres solapados en las próximas 4 semanas. Puedes reservarlo a partir de mañana.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-2">
+              {/* Cronograma de Ocupación por Alquileres */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Cronograma de Alquileres Asignados
+                    Cronograma de Alquileres Asignados ({occupiedDates.length})
                   </h4>
+                  <span className="text-[11px] font-mono text-amber-400">En Obra</span>
+                </div>
+
+                {occupiedDates.length === 0 ? (
+                  <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 text-center text-xs text-slate-500">
+                    No registra alquileres vigentes en las próximas semanas. Maquinaria en patio lista para despacho.
+                  </div>
+                ) : (
                   <div className="grid gap-2">
                     {occupiedDates.map((range, idx) => (
                       <div 
@@ -359,18 +530,58 @@ export const ToolDetailModal: React.FC = () => {
                       >
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 text-amber-400" />
-                          <span className="font-mono text-slate-300">
+                          <span className="font-mono text-slate-300 font-semibold">
                             {range.startDate} ➔ {range.endDate}
                           </span>
                         </div>
-                        <span className="font-mono text-slate-400 text-[11px] bg-slate-800 px-2 py-0.5 rounded">
+                        <span className="font-mono text-amber-300 text-[11px] bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded">
                           Reserva: {range.reservationCode}
                         </span>
                       </div>
                     ))}
                   </div>
+                )}
+              </div>
+
+              {/* Cronograma de Mantenimientos y Calibraciones en Taller */}
+              {maintenanceHistory.filter(m => m.status === 'EN_PROCESO' || m.status === 'PROGRAMADO').length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+                      <Hammer className="w-3.5 h-3.5 text-rose-400" />
+                      Intervenciones en Taller & Calibración RETIE
+                    </h4>
+                    <span className="text-[11px] font-mono text-rose-400">En Taller</span>
+                  </div>
+
+                  <div className="grid gap-2">
+                    {maintenanceHistory
+                      .filter(m => m.status === 'EN_PROCESO' || m.status === 'PROGRAMADO')
+                      .map((m) => (
+                        <div 
+                          key={m.id}
+                          className="p-3 rounded-lg bg-rose-950/20 border border-rose-500/30 flex items-center justify-between text-xs"
+                        >
+                          <div className="space-y-0.5">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-white font-bold">
+                                {m.startDate} ➔ {m.endDate || 'En proceso'}
+                              </span>
+                              <span className="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono text-[10px] font-bold">
+                                {m.maintenanceType}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-400">{m.description}</p>
+                          </div>
+                          <span className="font-mono text-[11px] text-slate-400">
+                            {m.technicianName || 'Técnico Certificado'}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
                 </div>
               )}
+
             </div>
           )}
 
@@ -458,6 +669,81 @@ export const ToolDetailModal: React.FC = () => {
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 5: HOJA DE VIDA TÉCNICA & TALLER */}
+          {activeTab === 'maintenance' && (
+            <div className="space-y-5 animate-in fade-in duration-200">
+              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    <span>Hoja de Vida Mecánica Certificada & Dictamen RETIE</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Historial público e inmutable de mantenimientos, calibraciones de impacto y pruebas dieléctricas.
+                  </p>
+                </div>
+                <span className="px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-[10px] font-bold">
+                  RETIE CERTIFICADO
+                </span>
+              </div>
+
+              {maintenanceHistory.length === 0 ? (
+                <div className="p-8 text-center text-xs text-slate-400 bg-slate-900/30 border border-slate-800/60 rounded-xl">
+                  Equipo nuevo en inventario. Próximo mantenimiento preventivo programado a las 200 horas de operación.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {maintenanceHistory.map((order, idx) => (
+                    <div key={order.id || idx} className="p-4 rounded-xl bg-slate-900/50 border border-slate-800 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            order.maintenanceType === 'PREVENTIVO'
+                              ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
+                              : order.maintenanceType === 'CORRECTIVO'
+                              ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                              : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                          }`}>
+                            {order.maintenanceType}
+                          </span>
+                          <span className="text-xs font-bold text-white">
+                            Intervención Técnica #{order.id}
+                          </span>
+                        </div>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          order.status === 'FINALIZADO'
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                            : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+                        }`}>
+                          {order.status === 'FINALIZADO' ? 'COMPLETADO & AUDITADO' : 'EN TALLER'}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        {order.description}
+                      </p>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2 border-t border-slate-800/60 text-[11px] font-mono text-slate-400">
+                        <div>
+                          <span className="text-slate-500 block">Técnico Certificado:</span>
+                          <span className="text-slate-200">{order.technicianName}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Periodo de Servicio:</span>
+                          <span className="text-slate-300">{order.startDate} {order.endDate ? `a ${order.endDate}` : ''}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Costo de Intervención:</span>
+                          <span className="text-white font-bold">${Number(order.cost || 0).toLocaleString('es-CO')}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

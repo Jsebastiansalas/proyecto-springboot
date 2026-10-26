@@ -115,11 +115,16 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool }) => {
           </button>
         </div>
 
-        {/* Weekly Discount Tag */}
-        <div className="absolute bottom-2.5 left-2.5 z-10">
-          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#181816] text-[#F5F4F0] border border-[#363632]">
+        {/* Weekly Discount Tag & Multi-Stock Badge */}
+        <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10 flex items-center justify-between pointer-events-none">
+          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#181816]/90 text-[#F5F4F0] border border-[#363632]">
             -15% en ≥7 días
           </span>
+          {tool.stockQuantity != null && tool.stockQuantity > 1 && (
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#141412]/90 text-emerald-400 border border-emerald-500/40">
+              Stock: {tool.stockQuantity} un.
+            </span>
+          )}
         </div>
       </div>
 
