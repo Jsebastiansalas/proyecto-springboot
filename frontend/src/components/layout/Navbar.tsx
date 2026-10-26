@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { NotificationBell } from '../common/NotificationBell';
+import { EnterpriseSecurityModal } from '../common/EnterpriseSecurityModal';
 
 export const Navbar: React.FC = () => {
   const { 
@@ -27,6 +28,7 @@ export const Navbar: React.FC = () => {
   } = useApp();
 
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
 
   const totalCartItems = cart.length;
 
@@ -113,6 +115,16 @@ export const Navbar: React.FC = () => {
 
           {/* Campana de Notificaciones & Alertas Scheduler */}
           <NotificationBell />
+
+          {/* Consola Enterprise (Auditoría OWASP, Rate Limit, Webhooks, Tests) */}
+          <button
+            type="button"
+            onClick={() => setIsSecurityModalOpen(true)}
+            className="p-2 rounded-lg bg-[#232320] hover:bg-[#2d2d29] text-cyan-400 border border-cyan-500/30 transition-all flex items-center justify-center"
+            title="Consola Enterprise: Auditoría OWASP, Rate Limiting, Webhooks ERP y Concurrencia"
+          >
+            <ShieldAlert className="w-4 h-4 text-cyan-400" />
+          </button>
 
           {/* Estado de Sesión del Usuario */}
           {user ? (
@@ -218,6 +230,13 @@ export const Navbar: React.FC = () => {
 
         </div>
       </div>
+
+      {/* Modal Consola Enterprise */}
+      {isSecurityModalOpen && (
+        <EnterpriseSecurityModal
+          onClose={() => setIsSecurityModalOpen(false)}
+        />
+      )}
     </header>
   );
 };

@@ -13,6 +13,7 @@ import { ReturnInspectionModal } from './ReturnInspectionModal';
 import { CreateToolModal } from './CreateToolModal';
 import { RetieCertificateModal } from '../common/RetieCertificateModal';
 import { DianTaxSettlementModal } from '../common/DianTaxSettlementModal';
+import { BranchTransferModal } from '../common/BranchTransferModal';
 import { 
   Truck, 
   Wrench, 
@@ -35,7 +36,9 @@ import {
   Check,
   X,
   Percent,
-  Award
+  Award,
+  ArrowRightLeft,
+  Gauge
 } from 'lucide-react';
 
 export const ProviderPortal: React.FC = () => {
@@ -51,6 +54,7 @@ export const ProviderPortal: React.FC = () => {
   const [selectedForTaxSettlement, setSelectedForTaxSettlement] = useState<Reservation | null>(null);
   const [selectedForDispatch, setSelectedForDispatch] = useState<Reservation | null>(null);
   const [selectedForReturn, setSelectedForReturn] = useState<Reservation | null>(null);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
 
   // Estado de inventario de herramientas
   const [tools, setTools] = useState<Tool[]>([]);
@@ -368,6 +372,15 @@ export const ProviderPortal: React.FC = () => {
         >
           <Receipt className="w-3.5 h-3.5" />
           <span>Facturación & Liquidaciones</span>
+        </button>
+
+        <button
+          onClick={() => setIsTransferModalOpen(true)}
+          className="px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 ml-auto"
+          title="Solicitar traslado logístico de maquinaria entre sedes (Funcionalidad 36)"
+        >
+          <ArrowRightLeft className="w-3.5 h-3.5 text-indigo-400" />
+          <span>🚚 Transferencia Inter-Patios</span>
         </button>
       </div>
 
@@ -1298,6 +1311,17 @@ export const ProviderPortal: React.FC = () => {
         <DianTaxSettlementModal
           reservation={selectedForTaxSettlement}
           onClose={() => setSelectedForTaxSettlement(null)}
+        />
+      )}
+
+      {/* Modal Transferencia Inter-Patios (Funcionalidad 36) */}
+      {isTransferModalOpen && (
+        <BranchTransferModal
+          onClose={() => setIsTransferModalOpen(false)}
+          onSuccess={() => {
+            setIsTransferModalOpen(false);
+            showToast('Traslado logístico registrado exitosamente.', 'success');
+          }}
         />
       )}
 

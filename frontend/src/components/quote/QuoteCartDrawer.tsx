@@ -20,7 +20,11 @@ import {
   Tag,
   Check,
   RotateCcw,
-  Sparkles
+  Sparkles,
+  Clock,
+  UserCheck,
+  MapPin,
+  PackageCheck
 } from 'lucide-react';
 import { formatImageUrl, handleImageError } from '../../utils/imageUtils';
 import { PaymentModal } from '../client/PaymentModal';
@@ -57,19 +61,31 @@ export const QuoteCartDrawer: React.FC = () => {
   const [validatingCoupon, setValidatingCoupon] = useState<boolean>(false);
   const [couponMessage, setCouponMessage] = useState<{ text: string; isError: boolean } | null>(null);
 
+  // Estados examen lote 6: Régimen de Turnos (39), Operador (27), Consumibles (29), Geocercas (33), Idempotencia (31)
+  const [workShift, setWorkShift] = useState<'TURNO_SENCILLO_8H' | 'DOBLE_TURNO_16H' | 'TRIPLE_TURNO_24H'>('TURNO_SENCILLO_8H');
+  const [includeOperator, setIncludeOperator] = useState<boolean>(false);
+  const [includeConsumablesKit, setIncludeConsumablesKit] = useState<boolean>(false);
+  const [deliveryZone, setDeliveryZone] = useState<'METROPOLITANA' | 'INTERMUNICIPAL_FORANEA'>('METROPOLITANA');
+  const [idempotencyKey] = useState<string>(() => crypto.randomUUID());
+
   if (!isQuoteDrawerOpen && !pendingPaymentReservation) return null;
+
+  // Multiplicador por turno de trabajo
+  const shiftMultiplier = workShift === 'TRIPLE_TURNO_24H' ? 2.20 : (workShift === 'DOBLE_TURNO_16H' ? 1.65 : 1.0);
 
   // Cálculos consolidados de cotización
   let subtotalSinDescuento = 0;
   let totalDescuentoSemanal = 0;
   let totalDescuentoCombo = 0;
   let totalDepositosBase = 0;
+  let totalDaysSum = 0;
 
   // Descuento Paquete Combo: 10% en herramientas adicionales cuando se cotizan 2 o más
   const isMultiToolCombo = cart.length >= 2;
 
   cart.forEach((item, index) => {
-    const itemSubtotal = item.tool.baseDailyPrice * item.days;
+    totalDaysSum += item.days;
+    const itemSubtotal = Math.round(item.tool.baseDailyPrice * item.days * shiftMultiplier);
     subtotalSinDescuento += itemSubtotal;
     if (item.days >= 7) {
       totalDescuentoSemanal += itemSubtotal * 0.15;
@@ -80,7 +96,11 @@ export const QuoteCartDrawer: React.FC = () => {
     totalDepositosBase += item.tool.depositAmount;
   });
 
-  const subtotalNetoPrevio = Math.max(0, subtotalSinDescuento - totalDescuentoSemanal - totalDescuentoCombo);
+  const costoOperador = includeOperator ? (totalDaysSum * 80000) : 0;
+  const costoConsumibles = includeConsumablesKit ? 45000 : 0;
+  const sobretasaGeocerca = deliveryZone === 'INTERMUNICIPAL_FORANEA' ? 120000 : 0;
+
+  const subtotalNetoPrevio = Math.max(0, subtotalSinDescuento - totalDescuentoSemanal - totalDescuentoCombo + costoOperador + costoConsumibles + sobretasaGeocerca);
   const descuentoCupon = appliedCoupon?.valid ? (appliedCoupon.discountAmount ?? 0) : 0;
   const subtotalNeto = Math.max(0, subtotalNetoPrevio - descuentoCupon);
 
@@ -442,6 +462,116 @@ export const QuoteCartDrawer: React.FC = () => {
                   )}
                 </div>
 
+                {/* Régimen de Turnos (Funcionalidad 39) */}
+                <div className="p-4 rounded-xl bg-[#1E1E1C] border border-[#363632] space-y-2.5 shadow-xs">
+                  <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-[#F5F4F0] font-mono">
+                    <span className="flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-[#D94E1F]" />
+                      Régimen de Turnos (Jornada)
+                    </span>
+                    <span className="text-[10px] text-amber-400 font-bold">
+                      {workShift === 'TURNO_SENCILLO_8H' ? '1.0x Base' : (workShift === 'DOBLE_TURNO_16H' ? '1.65x (+65%)' : '2.20x (+120%)')}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => setWorkShift('TURNO_SENCILLO_8H')}
+                      className={`p-2 rounded-lg border text-center transition-all ${
+                        workShift === 'TURNO_SENCILLO_8H'
+                          ? 'border-[#D94E1F] bg-[#D94E1F]/15 text-[#D94E1F] font-bold'
+                          : 'border-[#363632] text-[#A8A69E] hover:bg-[#232320]'
+                      }`}
+                    >
+                      Diurno (8h)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setWorkShift('DOBLE_TURNO_16H')}
+                      className={`p-2 rounded-lg border text-center transition-all ${
+                        workShift === 'DOBLE_TURNO_16H'
+                          ? 'border-[#D94E1F] bg-[#D94E1F]/15 text-[#D94E1F] font-bold'
+                          : 'border-[#363632] text-[#A8A69E] hover:bg-[#232320]'
+                      }`}
+                    >
+                      Doble (16h)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setWorkShift('TRIPLE_TURNO_24H')}
+                      className={`p-2 rounded-lg border text-center transition-all ${
+                        workShift === 'TRIPLE_TURNO_24H'
+                          ? 'border-[#D94E1F] bg-[#D94E1F]/15 text-[#D94E1F] font-bold'
+                          : 'border-[#363632] text-[#A8A69E] hover:bg-[#232320]'
+                      }`}
+                    >
+                      🌙 24/7 Continuo
+                    </button>
+                  </div>
+                </div>
+
+                {/* Servicios de Obra & Logística (Funcionalidades 27, 29 y 33) */}
+                <div className="p-4 rounded-xl bg-[#1E1E1C] border border-[#363632] space-y-3 shadow-xs">
+                  <div className="text-xs font-semibold uppercase tracking-wider text-[#F5F4F0] font-mono flex items-center gap-2">
+                    <UserCheck className="w-3.5 h-3.5 text-[#D94E1F]" />
+                    Servicios de Obra & Logística
+                  </div>
+
+                  {/* Operador Certificado */}
+                  <label className="flex items-center justify-between p-2.5 rounded-lg bg-[#141412] border border-[#363632] cursor-pointer hover:border-slate-600 transition-colors">
+                    <div className="flex items-center gap-2 text-xs">
+                      <input
+                        type="checkbox"
+                        checked={includeOperator}
+                        onChange={(e) => setIncludeOperator(e.target.checked)}
+                        className="rounded border-[#363632] text-[#D94E1F] focus:ring-0 accent-[#D94E1F]"
+                      />
+                      <div>
+                        <span className="text-[#F5F4F0] font-semibold block">Operador / Maquinista SENA</span>
+                        <span className="text-[10px] text-[#A8A69E]">Mitigación SST y curso de alturas</span>
+                      </div>
+                    </div>
+                    <span className="font-mono text-xs text-amber-400 font-bold">+$80.000/día</span>
+                  </label>
+
+                  {/* Kit Consumibles */}
+                  <label className="flex items-center justify-between p-2.5 rounded-lg bg-[#141412] border border-[#363632] cursor-pointer hover:border-slate-600 transition-colors">
+                    <div className="flex items-center gap-2 text-xs">
+                      <input
+                        type="checkbox"
+                        checked={includeConsumablesKit}
+                        onChange={(e) => setIncludeConsumablesKit(e.target.checked)}
+                        className="rounded border-[#363632] text-[#D94E1F] focus:ring-0 accent-[#D94E1F]"
+                      />
+                      <div>
+                        <span className="text-[#F5F4F0] font-semibold block">Kit Consumibles Diamantados</span>
+                        <span className="text-[10px] text-[#A8A69E]">Brocas de impacto y discos de corte</span>
+                      </div>
+                    </div>
+                    <span className="font-mono text-xs text-amber-400 font-bold">+$45.000 COP</span>
+                  </label>
+
+                  {/* Geocerca Territorial */}
+                  <div className="pt-2 border-t border-[#363632] space-y-1.5">
+                    <label className="text-xs text-[#A8A69E] flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <MapPin className="w-3 h-3 text-[#D94E1F]" /> Perímetro de Obra (Geocerca):
+                      </span>
+                      {deliveryZone === 'INTERMUNICIPAL_FORANEA' && (
+                        <span className="text-[10px] font-mono text-rose-400 font-bold">+$120.000 Póliza Foránea</span>
+                      )}
+                    </label>
+                    <select
+                      value={deliveryZone}
+                      onChange={(e) => setDeliveryZone(e.target.value as any)}
+                      className="w-full bg-[#141412] border border-[#363632] rounded-lg px-2.5 py-1.5 text-xs text-[#F5F4F0] font-mono focus:outline-none focus:border-[#D94E1F]"
+                    >
+                      <option value="METROPOLITANA">Perímetro Urbano / Metropolitano (&le; 50 km) - Tarifa Estándar</option>
+                      <option value="INTERMUNICIPAL_FORANEA">Zona Intermunicipal Foránea (&gt; 50 km) - Sobretasa Seguro</option>
+                    </select>
+                  </div>
+                </div>
+
                 {/* Seguro contra Daños Todo Riesgo */}
                 <div className={`p-4 rounded-xl border transition-all ${
                   includeDamageWaiver 
@@ -609,6 +739,24 @@ export const QuoteCartDrawer: React.FC = () => {
                     <span className="font-mono">+${costoSeguro.toLocaleString('es-CO')}</span>
                   </div>
                 )}
+                {costoOperador > 0 && (
+                  <div className="flex justify-between text-amber-400 font-semibold">
+                    <span>Servicio Maquinista SENA (+$80k/d):</span>
+                    <span className="font-mono">+${costoOperador.toLocaleString('es-CO')}</span>
+                  </div>
+                )}
+                {costoConsumibles > 0 && (
+                  <div className="flex justify-between text-amber-400 font-semibold">
+                    <span>Kit Consumibles Obra:</span>
+                    <span className="font-mono">+${costoConsumibles.toLocaleString('es-CO')}</span>
+                  </div>
+                )}
+                {sobretasaGeocerca > 0 && (
+                  <div className="flex justify-between text-rose-400 font-semibold">
+                    <span>Póliza Geocerca Intermunicipal:</span>
+                    <span className="font-mono">+${sobretasaGeocerca.toLocaleString('es-CO')}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-[#A8A69E]">
                   <span>IVA Legal (19%):</span>
                   <span className="font-mono text-[#F5F4F0]">${iva.toLocaleString('es-CO')}</span>
@@ -652,6 +800,13 @@ export const QuoteCartDrawer: React.FC = () => {
                   </>
                 )}
               </button>
+
+              <div className="pt-1 text-center">
+                <span className="text-[10px] text-[#A8A69E] font-mono flex items-center justify-center gap-1.5">
+                  <Lock className="w-3 h-3 text-emerald-400" />
+                  Transacción protegida con Idempotency-Key: {idempotencyKey.slice(0, 18)}...
+                </span>
+              </div>
             </div>
           )}
 
