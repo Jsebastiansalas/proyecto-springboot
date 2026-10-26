@@ -70,8 +70,32 @@ Permite a los administradores y proveedores registrar mantenimientos preventivos
 ### 3. Consultar Historial de Mantenimientos por Herramienta
 - **GET** `/api/v1/tools/maintenance/tool/{toolId}`
 
+### 4. Consultar Órdenes Activas en Taller
+- **GET** `/api/v1/tools/maintenance/active`
+
+---
+
+## 🖥️ Interfaz de Usuario y Dónde Verlo (Frontend React 18)
+
+### 1. Panel de Taller y Gestión de Órdenes (`ProviderPortal.tsx`)
+- Pestaña **"Taller & Hoja de Vida"**:
+  * **Tarjetas KPI:** Total en Mantenimiento, Órdenes en Proceso, Costo Invertido y Equipos Operativos.
+  * **Formulario Nueva Orden:** Permite seleccionar la herramienta, tipo (`PREVENTIVO`, `CORRECTIVO`, `CALIBRACION`), fechas estimadas, técnico o taller asignado y costo proyectado.
+  * **Acción Completar Orden:** Abre modal para registrar fecha real de entrega, observaciones y costo final, reincorporando la herramienta a `DISPONIBLE`.
+
+### 2. Pestaña de Hoja de Vida en la Ficha Técnica (`ToolDetailModal.tsx`)
+- Pestaña **"Hoja de Vida & Taller"**:
+  * El cliente o contratista puede consultar el historial de mantenimiento de la máquina antes de alquilarla, verificando horas de uso, fecha del último mantenimiento preventivo y certificaciones técnicas.
+
+### 3. Bloqueo en Catálogo y Prevención de Alquiler
+- En el catálogo (`CatalogPage.tsx` / `ToolGrid.tsx`), si una máquina está en estado `MANTENIMIENTO`:
+  * Muestra un badge de alerta ámbar: `EN MANTENIMIENTO TÉCNICO`.
+  * El botón *"Alquilar"* o *"Agregar a Cotización"* se deshabilita automáticamente, impidiendo cualquier intento de reserva.
+
 ---
 
 ## 💡 Defensa en el Examen (Argumentos Técnicos)
 - **Coherencia del Ciclo de Vida:** La transición del estado de la maquinaria (`ToolStatus.DISPONIBLE` $\leftrightarrow$ `ToolStatus.MANTENIMIENTO`) se orquesta de forma consistente en el servicio de aplicación asegurando que no queden estados inconsistentes.
 - **Trazabilidad:** Cada orden de mantenimiento guarda quién realizó el trabajo y la fecha de finalización, proporcionando auditoría completa.
+- **Seguridad Preventiva:** La sincronización entre el backend y el frontend impide fisuras operativas como alquilar maquinaria que se encuentra desarmada o en calibración en taller.
+
