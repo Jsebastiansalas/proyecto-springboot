@@ -381,3 +381,22 @@ CREATE TABLE tool_comments (
 CREATE INDEX idx_comments_tool ON tool_comments (tool_id);
 CREATE INDEX idx_comments_user ON tool_comments (user_id);
 
+-- ----------------------------------------------------------------------------
+-- 20. TABLA: discount_coupons (4FN)
+-- Cupones de descuento promocional para cotizaciones
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS discount_coupons (
+    id BIGSERIAL PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(255),
+    discount_percentage NUMERIC(5, 2) NOT NULL,
+    max_discount_amount NUMERIC(12, 2),
+    expiration_date DATE NOT NULL,
+    min_rental_days INT NOT NULL DEFAULT 1,
+    max_uses INT NOT NULL DEFAULT 1000,
+    current_uses INT NOT NULL DEFAULT 0,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE INDEX idx_coupons_code ON discount_coupons (code);
+

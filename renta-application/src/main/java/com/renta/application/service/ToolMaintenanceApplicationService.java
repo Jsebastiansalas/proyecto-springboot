@@ -91,19 +91,40 @@ public class ToolMaintenanceApplicationService {
                 .collect(Collectors.toList());
     }
 
+    public List<ToolMaintenanceResponse> listAllActive() {
+        return maintenanceRepository.findAllActive().stream()
+                .map(m -> {
+                    Tool tool = toolRepository.findById(m.getToolId()).orElse(null);
+                    return toResponse(m, tool, null);
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<ToolMaintenanceResponse> listByProviderId(Long providerId) {
+        List<Tool> providerTools = toolRepository.findByProviderId(providerId);
+        List<Long> toolIds = providerTools.stream().map(Tool::getId).toList();
+        return maintenanceRepository.findAllActive().stream()
+                .filter(m -> toolIds.contains(m.getToolId()))
+                .map(m -> {
+                    Tool tool = providerTools.stream().filter(t -> t.getId().equals(m.getToolId())).findFirst().orElse(null);
+                    return toResponse(m, tool, null);
+                })
+                .collect(Collectors.toList());
+    }
+
     private ToolMaintenanceResponse toResponse(ToolMaintenance m, Tool tool, String message) {
         return new ToolMaintenanceResponse(
                 m.getId(),
                 m.getToolId(),
-                tool.getName(),
-                tool.getCodeSku(),
-                m.getType().name(),
+                tool != null ? tool.getName() : "Herramienta #" + m.getToolId(),
+                tool != null ? tool.getCodeSku() : "SKU-N/A",
+                m.getType() != null ? m.getType().name() : "PREVENTIVO",
                 m.getStartDate(),
                 m.getEndDate(),
-                m.getCost().amount(),
+                m.getCost() != null ? m.getCost().amount() : java.math.BigDecimal.ZERO,
                 m.getTechnicianName(),
                 m.getDescription(),
-                m.getStatus().name(),
+                m.getStatus() != null ? m.getStatus().name() : "EN_PROCESO",
                 message
         );
     }

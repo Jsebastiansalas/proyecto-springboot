@@ -57,4 +57,18 @@ public class ToolMaintenanceController {
     public ResponseEntity<List<ToolMaintenanceResponse>> listByTool(@PathVariable Long toolId) {
         return ResponseEntity.ok(maintenanceService.listByToolId(toolId));
     }
+
+    @GetMapping("/active")
+    @Operation(summary = "Listar todos los mantenimientos activos", description = "Lista todas las órdenes técnicas actualmente en proceso en taller.")
+    public ResponseEntity<List<ToolMaintenanceResponse>> listAllActive() {
+        return ResponseEntity.ok(maintenanceService.listAllActive());
+    }
+
+    @GetMapping("/provider/{providerId:[0-9]+}")
+    @PreAuthorize("hasAnyRole('PROVEEDOR', 'ADMIN')")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Listar mantenimientos de un proveedor", description = "Lista las órdenes de taller de las herramientas que pertenecen a un proveedor específico.")
+    public ResponseEntity<List<ToolMaintenanceResponse>> listByProvider(@PathVariable Long providerId) {
+        return ResponseEntity.ok(maintenanceService.listByProviderId(providerId));
+    }
 }

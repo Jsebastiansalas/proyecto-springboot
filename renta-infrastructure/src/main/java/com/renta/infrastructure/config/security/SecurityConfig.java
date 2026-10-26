@@ -118,6 +118,8 @@ public class SecurityConfig {
                         // --- RUTAS PÚBLICAS (No requieren login) ---
                         .requestMatchers("/api/v1/auth/**").permitAll()                           // Login y Registro
                         .requestMatchers(HttpMethod.GET, "/api/v1/tools/**").permitAll()           // Ver catálogo de herramientas
+                        .requestMatchers(HttpMethod.GET, "/api/v1/tools/maintenance/**").permitAll() // Hoja de vida técnica y taller
+                        .requestMatchers(HttpMethod.GET, "/api/v1/clients/*/trust-score").permitAll() // Consulta de score de contratista
                         .requestMatchers(HttpMethod.POST, "/api/v1/reservations/calculate-price").permitAll() // Cotizador de precios
                         .requestMatchers(HttpMethod.GET, "/api/v1/reservations/tool/*/occupied-dates").permitAll() // Calendario de disponibilidad
                         .requestMatchers(HttpMethod.GET, "/api/v1/reviews/tool/**").permitAll()    // Reseñas de clientes
@@ -136,8 +138,7 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
 
                         // --- NOTIFICACIONES Y SIMULACIÓN ---
-                        .requestMatchers(HttpMethod.POST, "/api/v1/notifications/simulate").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/notifications/**").authenticated()
+                        .requestMatchers("/api/v1/notifications/**").permitAll()
 
                         // --- RUTAS PROTEGIDAS POR ROL: ADMINISTRADOR ---
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")

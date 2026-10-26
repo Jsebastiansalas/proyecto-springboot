@@ -75,7 +75,7 @@ public class ToolController {
         return ResponseEntity.ok(toolService.listCategories());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:[0-9]+}")
     @Operation(summary = "Ficha detallada de la herramienta (4FN)", description = "Obtiene los detalles completos de la herramienta: especificaciones técnicas, tiers de descuento por volumen, requisitos de seguridad e imágenes.")
     public ResponseEntity<ToolDetailResponse> getToolDetail(@PathVariable Long id) {
         return ResponseEntity.ok(toolService.getToolDetail(id));

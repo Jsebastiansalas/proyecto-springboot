@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * ============================================================================
@@ -32,6 +33,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  * en qué paquetes escanear las tablas relacionales para evitar problemas de descubrimiento.
  */
 @SpringBootApplication(scanBasePackages = "com.renta")
+@EnableScheduling
 @EntityScan(basePackages = "com.renta.infrastructure.adapter.out.persistence.entity")
 @EnableJpaRepositories(basePackages = "com.renta.infrastructure.adapter.out.persistence.repository")
 public class RentaHerramientasApplication extends SpringBootServletInitializer {
